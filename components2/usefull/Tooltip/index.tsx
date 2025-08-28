@@ -18,13 +18,13 @@ const Tooltip = ({ className, icon, content, place, variant = "light" }: Tooltip
   const uid = generateUid();
   return (
     <>
-      <div className={cn(styles.icon, className)}>
+      <span className={cn("inline-flex ml-1.5", styles.icon, className)}>
         <Icon
           name={icon || "info-circle"}
           size="18"
           data-tooltip-id={`tooltip-${uid}`}
         />
-      </div>
+      </span>
 
       <ReactTooltip
         id={`tooltip-${uid}`}
