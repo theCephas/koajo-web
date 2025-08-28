@@ -1,0 +1,52 @@
+@use "@/styles/helpers" as *
+
+.price
+    display: flex
+    margin-top: 16px
+    +fs36
+    font-weight: 700
+    svg
+        margin-left: 8px
+        fill: $s4
+
+.line
+    display: flex
+    align-items: center
+    margin-top: 16px
+    font-size: 16px
+    font-weight: 500
+
+.indicator
+    margin-right: 12px
+    padding: 3px 4px 3px 6px
+    background: $p1
+    border-radius: 6px
+    font-size: 14px
+    font-weight: 600
+    color: $p5
+    svg
+        transform: rotate(-45deg)
+        margin-right: 2px
+        fill: $p5
+    &.negative
+        background: $e2
+        color: $e5
+        svg
+            transform: rotate(45deg)
+            fill: $e5
+
+.btns
+    display: flex
+    margin: 16px -8px 0
+    +m
+        margin-left: -3px
+        margin-right: -3px
+
+.button
+    flex: 0 0 calc(50% - 16px)
+    margin: 0 8px
+    padding: 0 8px
+    +m
+        flex: 0 0 calc(50% - 6px)
+        margin: 0 3px
+
