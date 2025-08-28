@@ -85,3 +85,5 @@ export type HTMLTag =
     info: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     new: boolean;
 };
+
+export type Currency = "USD" | "GBP" | "EUR"
