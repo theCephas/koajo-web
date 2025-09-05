@@ -1,5 +1,5 @@
-import ComingSoon from "@/components/shared/coming-soon";
+import TransactionPage from "./TransactionPage";
 
 export default function TransactionsPage() {
-  return <ComingSoon />;
+  return <TransactionPage />;
 }
