@@ -14,7 +14,7 @@ const navigation = [
   },
   {
     title: "Transaction",
-    url: "/dashboard/transaction",
+    url: "/dashboard/transactions",
   },
   {
     title: "Pod Information",
