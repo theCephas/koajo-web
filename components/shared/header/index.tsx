@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ className = "" }: HeaderProps) {
-  const loginItem = menuItems.find(
+  const loginItem = menuItems.find( 
     (item) => item.label.toLowerCase() === "login"
   );
 
@@ -68,7 +68,7 @@ export default function Header({ className = "" }: HeaderProps) {
               Login
             </Link>
           )}
-          <Button href="/auth/login" text="Get Started" />
+          <Button href="/get-started" text="Get Started" />
         </div>
 
         <MenuMobile />
