@@ -1,163 +1,53 @@
-// "use client";
+import { ReactNode } from "react";
+import RegistrationSteps from "@/components/admin/registration-steps";
+import Link from "next/link";
+import Image from "next/image";
 
-// import Link from "next/link";
-// import { Button, Field, PasswordField } from "@/components/utils";
-// import { useAuth } from "@/lib/hooks/useAuth";
-// import { useForm } from "react-hook-form";
-// import { useState } from "react";
-// import GoogleIcon from "@/public/media/icons/google-g-letter.svg";
-// import CardAuth from "@/components/auth/card-auth";
-// import { useRouter } from "next/navigation";
+interface RegisterLayoutProps {
+  children: ReactNode;
+}
 
-// interface LoginFormData {
-//   firstName: string;
-//   lastName: string;
-//   mobileNumber: string;
-//   email: string;
-//   password: string;
-//   confirmPassword: string;
-// }
+export default function RegisterLayout({ children }: RegisterLayoutProps) {
+  return (
+    <div className="bg-gray w-full h-screen min-h-[calc(700rem/16)]">
+      {/* Background */}
+      <div className="absolute inset-0 flex gap-10 h-full p-page-auth-offset-horizontal">
+        <div className="w-[calc((428/1396)*100%)] bg-[image:linear-gradient(180deg,#469DA3_0%,#1C2634_100%)] rounded-2xl" />
+      </div>
 
-// export default function RegisterPage() {
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors: formErrors, isSubmitting },
-//     watch,
-//   } = useForm<LoginFormData>();
-//   const { register } = useAuth();
-//   const [isLoading, setIsLoading] = useState(false);
-//   const router = useRouter();
-//   const formData = watch();
-//   const [faillureMessage, setFaillureMessage] = useState<string>("");
-//   const handleSubmitForm = async (data: LoginFormData) => {
-//     setIsLoading(true);
+      {/* Left Column - Branding */}
+      <div className="page_auth_container flex gap-10 h-full">
+        <div className="lg:flex lg:w-[calc((428/1396)*100%)] relative h-full justify-end">
+          <div className="relative flex flex-col gap-16 px-8 py-6">
+            {/* Logo */}
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/media/icons/logo-light-gradient.svg"
+                alt="Koajo Logo"
+                width={100}
+                height={28}
+                className="h-7 w-auto"
+              />
+            </Link>
 
-//     try {
-//       const success = await login(data.email, data.password);
+            {/* Registration Steps */}
+            <RegistrationSteps />
+          </div>
+        </div>
 
-//       if (!success) {
-//         setFaillureMessage("Invalid email or password");
-//         return;
-//       }
+        {/* Right Column - Auth Forms */}
+        <div className="w-full grow flex items-center justify-center relative h-full">
+          {children}
 
-//       // Redirect to dashboard on success
-//       router.push("/dashboard");
-//     } catch (error) {
-//       console.error("Login error:", error);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const handleGoogleLogin = () => {
-//     // Implement Google OAuth
-//     console.log("Google login clicked");
-//   };
-
-//   return (
-//     <CardAuth
-//       title="Login First to Your Account"
-//       description="Sign in to your Koajo account to access all Koajo products."
-//     >
-//       {/* Form */}
-//       <form
-//         onSubmit={handleSubmit(handleSubmitForm)}
-//         className="space-y-6.5"
-//         noValidate
-//       >
-//         {faillureMessage && <span className="text-red-500 text-sm mx-auto  w-fit block">{faillureMessage}</span>}
-//         {/* Email Field */}
-//         <Field
-//           label="Email"
-//           type="email"
-//           placeholder="Enter Your email"
-//           required
-//           error={formErrors.email?.message}
-//           {...register("email", {
-//             required: "Email is required",
-//             pattern: {
-//               value: /\S+@\S+\.\S+/,
-//               message: "Please enter a valid email address",
-//             },
-//           })}
-//         />
-
-//         {/* Password Field */}
-//         <PasswordField
-//           label="Password"
-//           placeholder="Enter your password"
-//           required
-//           error={formErrors.password?.message}
-//           {...register("password", {
-//             required: "Password is required",
-//             minLength: {
-//               value: 6,
-//               message: "Password must be at least 6 characters",
-//             },
-//           })}
-//         />
-
-//         {/* Remember Me & Forgot Password */}
-//         <div className="flex items-center justify-between gap-2">
-//           <div className="flex items-center gap-2">
-//             <input
-//               type="checkbox"
-//               {...register("rememberMe")}
-//               className="w-4 h-4 text-primary border-secondary-100 rounded focus:ring-primary"
-//             />
-//             <label className="flex items-center gap-2 cursor-pointer">
-//               <span className="text-base text-text-500">Remember me</span>
-//             </label>
-//           </div>
-
-//           <Link
-//             href="/auth/login/forgot-password"
-//             className="text-base text-tertiary-100 hover:text-tertiary-100/80 transition-colors"
-//           >
-//             Forgot Password
-//           </Link>
-//         </div>
-
-//         {/* Login Button */}
-//         <div className="flex flex-col gap-3 items-center">
-//           <Button
-//             type="submit"
-//             text={isLoading ? "Logging in..." : "Login"}
-//             variant="primary"
-//             className="w-full"
-//             disabled={isLoading}
-//             showArrow={false}
-//           />
-
-//           <span className="text-sm text-gray-400">or login with</span>
-
-//           {/* Google Login */}
-//           <button
-//             onClick={handleGoogleLogin}
-//             className="cursor-pointer w-full flex items-center justify-center gap-1 px-8 py-3 border border-secondary-100 rounded-full text-text-500 hover:bg-gray transition-colors"
-//           >
-//             <GoogleIcon className="w-5 h-5" />
-//             Google
-//           </button>
-//         </div>
-//       </form>
-
-//       {/* Registration Link */}
-//       <div className="text-center font-semibold flex items-center justify-center gap-1">
-//         <span className="text-text-400">Don&apos;t have an account? </span>
-//         <Link
-//           href="/auth/register"
-//           className="text-tertiary-100 hover:text-tertiary-100/80"
-//         >
-//           Register Here
-//         </Link>
-//       </div>
-//     </CardAuth>
-//   );
-// }
-
-
-export default function RegisterLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+          {/* Copyright */}
+          <div className="text-center absolute bottom-0 mt-8 text-sm text-secondary-300 gap-3 flex">
+            © Koajo. All rights reserved.
+            <Link href="/legals/privacy-policy" className="text-tertiary-100 hover:text-tertiary-100/80">Privacy Policy</Link>
+            |
+            <Link href="/legals/terms-of-use" className="text-tertiary-100 hover:text-tertiary-100/80">Terms of Use</Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
