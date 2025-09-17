@@ -25,6 +25,8 @@
   --color-cyan-100: #ecfcff;
   --color-green-500: #22c55e;
   --color-green-100: #f0fdf4;
+  --color-green-700: #44513E;
+
 
   /* Spacing */
   --page-max-width: 23.4375rem; /* 375px */
@@ -103,7 +105,7 @@ body {
   --color-cyan-100: var(--color-cyan-100);
   --color-green-500: var(--color-green-500);
   --color-green-100: var(--color-green-100);
-
+  --color-green-700: var(--color-green-700);
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
