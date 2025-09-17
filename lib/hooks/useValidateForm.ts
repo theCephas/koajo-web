@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useForm, type FieldValues, type Path, type RegisterOptions, type UseFormReturn, type DefaultValues } from "react-hook-form";
+import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "../constants";
 
 export type FormType = "login" | "registration" | "otp";
 
@@ -56,15 +57,15 @@ function getRules<T extends FieldValues>(
     switch (name) {
       case "email":
         return {
-          required: "Email is required",
+          required: FORM_FIELDS_MESSAGES.EMAIL.REQUIRED,
           pattern: {
-            value: /\S+@\S+\.\S+/, // simple email check
-            message: "Please enter a valid email address",
+            value: FORM_FIELDS_PATTERNS.EMAIL, // simple email check
+            message: FORM_FIELDS_MESSAGES.EMAIL.PATTERN,
           },
         } as RegisterOptions<T, Path<T>>;
       case "password":
         return {
-          required: "Password is required",
+          required: FORM_FIELDS_MESSAGES.PASSWORD.REQUIRED,
           minLength: { value: 6, message: "Password must be at least 6 characters" },
         } as RegisterOptions<T, Path<T>>;
       default:
@@ -73,32 +74,32 @@ function getRules<T extends FieldValues>(
   }
 
   if (formType === "registration") {
-    switch (name) {
-      case "firstName":
-        return { required: "First name is required", minLength: { value: 2, message: "Too short" } } as RegisterOptions<T, Path<T>>;
-      case "lastName":
-        return { required: "Last name is required", minLength: { value: 2, message: "Too short" } } as RegisterOptions<T, Path<T>>;
-      case "email":
+    switch (name) {case "email":
         return {
-          required: "Email is required",
-          pattern: { value: /\S+@\S+\.\S+/, message: "Please enter a valid email address" },
+          required: FORM_FIELDS_MESSAGES.EMAIL.REQUIRED,
+          pattern: { value: FORM_FIELDS_PATTERNS.EMAIL, message: FORM_FIELDS_MESSAGES.EMAIL.PATTERN },
+        } as RegisterOptions<T, Path<T>>;
+      case "phoneNumber":
+        return {
+          required: FORM_FIELDS_MESSAGES.PHONE_NUMBER.REQUIRED,
+          pattern: { value: FORM_FIELDS_PATTERNS.PHONE_NUMBER, message: FORM_FIELDS_MESSAGES.PHONE_NUMBER.PATTERN },
         } as RegisterOptions<T, Path<T>>;
       case "password":
         return {
-          required: "Password is required",
-          minLength: { value: 8, message: "Password must be at least 8 characters" },
+          required: FORM_FIELDS_MESSAGES.PASSWORD.REQUIRED,
+          minLength: { value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH, message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH },
         } as RegisterOptions<T, Path<T>>;
       case "confirmPassword":
         return {
-          required: "Please confirm your password",
+          required: FORM_FIELDS_MESSAGES.PASSWORD.REPEAT,
           validate: (value: unknown) => {
             const password = (form.getValues() as unknown as RegistrationFormValues).password;
-            return value === password || "Passwords do not match";
+            return value === password || FORM_FIELDS_MESSAGES.PASSWORD.REPEAT;
           },
         } as RegisterOptions<T, Path<T>>;
       case "agreeToTerms":
         return {
-          validate: (value: unknown) => Boolean(value) || "You must agree to the terms and conditions",
+          validate: (value: unknown) => Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED,
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
@@ -109,10 +110,9 @@ function getRules<T extends FieldValues>(
     switch (name) {
       case "otp":
         return {
-          required: "Enter the 6-digit code",
-          minLength: { value: 6, message: "Code must be 6 digits" },
-          maxLength: { value: 6, message: "Code must be 6 digits" },
-          pattern: { value: /^\d{6}$/u, message: "Code must be numeric" },
+          required: FORM_FIELDS_MESSAGES.OTP.REQUIRED,
+          maxLength: { value: FORM_FIELDS_PATTERNS.OTP.LENGTH, message: FORM_FIELDS_MESSAGES.OTP.LENGTH },
+          pattern: { value: FORM_FIELDS_PATTERNS.OTP.PATTERN, message: FORM_FIELDS_MESSAGES.OTP.PATTERN },
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
