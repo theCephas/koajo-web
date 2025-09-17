@@ -89,8 +89,8 @@ export default function LoginPage() {
           {...register("password", {
             required: "Password is required",
             minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters",
+              value: 10,
+              message: "Password must be at least 10 characters",
             },
           })}
         />
@@ -144,7 +144,7 @@ export default function LoginPage() {
       <div className="text-center font-semibold flex items-center justify-center gap-1">
         <span className="text-text-400">Don&apos;t have an account? </span>
         <Link
-          href="/auth/register"
+          href="/register"
           className="text-tertiary-100 hover:text-tertiary-100/80"
         >
           Register Here
