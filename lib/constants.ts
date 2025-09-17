@@ -11,6 +11,7 @@ export const FORM_FIELDS_PATTERNS = {
     UPPERCASE: /[A-Z]/,
     NUMBER: /[0-9]/,
     SPECIAL: /[^A-Za-z0-9]/,
+    SPACE: /\s/,
   },
 
   EMAIL: /\S+@\S+\.\S+/,
@@ -34,6 +35,7 @@ export const FORM_FIELDS_MESSAGES = {
     MIN_LENGTH: "Password must be at least 10 characters",
     REPEAT: "Passwords do not match",
     REQUIRED: "Password is required",
+    SPACE: "Spaces not allowed. We removed them automatically",
   },
 
   EMAIL: {
@@ -42,7 +44,7 @@ export const FORM_FIELDS_MESSAGES = {
   },
 
   PHONE_NUMBER: {
-    PATTERN: "Please enter a valid phone number",
+    PATTERN: "Please enter a valid phone number with country code",
     REQUIRED: "Phone number is required",
   },
 
