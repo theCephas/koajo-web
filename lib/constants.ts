@@ -15,6 +15,12 @@ export const FORM_FIELDS_PATTERNS = {
 
   EMAIL: /\S+@\S+\.\S+/,
 
+  OTP: {
+    LENGTH: 6,
+    PATTERN: /^\d{6}$/,
+    REQUIRED: "Enter the 6-digit code",
+  },
+
   PHONE_NUMBER: /^\+[1-9](?:[ -]?\d){1,14}$/, // E.164 with optional space or dash separators
 };
 
@@ -38,5 +44,15 @@ export const FORM_FIELDS_MESSAGES = {
   PHONE_NUMBER: {
     PATTERN: "Please enter a valid phone number",
     REQUIRED: "Phone number is required",
+  },
+
+  OTP: {
+    REQUIRED: "Enter the 6-digit code",
+    LENGTH: "Code must be 6 digits",
+    PATTERN: "Code must be number only",
+  },
+
+  AGREE_TO_TERMS: {
+    REQUIRED: "You must agree to the terms and conditions",
   },
 };
