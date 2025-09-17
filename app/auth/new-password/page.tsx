@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Field, PasswordField } from "@/components/utils";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { Button, PasswordField } from "@/components/utils";
 import { useForm } from "react-hook-form";
 import CardAuth from "@/components/auth/card-auth";
-import { FORM_FIELDS_PATTERNS, FORM_FIELDS_MESSAGES } from "@/lib/constants";
+import { getPasswordStrength } from "@/lib/utils/form";
+import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "@/lib/constants";
 
 
 interface NewPasswordFormData {
@@ -14,11 +14,6 @@ interface NewPasswordFormData {
   repeatPassword: string;
 }
 
-interface PasswordStrength {
-  score: number;
-  label: string;
-  color: string;
-}
 
 export default function NewPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,23 +27,6 @@ export default function NewPasswordPage() {
   } = useForm<NewPasswordFormData>();
 
   const formData = watch();
-
-  const getPasswordStrength = (password: string): PasswordStrength => {
-    let score = 0;
-
-    if (password.length >= FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH) score++;
-    if (FORM_FIELDS_PATTERNS.PASSWORD.LOWERCASE.test(password)) score++;
-    if (FORM_FIELDS_PATTERNS.PASSWORD.UPPERCASE.test(password)) score++;
-    if (FORM_FIELDS_PATTERNS.PASSWORD.NUMBER.test(password)) score++;
-    if (FORM_FIELDS_PATTERNS.PASSWORD.SPECIAL.test(password)) score++;
-
-    console.log("score", score);
-
-    if (score <= 2) return { score, label: "Weak", color: "bg-red-500" };
-    if (score <= 3) return { score, label: "Fair", color: "bg-yellow-500" };
-    if (score <= 4) return { score, label: "Good", color: "bg-blue-500" };
-    return { score, label: "Strong", color: "bg-tertiary-100" };
-  };
 
   const passwordStrength = getPasswordStrength(formData.newPassword || "");
 
@@ -103,13 +81,13 @@ export default function NewPasswordPage() {
             {...register("newPassword", {
               required: "New password is required",
               minLength: {
-                value: 10,
-                message: "Password must be at least 10 characters",
+                value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH,
+                message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH,
               },
               pattern: {
-                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                value: FORM_FIELDS_PATTERNS.PASSWORD.ALL,
                 message:
-                  "Password must contain uppercase, lowercase, number, and special characters",
+                  FORM_FIELDS_MESSAGES.PASSWORD.ALL,
               },
             })}
           />
@@ -161,10 +139,10 @@ export default function NewPasswordPage() {
           required
           error={formErrors.repeatPassword?.message}
           {...register("repeatPassword", {
-            required: "Please repeat your password",
+            required: FORM_FIELDS_MESSAGES.PASSWORD.REPEAT,
             validate: (value) => {
               const newPassword = watch("newPassword");
-              return value === newPassword || "Passwords do not match";
+              return value === newPassword || FORM_FIELDS_MESSAGES.PASSWORD.REPEAT;
             },
           })}
         />
