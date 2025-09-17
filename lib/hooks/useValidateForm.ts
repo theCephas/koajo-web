@@ -66,7 +66,7 @@ function getRules<T extends FieldValues>(
       case "password":
         return {
           required: FORM_FIELDS_MESSAGES.PASSWORD.REQUIRED,
-          minLength: { value: 6, message: "Password must be at least 6 characters" },
+          minLength: { value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH, message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH },
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
