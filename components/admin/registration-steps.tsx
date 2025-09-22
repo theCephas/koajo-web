@@ -34,7 +34,7 @@ export default function RegistrationSteps() {
       {
         label: "Confirmation Code",
         description: "Verify your email with the code sent to your inbox.",
-        href: "/register/confirmation-code",
+        href: "/register/otp",
         Icon: VerifiedIcon,
       },
       {
