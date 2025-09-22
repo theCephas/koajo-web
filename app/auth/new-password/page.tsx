@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import CardAuth from "@/components/auth/card-auth";
 import { getPasswordStrength } from "@/lib/utils/form";
 import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "@/lib/constants";
+import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 
 
 interface NewPasswordFormData {
@@ -28,7 +29,7 @@ export default function NewPasswordPage() {
 
   const formData = watch();
 
-  const passwordStrength = getPasswordStrength(formData.newPassword || "");
+  const password = watch("newPassword");
 
   const handleSubmitForm = async (data: NewPasswordFormData) => {
     if (data.newPassword !== data.repeatPassword) {
@@ -93,42 +94,8 @@ export default function NewPasswordPage() {
           />
 
           {/* Password Strength Indicator */}
-          {formData.newPassword && (
-            <div className="space-y-2">
-              <p className="text-xs text-text-400">
-                Min 10 Characters with a combination of letters, numbers and
-                special characters
-              </p>
-
-              <div className="flex items-center gap-6">
-                <div className="flex gap-1 w-full">
-                  {[...Array(5)].map((_, segment) => (
-                    <div
-                      key={segment}
-                      className={`h-1.5 rounded-full transition-all ${
-                        segment < passwordStrength.score
-                          ? "bg-tertiary-100"
-                          : "bg-text-200"
-                      }`}
-                      style={{ width: `${100 / 5}%` }}
-                    />
-                  ))}
-                </div>
-                <span
-                  className={`text-xs font-semibold ${
-                    passwordStrength.score <= 2
-                      ? "text-red-500"
-                      : passwordStrength.score === 3
-                      ? "text-yellow-500"
-                      : passwordStrength.score === 4
-                      ? "text-blue-500"
-                      : "text-tertiary-100"
-                  }`}
-                >
-                  {passwordStrength.label}
-                </span>
-              </div>
-            </div>
+          {password && (
+            <PasswordStrengthIndicator password={password} />
           )}
         </div>
 
