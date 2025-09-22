@@ -15,6 +15,7 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   children?: ReactNode;
+  showError?: boolean;
 }
 
 export const Field = forwardRef<HTMLInputElement, FieldProps>(
@@ -32,6 +33,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
       error,
       onChange,
       children,
+      showError = true,
       ...props
     },
     ref
@@ -51,7 +53,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
             name={name}
             type={type}
             placeholder={placeholder}
-            className={cn(
+            className={cn("placeholder:text-text-400/50",
               hasError &&
                 "border-red-500 focus:ring-red-500 focus:border-red-500",
               inputClassName
@@ -62,7 +64,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
           {children}
         </div>
 
-        {hasError && (
+        {hasError && showError && (
           <div
             className={cn(
               "flex items-center gap-2 text-red-500 text-sm",
