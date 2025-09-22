@@ -9,6 +9,8 @@ import CardAuth from "@/components/auth/card-auth";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 
 interface RegisterFormData {
+  // firstName: string;
+  // lastName: string;
   email: string;
   phoneNumber: string;
   password: string;
@@ -31,7 +33,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/dashboard");
+      router.push("/register/otp");
     } finally {
       setIsLoading(false);
     }
@@ -39,8 +41,8 @@ export default function RegisterPage() {
 
   return (
     <CardAuth
-      title="Login First to Your Account"
-      description="Sign in to your Koajo account to access all Koajo products."
+      title="Let's Create Your Account"
+      description="Get started with Koajo and take control of your finances."
     >
       {/* Form */}
       <form
@@ -48,6 +50,26 @@ export default function RegisterPage() {
         className="space-y-6.5"
         noValidate
       >
+
+        {/* Email Field */}
+        <Field
+          label="Email"
+          type="email"
+          placeholder="Enter Your email"
+          required
+          error={formErrors.email?.message}
+          {...registerField("email")}
+        /> 
+
+        {/* Email Field */}
+        <Field
+          label="Email"
+          type="email"
+          placeholder="Enter Your email"
+          required
+          error={formErrors.email?.message}
+          {...registerField("email")}
+        />
         {/* Email Field */}
         <Field
           label="Email"
