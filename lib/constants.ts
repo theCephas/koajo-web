@@ -4,6 +4,18 @@ export const REM_BASE = 16;
 export const HEADINGS: HTMLTag[] = ["h1", "h2", "h3", "h4", "h5", "h6"];
 
 export const FORM_FIELDS_PATTERNS = {
+  FIRST_NAME: {
+    PATTERN: /^[a-zA-Z]+$/,
+    MIN_LENGTH: 2,
+    MAX_LENGTH: 50,
+  },
+
+  LAST_NAME: {
+    PATTERN: /^[a-zA-Z]+$/,
+    MIN_LENGTH: 2,
+    MAX_LENGTH: 50,
+  },
+
   PASSWORD: {
     MIN_LENGTH: 10,
     ALL: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/,
@@ -26,6 +38,18 @@ export const FORM_FIELDS_PATTERNS = {
 };
 
 export const FORM_FIELDS_MESSAGES = {
+  FIRST_NAME: {
+    REQUIRED: "First name is required",
+    PATTERN: "First name must be alphabetic letters only",
+    MIN_LENGTH: "First name must be at least 2 characters",
+    MAX_LENGTH: "First name must be at most 50 characters",
+  },
+  LAST_NAME: {
+    REQUIRED: "Last name is required",
+    PATTERN: "Last name must be alphabetic letters only",
+    MIN_LENGTH: "Last name must be at least 2 characters",
+    MAX_LENGTH: "Last name must be at most 50 characters",
+  },
   PASSWORD: {
     ALL: "Password must contain uppercase, lowercase, number, and special characters",
     LOWERCASE: "Password must contain a lowercase character",
