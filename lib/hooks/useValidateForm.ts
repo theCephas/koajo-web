@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { useForm, type FieldValues, type Path, type RegisterOptions, type UseFormReturn, type DefaultValues } from "react-hook-form";
+import {
+  useForm,
+  type FieldValues,
+  type Path,
+  type RegisterOptions,
+  type UseFormReturn,
+  type DefaultValues,
+} from "react-hook-form";
 import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "../constants";
 
 export type FormType = "login" | "registration" | "otp";
@@ -13,6 +20,8 @@ export interface LoginFormValues {
 }
 
 export interface RegistrationFormValues {
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   password: string;
@@ -37,6 +46,8 @@ const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
     rememberMe: false,
   },
   registration: {
+    firstName: "",
+    lastName: "",
     email: "",
     phoneNumber: "",
     password: "",
@@ -66,7 +77,10 @@ function getRules<T extends FieldValues>(
       case "password":
         return {
           required: FORM_FIELDS_MESSAGES.PASSWORD.REQUIRED,
-          minLength: { value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH, message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH },
+          minLength: {
+            value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH,
+            message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH,
+          },
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
@@ -74,32 +88,53 @@ function getRules<T extends FieldValues>(
   }
 
   if (formType === "registration") {
-    switch (name) {case "email":
+    switch (name) {
+      case "firstName":
+        return {
+          required: FORM_FIELDS_MESSAGES.FIRST_NAME.REQUIRED,
+        } as RegisterOptions<T, Path<T>>;
+      case "lastName":
+        return {
+          required: FORM_FIELDS_MESSAGES.LAST_NAME.REQUIRED,
+        } as RegisterOptions<T, Path<T>>;
+      case "email":
         return {
           required: FORM_FIELDS_MESSAGES.EMAIL.REQUIRED,
-          pattern: { value: FORM_FIELDS_PATTERNS.EMAIL, message: FORM_FIELDS_MESSAGES.EMAIL.PATTERN },
+          pattern: {
+            value: FORM_FIELDS_PATTERNS.EMAIL,
+            message: FORM_FIELDS_MESSAGES.EMAIL.PATTERN,
+          },
         } as RegisterOptions<T, Path<T>>;
       case "phoneNumber":
         return {
           required: FORM_FIELDS_MESSAGES.PHONE_NUMBER.REQUIRED,
-          pattern: { value: FORM_FIELDS_PATTERNS.PHONE_NUMBER, message: FORM_FIELDS_MESSAGES.PHONE_NUMBER.PATTERN },
+          pattern: {
+            value: FORM_FIELDS_PATTERNS.PHONE_NUMBER,
+            message: FORM_FIELDS_MESSAGES.PHONE_NUMBER.PATTERN,
+          },
         } as RegisterOptions<T, Path<T>>;
       case "password":
         return {
           required: FORM_FIELDS_MESSAGES.PASSWORD.REQUIRED,
-          minLength: { value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH, message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH },
+          minLength: {
+            value: FORM_FIELDS_PATTERNS.PASSWORD.MIN_LENGTH,
+            message: FORM_FIELDS_MESSAGES.PASSWORD.MIN_LENGTH,
+          },
         } as RegisterOptions<T, Path<T>>;
       case "confirmPassword":
         return {
           required: FORM_FIELDS_MESSAGES.PASSWORD.REPEAT,
           validate: (value: unknown) => {
-            const password = (form.getValues() as unknown as RegistrationFormValues).password;
+            const password = (
+              form.getValues() as unknown as RegistrationFormValues
+            ).password;
             return value === password || FORM_FIELDS_MESSAGES.PASSWORD.REPEAT;
           },
         } as RegisterOptions<T, Path<T>>;
       case "agreeToTerms":
         return {
-          validate: (value: unknown) => Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED,
+          validate: (value: unknown) =>
+            Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED,
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
@@ -111,8 +146,14 @@ function getRules<T extends FieldValues>(
       case "otp":
         return {
           required: FORM_FIELDS_MESSAGES.OTP.REQUIRED,
-          maxLength: { value: FORM_FIELDS_PATTERNS.OTP.LENGTH, message: FORM_FIELDS_MESSAGES.OTP.LENGTH },
-          pattern: { value: FORM_FIELDS_PATTERNS.OTP.PATTERN, message: FORM_FIELDS_MESSAGES.OTP.PATTERN },
+          maxLength: {
+            value: FORM_FIELDS_PATTERNS.OTP.LENGTH,
+            message: FORM_FIELDS_MESSAGES.OTP.LENGTH,
+          },
+          pattern: {
+            value: FORM_FIELDS_PATTERNS.OTP.PATTERN,
+            message: FORM_FIELDS_MESSAGES.OTP.PATTERN,
+          },
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
@@ -131,13 +172,24 @@ export function useValidateForm<T extends FormType>(formType: T) {
     defaultValues: defaultValuesByType[formType] as DefaultValues<Values>,
   });
 
-  const rules = useMemo(() => ({
-    for: (name: keyof Values) => getRules(formType, String(name), form as unknown as UseFormReturn<FieldValues>),
-  }), [formType, form]);
+  const rules = useMemo(
+    () => ({
+      for: (name: keyof Values) =>
+        getRules(
+          formType,
+          String(name),
+          form as unknown as UseFormReturn<FieldValues>
+        ),
+    }),
+    [formType, form]
+  );
 
   const registerWithRules = <K extends keyof Values>(name: K) => {
     const fieldRules = rules.for(name);
-    return form.register(name as unknown as Path<Values>, fieldRules as RegisterOptions<Values, Path<Values>>);
+    return form.register(
+      name as unknown as Path<Values>,
+      fieldRules as RegisterOptions<Values, Path<Values>>
+    );
   };
 
   return {
@@ -148,4 +200,6 @@ export function useValidateForm<T extends FormType>(formType: T) {
   } as const;
 }
 
-export type UseValidateFormReturn<T extends FormType> = ReturnType<typeof useValidateForm<T>>;
+export type UseValidateFormReturn<T extends FormType> = ReturnType<
+  typeof useValidateForm<T>
+>;
