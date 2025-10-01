@@ -9,11 +9,17 @@ interface VerificationResult {
   sessionId?: string;
 }
 
+type VerificationType = 'document' | 'id_number';
+
 export function useStripeIdentity() {
   const { stripe, loading } = useStripe();
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const verifyIdentity = async (email?: string, userId?: string): Promise<VerificationResult> => {
+  const verifyIdentity = async (
+    email?: string,
+    userId?: string,
+    options?: { verificationType?: VerificationType }
+  ): Promise<VerificationResult> => {
     if (!stripe) {
       console.error('Stripe is not loaded:', { stripe, loading });
       return {
@@ -35,6 +41,7 @@ export function useStripeIdentity() {
         body: JSON.stringify({
           email,
           userId,
+          verificationType: options?.verificationType || 'document',
         }),
       });
 
