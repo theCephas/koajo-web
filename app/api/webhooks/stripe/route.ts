@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   switch (event.type) {
     case 'identity.verification_session.verified':
       const verifiedSession = event.data.object as Stripe.Identity.VerificationSession;
-      console.log('Verification verified:', verifiedSession.id);
+      console.log('Verification verified:', verifiedSession.id, 'type:', verifiedSession.type);
       
       // Handle successful verification
       // You can update your database, send emails, etc.
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     case 'identity.verification_session.requires_input':
       const requiresInputSession = event.data.object as Stripe.Identity.VerificationSession;
-      console.log('Verification requires input:', requiresInputSession.id);
+      console.log('Verification requires input:', requiresInputSession.id, 'type:', requiresInputSession.type);
       
       // Handle verification that needs user input
       await handleVerificationRequiresInput(requiresInputSession);

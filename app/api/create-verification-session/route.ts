@@ -20,13 +20,19 @@ export async function POST(request: NextRequest) {
 
     // Get user data from request body
     const body = await request.json();
-    const { email, userId } = body;
+    const { email, userId, verificationType } = body as {
+      email?: string;
+      userId?: string;
+      verificationType?: 'document' | 'id_number';
+    };
 
     console.log('User data:', { email, userId });
 
     // Create the verification session
+    const type: 'document' | 'id_number' = verificationType === 'id_number' ? 'id_number' : 'document';
+
     const verificationSession = await stripe.identity.verificationSessions.create({
-      type: 'document',
+      type,
       provided_details: {
         email: email || 'user@example.com',
       },

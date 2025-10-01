@@ -3,31 +3,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/utils";
-import CardFaqTopic from "@/components/utils/card-faq-topic";
-import { CameraIcon, LockClosedIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
+ 
 import CardAuth from "@/components/auth/card-auth";
 import { useStripeIdentity } from "@/lib/hooks/useStripeIdentity";
 
 export default function KycPage() {
   const [currentStep, setCurrentStep] = useState<"verification" | "mobile" | "processing" | "success">("verification");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const router = useRouter();
   const { verifyIdentity, isVerifying, loading: stripeLoading } = useStripeIdentity();
 
   const handleAgreeAndContinue = async () => {
     setError(null);
-    setCountdown(3); // Start 3-second countdown
+    // setCountdown(3); // Start 3-second countdown
     
-    // Countdown before opening modal
-    for (let i = 3; i > 0; i--) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCountdown(i - 1);
-    }
+    // // Countdown before opening modal
+    // for (let i = 3; i > 0; i--) {
+    //   await new Promise(resolve => setTimeout(resolve, 1000));
+    //   setCountdown(i - 1);
+    // }
     
     setCountdown(null);
     setIsLoading(true);
@@ -37,10 +33,9 @@ export default function KycPage() {
       const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
       const userId = localStorage.getItem('userId') || 'user_123';
       
-      const result = await verifyIdentity(userEmail, userId);
+      const result = await verifyIdentity(userEmail, userId, { verificationType: 'document' });
       
       if (result.success) {
-        setVerificationResult(result);
         // Show processing message instead of immediate success
         setCurrentStep("processing");
       } else {
@@ -58,24 +53,27 @@ export default function KycPage() {
     router.push("/register");
   };
 
-  const handleBack = () => {
-    if (currentStep === "mobile") {
-      setCurrentStep("verification");
-    } else {
-      router.push("/register/otp");
-    }
-  };
-
-  const handleContinueOnMobile = async () => {
+  const handleVerifyIdNumber = async () => {
+    setError(null);
     setIsLoading(true);
     try {
-      // Simulate mobile verification process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.push("/dashboard");
+      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+      const userId = localStorage.getItem('userId') || 'user_123';
+      const result = await verifyIdentity(userEmail, userId, { verificationType: 'id_number' });
+      if (result.success) {
+        setCurrentStep("processing");
+      } else {
+        setError(result.error || 'Verification failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  
 
   const handleContinueToDashboard = () => {
     router.push("/dashboard");
@@ -99,7 +97,7 @@ export default function KycPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Processing Verification</h3>
                 <p className="text-gray-600">
-                  We're verifying your identity documents. You'll be notified once the process is complete.
+                  We&apos;re verifying your identity documents. You&apos;ll be notified once the process is complete.
                 </p>
               </div>
 
@@ -164,37 +162,34 @@ export default function KycPage() {
   }
 
   // if (currentStep === "verification") {
-    return (
-      <div className=" bg-white flex items-center justify-center p-4 rounded-2xl">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <button
-              onClick={handleBack}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
-            </button>
-            <div className="flex-1 text-center">
-              <div className="text-2xl font-bold text-black">stripe</div>
-            </div>
-          </div>
+    // return (
+    //   <div className=" bg-white flex items-center justify-center p-4 rounded-2xl">
+    //     <div className="w-full max-w-md">
+    //       {/* Header */}
+    //       <div className="flex items-center gap-4 mb-8">
+    //         <button
+    //           onClick={handleBack}
+    //           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+    //         >
+    //           <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
+    //         </button>
+    //         <div className="flex-1 text-center">
+    //           <div className="text-2xl font-bold text-black">stripe</div>
+    //         </div>
+    //       </div>
 
           {/* Main Content */}
-          <CardAuth
-            title="Koajo works with Stripe to verify your identity"
-            description=""
+         return  (<CardAuth
+            title="Verification"
+            description="You are being redirected for identity verification."
           >
             <div className="space-y-6">
               {/* Verification Points */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <CameraIcon className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
                   <p className="text-gray-700">
-                    You&apos;ll take a photo of a valid ID, then take a selfie to make sure it&apos;s yours. 
-                    <span className="font-semibold text-blue-600 block mt-2">
-                      ⚠️ Important: The verification window will open immediately - be ready to interact with it right away!
-                    </span>
+
                   </p>
                 </div>
                 
@@ -211,36 +206,36 @@ export default function KycPage() {
                     Stripe uses biometric technology on your images to make sure it&apos;s you. You can delete your data at any time.
                   </p>
                 </div>
-              </div>
+              </div> */}
               {/* Footer Links */}
-              <div className="flex justify-between text-sm text-gray-500 pt-4 border-t">
+              {/* <div className="flex justify-between text-sm text-gray-500 pt-4 border-t">
                 <Link href="#" className="hover:text-gray-700 transition-colors">
                   Stripe Privacy Policy
                 </Link>
                 <Link href="#" className="hover:text-gray-700 transition-colors">
                   English (United States)
                 </Link>
-              </div>
+              </div> */}
 
                  {/* Countdown Message */}
-                 {countdown && (
+                 {/* {countdown && (
                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                      <p className="text-blue-600 text-sm font-semibold">
                        🚀 Get ready! Verification window opening in {countdown} seconds...
                      </p>
                    </div>
-                 )}
+                 )} */}
 
                  {/* Error Message */}
-                 {error && (
+                 {/* {error && (
                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                      <p className="text-red-600 text-sm">{error}</p>
                    </div>
-                 )}
+                 )} */}
 
                  {/* Action Buttons */}
                  <div className="space-y-3 pt-4">
-                   <Button
+                  <Button
                      onClick={handleAgreeAndContinue}
                      text={
                        countdown ? `Opening in ${countdown}...` :
@@ -252,6 +247,14 @@ export default function KycPage() {
                      disabled={isLoading || isVerifying || stripeLoading || countdown !== null}
                      showArrow={true}
                    />
+                  <Button
+                    onClick={handleVerifyIdNumber}
+                    text={isLoading || isVerifying ? "Processing..." : "Verify ID Number Instead"}
+                    variant="secondary"
+                    className="w-full"
+                    disabled={isLoading || isVerifying || stripeLoading}
+                    showArrow={false}
+                  />
                 
                 <Button
                   onClick={handleDecline}
@@ -264,8 +267,8 @@ export default function KycPage() {
 
             </div>
           </CardAuth>
-        </div>
-      </div>
+      //   </div>
+      // </div>
     );
   // }
 
