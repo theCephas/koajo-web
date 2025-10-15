@@ -9,8 +9,8 @@ import CardAuth from "@/components/auth/card-auth";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 
 interface RegisterFormData {
-  // firstName: string;
-  // lastName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   password: string;
@@ -29,9 +29,16 @@ export default function RegisterPage() {
   const router = useRouter();
   const password = watch("password");
 
-  const onSubmit = async (_data: RegisterFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
+      // Store user data in localStorage for use in KYC verification
+      localStorage.setItem('userEmail', data.email);
+      localStorage.setItem('firstName', data.firstName);
+      localStorage.setItem('lastName', data.lastName);
+      localStorage.setItem('phoneNumber', data.phoneNumber);
+      localStorage.setItem('userId', `user_${Date.now()}`); // Generate a simple user ID
+      
       await new Promise((resolve) => setTimeout(resolve, 1000));
       router.push("/register/otp");
     } finally {
@@ -50,26 +57,26 @@ export default function RegisterPage() {
         className="space-y-6.5"
         noValidate
       >
-
-        {/* Email Field */}
+        {/* First Name Field */}
         <Field
-          label="Email"
-          type="email"
-          placeholder="Enter Your email"
+          label="First Name"
+          type="text"
+          placeholder="Enter Your first name"
           required
-          error={formErrors.email?.message}
-          {...registerField("email")}
-        /> 
-
-        {/* Email Field */}
-        <Field
-          label="Email"
-          type="email"
-          placeholder="Enter Your email"
-          required
-          error={formErrors.email?.message}
-          {...registerField("email")}
+          error={formErrors.firstName?.message}
+          {...registerField("firstName")}
         />
+
+        {/* Last Name Field */}
+        <Field
+          label="Last Name"
+          type="text"
+          placeholder="Enter Your last name"
+          required
+          error={formErrors.lastName?.message}
+          {...registerField("lastName")}
+        />
+
         {/* Email Field */}
         <Field
           label="Email"
