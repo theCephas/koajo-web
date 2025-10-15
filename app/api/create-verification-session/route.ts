@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
 });
 
 export async function POST(request: NextRequest) {
@@ -20,10 +20,13 @@ export async function POST(request: NextRequest) {
 
     // Get user data from request body
     const body = await request.json();
-    const { email, userId, verificationType } = body as {
+    const { email, userId, verificationType, firstName, lastName, phoneNumber } = body as {
       email?: string;
       userId?: string;
       verificationType?: 'document' | 'id_number';
+      firstName?: string;
+      lastName?: string;
+      phoneNumber?: string;
     };
 
     console.log('User data:', { email, userId });
@@ -31,11 +34,25 @@ export async function POST(request: NextRequest) {
     // Create the verification session
     const type: 'document' | 'id_number' = verificationType === 'id_number' ? 'id_number' : 'document';
 
+    // Prepare provided details based on verification type
+    const providedDetails: any = {
+      email: email || 'user@example.com',
+    };
+
+    // For ID number verification, include additional user details
+    if (type === 'id_number') {
+      if (firstName && lastName) {
+        providedDetails.name = `${firstName} ${lastName}`;
+      }
+      if (phoneNumber) {
+        providedDetails.phone = phoneNumber;
+      }
+    }
+
     const verificationSession = await stripe.identity.verificationSessions.create({
       type,
-      provided_details: {
-        email: email || 'user@example.com',
-      },
+      provided_details: providedDetails,
+      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/register/kyc?verification=complete`,
       metadata: {
         user_id: userId || 'user_123',
       },
@@ -43,9 +60,10 @@ export async function POST(request: NextRequest) {
 
     console.log('Verification session created:', verificationSession.id);
 
-    // Return only the client secret to the frontend
+    // Return the verification URL instead of client secret
     return NextResponse.json({ 
-      client_secret: verificationSession.client_secret 
+      verification_url: verificationSession.url,
+      session_id: verificationSession.id
     });
   } catch (error) {
     console.error('Error creating verification session:', error);
