@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/utils";
  
 import CardAuth from "@/components/auth/card-auth";
@@ -12,34 +12,30 @@ export default function KycPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'document_complete' | 'id_complete' | 'both_complete'>('pending');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { verifyIdentity, isVerifying, loading: stripeLoading } = useStripeIdentity();
 
   const handleAgreeAndContinue = async () => {
     setError(null);
-    // setCountdown(3); // Start 3-second countdown
-    
-    // // Countdown before opening modal
-    // for (let i = 3; i > 0; i--) {
-    //   await new Promise(resolve => setTimeout(resolve, 1000));
-    //   setCountdown(i - 1);
-    // }
-    
     setCountdown(null);
     setIsLoading(true);
     
     try {
-      // Get user email from localStorage or context (you may need to adjust this)
+      // Get user data from localStorage or context
       const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
       const userId = localStorage.getItem('userId') || 'user_123';
       
-      const result = await verifyIdentity(userEmail, userId, { verificationType: 'document' });
-      
-      if (result.success) {
-        // Show processing message instead of immediate success
+      // Start document verification
+      const documentResult = await verifyIdentity(userEmail, userId, { verificationType: 'document' });
+      if (documentResult.success) {
+        // Document verification started, set status and wait for return
+        localStorage.setItem('verificationStatus', 'document_complete');
+        setVerificationStatus('document_complete');
         setCurrentStep("processing");
       } else {
-        setError(result.error || 'Verification failed. Please try again.');
+        setError(documentResult.error || 'Document verification failed. Please try again.');
       }
     } catch (error) {
       console.error('Verification error:', error);
@@ -48,30 +44,62 @@ export default function KycPage() {
       setIsLoading(false);
     }
   };
+
+  const handleIdVerification = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Get user data from localStorage or context
+      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+      const userId = localStorage.getItem('userId') || 'user_123';
+      const firstName = localStorage.getItem('firstName') || '';
+      const lastName = localStorage.getItem('lastName') || '';
+      const phoneNumber = localStorage.getItem('phoneNumber') || '';
+      
+      // Start ID number verification
+      const idResult = await verifyIdentity(userEmail, userId, { 
+        verificationType: 'id_number',
+        firstName,
+        lastName,
+        phoneNumber
+      });
+      if (idResult.success) {
+        // ID verification started, set status and wait for return
+        localStorage.setItem('verificationStatus', 'id_complete');
+        setVerificationStatus('id_complete');
+        setCurrentStep("processing");
+      } else {
+        console.error('ID number verification failed:', idResult.error);
+        setError('ID number verification failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [verifyIdentity, setError]);
 
   const handleDecline = () => {
     router.push("/register");
   };
 
-  const handleVerifyIdNumber = async () => {
-    setError(null);
-    setIsLoading(true);
-    try {
-      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
-      const userId = localStorage.getItem('userId') || 'user_123';
-      const result = await verifyIdentity(userEmail, userId, { verificationType: 'id_number' });
-      if (result.success) {
-        setCurrentStep("processing");
-      } else {
-        setError(result.error || 'Verification failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Verification error:', error);
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Check if user returned from verification
+  // useEffect(() => {
+  //   const verification = searchParams.get('verification');
+  //   if (verification === 'complete') {
+  //     // User returned from verification, check what step we're on
+  //     const currentStatus = localStorage.getItem('verificationStatus') || 'pending';
+  //     setVerificationStatus(currentStatus as 'pending' | 'document_complete' | 'id_complete' | 'both_complete');
+      
+  //     if (currentStatus === 'document_complete') {
+  //       // Document verification completed, now start ID verification
+  //       handleIdVerification();
+  //     } else if (currentStatus === 'id_complete' || currentStatus === 'both_complete') {
+  //       // Both verifications completed
+  //       setCurrentStep("success");
+  //     }
+  //   }
+  // }, [searchParams, handleIdVerification]);
 
   
 
@@ -81,12 +109,37 @@ export default function KycPage() {
 
   // Processing step after verification submission
   if (currentStep === "processing") {
+    const getProcessingMessage = () => {
+      switch (verificationStatus) {
+        case 'document_complete':
+          return {
+            title: "Document Verification Complete",
+            description: "Your document verification is complete. Please complete the ID number verification that will open in a new tab.",
+            showIdButton: true
+          };
+        case 'id_complete':
+          return {
+            title: "ID Verification Complete", 
+            description: "Your ID number verification is complete. Both verifications are now finished.",
+            showIdButton: false
+          };
+        default:
+          return {
+            title: "Verification Submitted",
+            description: "Your identity verification has been submitted and is being processed. This may take a few minutes.",
+            showIdButton: false
+          };
+      }
+    };
+
+    const { title, description, showIdButton } = getProcessingMessage();
+
     return (
       <div className="bg-white flex items-center justify-center p-4 rounded-2xl">
         <div className="w-full max-w-md">
           <CardAuth
-            title="Verification Submitted"
-            description="Your identity verification has been submitted and is being processed. This may take a few minutes."
+            title={title}
+            description={description}
           >
             <div className="space-y-6">
               <div className="text-center">
@@ -97,18 +150,31 @@ export default function KycPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Processing Verification</h3>
                 <p className="text-gray-600">
-                  We&apos;re verifying your identity documents. You&apos;ll be notified once the process is complete.
+                  {description}
                 </p>
               </div>
 
               <div className="space-y-3">
-                <Button
-                  onClick={() => setCurrentStep("success")}
-                  text="Check Status"
-                  variant="primary"
-                  className="w-full"
-                  showArrow={true}
-                />
+                {verificationStatus === 'id_complete' && (
+                  <Button
+                    onClick={() => setCurrentStep("success")}
+                    text="Continue to Dashboard"
+                    variant="primary"
+                    className="w-full"
+                    showArrow={true}
+                  />
+                )}
+                
+                {showIdButton && (
+                  <Button
+                    onClick={handleIdVerification}
+                    text="Start ID Number Verification"
+                    variant="primary"
+                    className="w-full"
+                    disabled={isLoading || isVerifying}
+                    showArrow={true}
+                  />
+                )}
                 
                 <Button
                   onClick={() => setCurrentStep("verification")}
@@ -181,7 +247,9 @@ export default function KycPage() {
           {/* Main Content */}
          return  (<CardAuth
             title="Verification"
-            description="You are being redirected for identity verification."
+            description="Koajo is required by law to verify the identity of all our users to prevent fraud and comply with regulatory requirements.
+Koajo uses Stripe’s system to complete this verification process. 
+"
           >
             <div className="space-y-6">
               {/* Verification Points */}
@@ -247,14 +315,6 @@ export default function KycPage() {
                      disabled={isLoading || isVerifying || stripeLoading || countdown !== null}
                      showArrow={true}
                    />
-                  <Button
-                    onClick={handleVerifyIdNumber}
-                    text={isLoading || isVerifying ? "Processing..." : "Verify ID Number Instead"}
-                    variant="secondary"
-                    className="w-full"
-                    disabled={isLoading || isVerifying || stripeLoading}
-                    showArrow={false}
-                  />
                 
                 <Button
                   onClick={handleDecline}
