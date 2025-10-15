@@ -7,6 +7,7 @@ interface VerificationResult {
   success: boolean;
   error?: string;
   sessionId?: string;
+  verificationUrl?: string;
 }
 
 type VerificationType = 'document' | 'id_number';
@@ -18,7 +19,12 @@ export function useStripeIdentity() {
   const verifyIdentity = async (
     email?: string,
     userId?: string,
-    options?: { verificationType?: VerificationType }
+    options?: { 
+      verificationType?: VerificationType;
+      firstName?: string;
+      lastName?: string;
+      phoneNumber?: string;
+    }
   ): Promise<VerificationResult> => {
     if (!stripe) {
       console.error('Stripe is not loaded:', { stripe, loading });
@@ -42,6 +48,9 @@ export function useStripeIdentity() {
           email,
           userId,
           verificationType: options?.verificationType || 'document',
+          first_name: options?.firstName,
+          last_name: options?.lastName,
+          phone: options?.phoneNumber,
         }),
       });
 
@@ -51,45 +60,23 @@ export function useStripeIdentity() {
         throw new Error(errorData.details || errorData.error || 'Failed to create verification session');
       }
 
-      const { client_secret } = await response.json();
+      const { verification_url, session_id } = await response.json();
 
-      // Show the verification modal with extended timeout
-      console.log('Opening Stripe verification modal...');
-      
-      const { error } = await stripe.verifyIdentity(client_secret, {
-        // Add options to extend the modal timeout
-        timeout: 300000, // 5 minutes timeout
-      });
-
-      if (error) {
-        console.error('Stripe verification error:', error);
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
-        console.error('Full error object:', JSON.stringify(error, null, 2));
-        
-        // Handle specific timeout/cancellation errors
-        if (error.code === 'consent_declined' || error.message?.includes('cancelled')) {
-          return {
-            success: false,
-            error: 'Verification was cancelled or timed out. Please try again and interact with the verification window immediately when it opens.',
-          };
-        }
-        
+      if (!verification_url) {
         return {
           success: false,
-          error: getErrorMessage(error.code || 'unknown'),
+          error: 'Failed to get verification URL from Stripe.',
         };
       }
 
-      // The verification was submitted successfully
-      console.log('Verification submitted successfully');
-      
-      // Add a small delay to show the processing state
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Open verification URL in a new tab
+      console.log('Opening Stripe verification URL in new tab...');
+      window.open(verification_url, '_blank', 'noopener,noreferrer');
       
       return {
         success: true,
-        sessionId: client_secret.split('_secret_')[0],
+        sessionId: session_id,
+        verificationUrl: verification_url,
       };
     } catch (error) {
       console.error('Verification error:', error);
