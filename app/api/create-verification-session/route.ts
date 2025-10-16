@@ -35,20 +35,12 @@ export async function POST(request: NextRequest) {
     const type: 'document' | 'id_number' = verificationType === 'id_number' ? 'id_number' : 'document';
 
     // Prepare provided details based on verification type
-    const providedDetails: any = {
+    const providedDetails: { email: string, name: string, phone?: string } = {
       email: email || 'user@example.com',
+      name: firstName + " " + lastName || "John Doe",
+      phone: phoneNumber || undefined
     };
-
-    // For ID number verification, include additional user details
-    if (type === 'id_number') {
-      if (firstName && lastName) {
-        providedDetails.name = `${firstName} ${lastName}`;
-      }
-      if (phoneNumber) {
-        providedDetails.phone = phoneNumber;
-      }
-    }
-
+    
     const verificationSession = await stripe.identity.verificationSessions.create({
       type,
       provided_details: providedDetails,
@@ -70,13 +62,13 @@ export async function POST(request: NextRequest) {
     
     // Return more detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorCode = (error as any)?.code || 'unknown';
+    // const errorCode = (error as Error)?.code || 'unknown';
     
     return NextResponse.json(
       { 
         error: 'Failed to create verification session',
         details: errorMessage,
-        code: errorCode
+        // code: errorCode
       },
       { status: 500 }
     );
