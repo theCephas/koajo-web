@@ -87,3 +87,25 @@ export type HTMLTag =
 };
 
 export type Currency = "USD" | "GBP" | "EUR"
+
+export type TransactionType = {
+    id: string;
+    invoice: string;
+    name: string;
+    image: string;
+    business: string;
+    typeTransaction: string;
+    date: string;
+    time: string;
+    amount: string;
+    status: string;
+    paidBy: string;
+    accountType: string;
+    transferSend: string;
+    transferReceive: string;
+    accountNumber: string;
+    transactionId: string;
+  };
+  
+
+export type CheckboxValue = "checked" | "unchecked";
