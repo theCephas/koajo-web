@@ -5,9 +5,8 @@ import styles from "./Delete.module.sass";
 import Modal from "@/components2/usefull/Modal";
 import Icon from "@/components2/usefull/Icon";
 
-type DeleteProps = {};
 
-const Delete = ({}: DeleteProps) => {
+const Delete = () => {
     const [visibleModal, setVisibleModal] = useState<boolean>(false);
 
     return (
