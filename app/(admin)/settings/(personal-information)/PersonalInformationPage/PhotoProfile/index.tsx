@@ -5,9 +5,9 @@ import styles from "./PhotoProfile.module.sass";
 import Image from "@/components2/usefull/Image";
 import Icon from "@/components2/usefull/Icon";
 
-type PhotoProfileProps = {};
+// type PhotoProfileProps = {};
 
-const PhotoProfile = ({}: PhotoProfileProps) => {
+const PhotoProfile = () => {
     const [objectURL, setObjectURL] = useState<any>("/media/images/avatar.jpg"); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const handleUpload = (e: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
