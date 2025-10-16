@@ -6,16 +6,16 @@ import { CSSTransition } from "react-transition-group";
 import { useHotkeys } from "react-hotkeys-hook";
 import cn from "clsx";
 import styles from "./modal.module.sass";
-import CloseIcon from "@/public/media/icons/close.svg";
-import { Button } from "@/components/utils";
+// import CloseIcon from "@/public/media/icons/close.svg";
+// import { Button } from "@/components/utils";
 
 type ModalProps = {
   className?: string;
-  closeClassName?: string;
+  // closeClassName?: string;
   containerClassName?: string;
   visible: boolean;
   onClose?: () => void;
-  hideClose?: boolean;
+  // hideClose?: boolean;
   makeFullHeight?: boolean;
   children: React.ReactNode;
   position?: {
@@ -27,10 +27,10 @@ type ModalProps = {
 const Modal = ({
   className,
   containerClassName,
-  closeClassName,
+  // closeClassName,
   visible,
   onClose,
-  hideClose,
+  // hideClose,
   children,
   makeFullHeight = false,
   position = {
