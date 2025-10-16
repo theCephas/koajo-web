@@ -1,8 +1,9 @@
 import cn from "clsx";
 import styles from "./Details.module.sass";
+import { TransactionType } from "@/types";
 
 type DetailsProps = {
-    item: any;
+    item: TransactionType;
 };
 
 const Details = ({ item }: DetailsProps) => (
