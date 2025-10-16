@@ -9,8 +9,8 @@ type SearchProps = {
     classInput?: string;
     placeholder: string;
     value: string;
-    onChange: any;
-    onSubmit: any;
+    onChange: ChangeEventHandler<HTMLInputElement>;
+    onSubmit: Function;
     light?: boolean;
     large?: boolean;
 };

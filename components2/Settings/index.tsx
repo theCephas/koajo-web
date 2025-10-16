@@ -24,7 +24,7 @@ const navigation = [
     {
         title: "Log Out",
         icon: "logout",
-        url: "/login",
+        url: "/auth/login",
     },
 ];
 

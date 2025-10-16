@@ -32,9 +32,9 @@ const navigation = [
   },
 ];
 
-type HeaderProps = {};
+// type HeaderProps = {};
 
-const Header = ({}: HeaderProps) => {
+const Header = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [visibleSearch, setVisibleSearch] = useState<boolean>(false);
@@ -71,7 +71,7 @@ const Header = ({}: HeaderProps) => {
             [styles.visible]: visible,
           })}
         >
-          <Link href="/dashboard/overview" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <Image
               src="/media/icons/logo-light-gradient.svg"
               alt="Koajo Logo"
@@ -94,7 +94,7 @@ const Header = ({}: HeaderProps) => {
               </Link>
             ))}
           </nav>
-          <Link className={styles.logout} href="/login">
+          <Link className={styles.logout} href="/auth/login">
             Log Out
           </Link>
           <button className={styles.close} onClick={closeMenu}>
@@ -118,7 +118,7 @@ const Header = ({}: HeaderProps) => {
               classInput={styles.input}
               placeholder="Search anything here"
               value={search}
-              onChange={(e: any) => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               onSubmit={() => console.log("Submit")}
               light
             />

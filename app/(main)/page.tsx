@@ -11,14 +11,14 @@ import { Modal } from "@/components/utils";
 export default function HomePage() {
   return (
     <>
-      {/* <Hero />
+      <Hero />
       <Solutions />
       <Marques />
       <Steps />
       <Benefits />
       <Features />
       <Comparison />
-      <Pricing /> */}
+      <Pricing />
 
      {/* <Modal visible={true} >Hello world!</Modal>; */}
     </>
