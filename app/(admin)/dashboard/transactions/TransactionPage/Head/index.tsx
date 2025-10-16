@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import cn from "clsx";
 import styles from "./Head.module.sass";
 import Search from "@/components2/usefull/Search";
@@ -9,8 +9,8 @@ import Export from "../Export";
 
 type HeadProps = {
     search: string;
-    setSearch: any;
-    onSubmit: any;
+    setSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onSubmit: () => void;
     onFilter: () => void;
     visible: boolean;
 };
