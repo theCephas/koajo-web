@@ -5,6 +5,7 @@ import styles from "./Entry.module.sass";
 import Field from "@/components2/usefull/Field";
 import Checkbox from "@/components2/Checkbox";
 import Description from "../Description";
+import { CheckboxValue } from "@/types";
 
 type EntryProps = {
     onForgotPassword: () => void;
@@ -14,7 +15,7 @@ type EntryProps = {
 const Entry = ({ onForgotPassword, onRegister }: EntryProps) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    const [remember, setRemember] = useState<boolean>(true);
+    const [remember, setRemember] = useState<CheckboxValue>("unchecked");
 
     return (
         <Description title="Login First to Your Account" arrow>
@@ -29,7 +30,7 @@ const Entry = ({ onForgotPassword, onRegister }: EntryProps) => {
                     placeholder="Type email"
                     type="email"
                     value={email}
-                    onChange={(e: any) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                 />
                 <Field
@@ -38,7 +39,7 @@ const Entry = ({ onForgotPassword, onRegister }: EntryProps) => {
                     placeholder="Type password"
                     type="password"
                     value={password}
-                    onChange={(e: any) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                 />
                 <div className={styles.line}>
@@ -46,7 +47,7 @@ const Entry = ({ onForgotPassword, onRegister }: EntryProps) => {
                         className={styles.checkbox}
                         label="Remember me"
                         value={remember}
-                        onChange={() => setRemember(!remember)}
+                        onChange={(e) => setRemember(e.target.checked ? "checked" : "unchecked")}
                     />
                     <button
                         type="button"
