@@ -1,11 +1,12 @@
 import cn from "clsx";
 import styles from "./Checkbox.module.sass";
+import { ChangeEventHandler } from "react";
 
-type CheckboxProps = {
+export type CheckboxProps = {
     className?: string;
     label?: string;
-    value: any;
-    onChange: any;
+    value: "checked" | "unchecked";
+    onChange: ChangeEventHandler<HTMLInputElement>;
 };
 
 const Checkbox = ({ className, label, value, onChange }: CheckboxProps) => {
@@ -16,7 +17,7 @@ const Checkbox = ({ className, label, value, onChange }: CheckboxProps) => {
                 type="checkbox"
                 value={value}
                 onChange={onChange}
-                checked={value}
+                checked={value === "checked"}
             />
             <span className={styles.inner}>
                 <span className={styles.tick}></span>
