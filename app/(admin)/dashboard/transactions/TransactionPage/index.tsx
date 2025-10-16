@@ -3,7 +3,7 @@ import { useState } from "react";
 import styles from "./TransactionPage.module.sass";
 import Layout from "@/components2/usefull/Layout";
 import Navigation from "@/components2/usefull/Navigation";
-import Checkbox from "@/components2/Checkbox";
+import Checkbox, { CheckboxProps } from "@/components2/Checkbox";
 import Icon from "@/components2/usefull/Icon";
 import Filters from "./Filters";
 import Head from "./Head";
@@ -11,6 +11,7 @@ import Transaction from "./Transaction";
 import Foot from "./Foot";
 
 import { captions, transactions } from "@/mocks/transactions";
+import { CheckboxValue, TransactionType } from "@/types";
 
 const breadcrumbs = [
   {
@@ -22,31 +23,25 @@ const breadcrumbs = [
   },
 ];
 
-type TransactionPageProps = {};
-
-const TransactionPage = ({}: TransactionPageProps) => {
+const TransactionPage = () => {
   const [search, setSearch] = useState<string>("");
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
-  const [choose, setChoose] = useState<boolean>(false);
-  const [selectedFilters, setSelectedFilters] = useState<Array<string>>([]);
+  const [choose, setChoose] = useState<CheckboxValue>("unchecked");
+  const [selectedFilters, setSelectedFilters] = useState<Array<TransactionType>>([]);
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState<Array<string>>([]);
 
-  const handleChange = (filter: any) => {
-    if (selectedFilters.includes(filter)) {
-      setSelectedFilters(selectedFilters.filter((x: any) => x !== filter));
-    } else {
-      setSelectedFilters((selectedFilters: any) => [
-        ...selectedFilters,
-        filter,
-      ]);
+  const handleChange = (transaction: TransactionType) => {
+    setSelectedTransactionIds([...selectedTransactionIds, transaction.id]);
+    if (selectedTransactionIds.includes(transaction.id)) {
+      setSelectedTransactionIds(selectedTransactionIds.filter((id) => id !== transaction.id));
     }
   };
 
-  const handleClick = () => {
-    setChoose(!choose);
-    if (choose) {
-      setSelectedFilters([]);
+  const handleChangeCheckbox = (checked: boolean) => {
+    if (checked) {
+      setSelectedTransactionIds([...selectedTransactionIds]);
     } else {
-      setSelectedFilters(transactions.map((x: any) => x.id));
+      setSelectedTransactionIds([]);
     }
   };
 
@@ -59,7 +54,7 @@ const TransactionPage = ({}: TransactionPageProps) => {
       <div className={styles.transaction}>
         <Head
           search={search}
-          setSearch={(e: any) => setSearch(e.target.value)}
+          setSearch={(e) => setSearch(e.target.value)}
           onSubmit={() => console.log("Submit")}
           onFilter={() => setVisibleFilters(!visibleFilters)}
           visible={visibleFilters}
@@ -73,7 +68,7 @@ const TransactionPage = ({}: TransactionPageProps) => {
                   <Checkbox
                     className={styles.checkbox}
                     value={choose}
-                    onChange={handleClick}
+                    onChange={(e) => handleChangeCheckbox(e.target.checked)}
                   />
                 </div>
               </div>
@@ -93,8 +88,8 @@ const TransactionPage = ({}: TransactionPageProps) => {
             <div className={styles.body}>
               {transactions.map((transaction) => (
                 <Transaction
-                  value={selectedFilters.includes(transaction.id)}
-                  onChange={() => handleChange(transaction.id)}
+                  checkboxValue={selectedTransactionIds.includes(transaction.id) ? "checked" : "unchecked"}
+                  onChange={() => handleChange(transaction)}
                   item={transaction}
                   key={transaction.id}
                 />
