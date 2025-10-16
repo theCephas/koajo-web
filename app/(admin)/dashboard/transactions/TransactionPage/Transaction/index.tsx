@@ -7,33 +7,18 @@ import Image from "@/components2/usefull/Image";
 import Icon from "@/components2/usefull/Icon";
 import Delete from "../Delete";
 import Details from "./Details";
+import { CheckboxProps } from "@/components2/Checkbox";
+import { TransactionType } from "@/types";
 
-type TransactionType = {
-  id: string;
-  invoice: string;
-  name: string;
-  image: string;
-  business: string;
-  typeTransaction: string;
-  date: string;
-  time: string;
-  amount: string;
-  status: string;
-  paidBy: string;
-  accountType: string;
-  transferSend: string;
-  transferReceive: string;
-  accountNumber: string;
-  transactionId: string;
-};
+
 
 type TransactionProps = {
   item: TransactionType;
-  value: any;
-  onChange: any;
+  checkboxValue: CheckboxProps["value"];
+  onChange: CheckboxProps["onChange"];
 };
 
-const Transaction = ({ item, value, onChange }: TransactionProps) => {
+const Transaction = ({ item, checkboxValue, onChange }: TransactionProps) => {
   const [visible, setVisible] = useState<boolean>(false);
 
   return (
@@ -44,7 +29,7 @@ const Transaction = ({ item, value, onChange }: TransactionProps) => {
             <div className="flex justify-center w-12">
               <Checkbox
                 className={styles.checkbox}
-                value={value}
+                value={checkboxValue}
                 onChange={onChange}
               />
             </div>
