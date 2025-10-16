@@ -1,10 +1,10 @@
 import { HTMLTag } from "@/types";
-import { remark } from "remark";
-import html from "remark-html";
-import gfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
-import { rehype } from "rehype";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+// import { remark } from "remark";
+// import html from "remark-html";
+// import gfm from "remark-gfm";
+// import rehypeRaw from "rehype-raw";
+// import { rehype } from "rehype";
+// import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 
 // Extend String prototype with chainable HTML processing methods
