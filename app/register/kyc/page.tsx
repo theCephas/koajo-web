@@ -14,7 +14,7 @@ export default function KycPage() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'pending' | 'document_complete' | 'id_complete' | 'both_complete'>('pending');
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const { verifyIdentity, isVerifying, loading: stripeLoading } = useStripeIdentity();
 
   const handleAgreeAndContinue = async () => {
