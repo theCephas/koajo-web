@@ -68,11 +68,6 @@ export default function RegistrationSteps() {
 
   const progressPercent = (activeIndex / (steps.length - 1)) * 100;
 
-  console.log("current progressPercent", progressPercent);
-  console.log("current activeIndex", activeIndex);
-  console.log("current pathname", pathname);
-  console.log("current steps", steps);
-
   return (
     <ul className="w-full max-w-[calc(364rem/16)]">
       {steps.map((step, index) => {
