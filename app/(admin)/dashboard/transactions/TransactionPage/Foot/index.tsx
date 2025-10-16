@@ -4,9 +4,7 @@ import styles from "./Foot.module.sass";
 import Pagination from "@/components2/Pagination";
 import Select from "@/components2/usefull/Select";
 
-type FootProps = {};
-
-const Foot = ({}: FootProps) => {
+const Foot = () => {
     const showOptions = [
         {
             title: "Show 10",
