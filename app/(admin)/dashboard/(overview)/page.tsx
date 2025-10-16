@@ -58,9 +58,9 @@ export default Dashboard;
 const breadcrumbs = [
   {
     title: "Dashboard",
-    url: "/",
   },
   {
     title: "Overview",
+    url: "/dashboard",
   },
 ];
