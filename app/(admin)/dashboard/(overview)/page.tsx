@@ -25,7 +25,7 @@ const Dashboard = () => {
   return (
     <Layout
       title="Welcome back, Rainer Yaeger 👏🏻"
-      breadcrumbs={breadcrumbs}
+      // breadcrumbs={breadcrumbs}
       head={<Navigation />}
     >
       <div className={styles.row}>
