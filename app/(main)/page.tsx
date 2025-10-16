@@ -6,7 +6,6 @@ import Solutions from "@/components/main/solutions";
 import Features from "@/components/main/features";
 import Marques from "@/components/main/marques";
 import Comparison from "@/components/main/comparison";
-import { Modal } from "@/components/utils";
 
 export default function HomePage() {
   return (
@@ -19,8 +18,6 @@ export default function HomePage() {
       <Features />
       <Comparison />
       <Pricing />
-
-     {/* <Modal visible={true} >Hello world!</Modal>; */}
     </>
   );
 }
