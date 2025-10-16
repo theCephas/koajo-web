@@ -16,9 +16,11 @@ const breadcrumbs = [
     },
 ];
 
-type SecurityPageProps = {};
+// type SecurityPageProps = {};
 
-const SecurityPage = ({}: SecurityPageProps) => {
+const SecurityPage = (
+    // {}: SecurityPageProps
+) => {
     const [oldPassword, setOldPassword] = useState<string>("eeqw567891");
     const [newPassword, setNewPassword] = useState<string>("");
     const [repeatPassword, setRepeatPassword] = useState<string>("");
@@ -32,7 +34,7 @@ const SecurityPage = ({}: SecurityPageProps) => {
                     type="password"
                     placeholder="Type old password"
                     value={oldPassword}
-                    onChange={(e: any) => setOldPassword(e.target.value)}
+                    onChange={(e) => setOldPassword(e.target.value)}
                     required
                 />
                 <Field
@@ -41,7 +43,7 @@ const SecurityPage = ({}: SecurityPageProps) => {
                     type="password"
                     placeholder="Type new password"
                     value={newPassword}
-                    onChange={(e: any) => setNewPassword(e.target.value)}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     required
                 />
                 <Field
@@ -50,7 +52,7 @@ const SecurityPage = ({}: SecurityPageProps) => {
                     type="password"
                     placeholder="Type repeat password"
                     value={repeatPassword}
-                    onChange={(e: any) => setRepeatPassword(e.target.value)}
+                    onChange={(e) => setRepeatPassword(e.target.value)}
                     required
                 />
                 <div className={styles.btns}>
