@@ -4,71 +4,25 @@ import styles from "./Filters.module.sass";
 import Select from "@/components2/usefull/Select";
 import DatePicker from "@/components2/usefull/DatePicker";
 
-type FiltersProps = {};
 
-const Filters = ({}: FiltersProps) => {
-    const [typeTransaction, setTypeTransaction] = useState<string>("");
-    const [typeBusiness, setTypeBusiness] = useState<string>("");
-    const [status, setStatus] = useState<string>("");
-    const [dateRange, setDateRange] = useState([null, null]);
+export interface FilterOption {
+    title: string;
+    value: string;
+}
+
+
+const Filters = () => {
+    const [transactionType, setTransactionType] = useState<FilterOption["title"]>("");
+    const [businessType, setBusinessType] = useState<FilterOption["title"]>("");
+    const [statusType, setStatusType] = useState<FilterOption["title"]>("");
+    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
     const [startDate, endDate] = dateRange;
 
-    const typeTransactionOptions = [
-        {
-            title: "Subscribe",
-            value: "subscribe",
-        },
-        {
-            title: "Receive",
-            value: "teceive",
-        },
-        {
-            title: "Transfer",
-            value: "transfer",
-        },
-    ];
 
-    const typeBusinessOptions = [
-        {
-            title: "Software",
-            value: "software",
-        },
-        {
-            title: "Freelance platform",
-            value: "freelance-platform",
-        },
-        {
-            title: "Coffehouse",
-            value: "coffehouse",
-        },
-        {
-            title: "Fast Food Restaurant",
-            value: "fast-food-restaurant",
-        },
-        {
-            title: "E-Commerce Company",
-            value: "e-commerce-company",
-        },
-    ];
-    const statusOptions = [
-        {
-            title: "Success",
-            value: "success",
-        },
-        {
-            title: "Pending",
-            value: "pending",
-        },
-        {
-            title: "Canceled",
-            value: "canceled",
-        },
-    ];
-
-    const handleChangeTransaction = (value: string) =>
-        setTypeTransaction(value);
-    const handleChangeBusiness = (value: string) => setTypeBusiness(value);
-    const handleChangeStatus = (value: string) => setStatus(value);
+    const handleChangeTransaction = (value: FilterOption["title"]) =>
+        setTransactionType(value);
+    const handleChangeBusiness = (value: FilterOption["title"]) => setBusinessType(value);
+    const handleChangeStatus = (value: FilterOption["title"]) => setStatusType(value);
 
     return (
         <div className={styles.filters}>
@@ -76,18 +30,18 @@ const Filters = ({}: FiltersProps) => {
                 className={styles.field}
                 classToggle={styles.toggleSelect}
                 title="Transaction Type"
-                value={typeTransaction}
+                value={transactionType || ""}
                 onChange={handleChangeTransaction}
-                options={typeTransactionOptions}
+                options={transactionOptions}
                 medium
             />
             <Select
                 className={styles.field}
                 classToggle={styles.toggleSelect}
                 title="Business type"
-                value={typeBusiness}
+                value={businessType || ""}
                 onChange={handleChangeBusiness}
-                options={typeBusinessOptions}
+                options={businessOptions}
                 medium
             />
             <DatePicker
@@ -95,7 +49,7 @@ const Filters = ({}: FiltersProps) => {
                 selectsRange={true}
                 startDate={startDate}
                 endDate={endDate}
-                onChange={(update: any) => {
+                onChange={(update: [Date | null, Date | null]) => {
                     setDateRange(update);
                 }}
                 dateFormat="MM.dd.yyyy"
@@ -107,7 +61,7 @@ const Filters = ({}: FiltersProps) => {
                 className={styles.field}
                 classToggle={styles.toggleSelect}
                 title="Status"
-                value={status}
+                value={statusType || ""}
                 onChange={handleChangeStatus}
                 options={statusOptions}
                 medium
@@ -115,5 +69,58 @@ const Filters = ({}: FiltersProps) => {
         </div>
     );
 };
+
+
+export const transactionOptions: FilterOption[] = [
+    {
+        title: "Subscribe",
+        value: "subscribe",
+    },
+    {
+        title: "Receive",
+        value: "receive",
+    },
+    {
+        title: "Transfer",
+        value: "transfer",
+    },
+];
+
+export const businessOptions: FilterOption[] = [
+    {
+        title: "Software",
+        value: "software",
+    },
+    {
+        title: "Freelance platform",
+        value: "freelance-platform",
+    },
+    {
+        title: "Coffehouse",
+        value: "coffehouse",
+    },
+    {
+        title: "Fast Food Restaurant",
+        value: "fast-food-restaurant",
+    },
+    {
+        title: "E-Commerce Company",
+        value: "e-commerce-company",
+    },
+];
+export const statusOptions: FilterOption[] = [
+    {
+        title: "Success",
+        value: "success",
+    },
+    {
+        title: "Pending",
+        value: "pending",
+    },
+    {
+        title: "Canceled",
+        value: "canceled",
+    },
+];
 
 export default Filters;
