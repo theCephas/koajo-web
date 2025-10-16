@@ -50,9 +50,8 @@ const colors = [
     },
 ];
 
-type PreferencesPagуProps = {};
 
-const PreferencesPagу = ({}: PreferencesPagуProps) => {
+const PreferencesPage = () => {
     const [language, setLanguage] = useState<string>(languages[0].value);
     const [color, setColor] = useState<string>(colors[0].value);
     const [updateSystems, setUpdateSystems] = useState<boolean>(false);
@@ -138,4 +137,4 @@ const PreferencesPagу = ({}: PreferencesPagуProps) => {
     );
 };
 
-export default PreferencesPagу;
+export default PreferencesPage;
