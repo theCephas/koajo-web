@@ -35,7 +35,6 @@ export default function Steps() {
           end: "bottom 52%",
           onEnter: () => handleStepClick(idx),
           onEnterBack: () => handleStepClick(idx),
-          markers: true,
           onLeave: () => {
             // Only change if we're leaving to the next step
             if (idx < steps.length - 1) {
