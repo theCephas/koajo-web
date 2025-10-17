@@ -3,12 +3,12 @@ import { useState } from "react";
 import cn from "clsx";
 import styles from "./QuickTransfer.module.sass";
 import Card from "@/components2/usefull/Card";
-import Contacts from "@/components2/Contacts";
-import Field from "@/components2/Field";
+import Contacts from "@/components2/usefull/Contacts";
+import Field from "@/components2/usefull/Field";
 import Icon from "@/components2/usefull/Icon";
 
 type QuickTransferProps = {
-    contacts: any;
+    contacts: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
 
 const QuickTransfer = ({ contacts }: QuickTransferProps) => {
@@ -32,7 +32,7 @@ const QuickTransfer = ({ contacts }: QuickTransferProps) => {
                     placeholder="Type input ammount"
                     iconBefore="dollar-circle"
                     value={ammount}
-                    onChange={(e: any) => setAmmount(e.target.value)}
+                    onChange={(e: any) => setAmmount(e.target.value)} // eslint-disable-line @typescript-eslint/no-explicit-any
                     required
                 />
                 <button className={cn("button", styles.button)}>

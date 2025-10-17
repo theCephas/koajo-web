@@ -40,7 +40,7 @@ const ExpenseCategory = ({ items, column }: ExpenseCategoryProps) => {
     if (isServerSide) return null;
     return (
         <Card
-            title="Expense Category"
+            title="Circle Duration"
             tooltip="Small description"
             right={
                 <Select

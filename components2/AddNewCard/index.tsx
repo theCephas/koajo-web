@@ -1,9 +1,9 @@
 import { useState } from "react";
 import styles from "./AddNewCard.module.sass";
-import Modal from "@/components2/Modal";
+import Modal from "@/components2/usefull/Modal";
 import CreditCard from "@/components2/CreditCard";
-import Field from "@/components2/Field";
-import DatePicker from "@/components2/DatePicker";
+import Field from "@/components2/usefull/Field";
+import DatePicker from "@/components2/usefull/DatePicker";
 
 type AddNewCardProps = {};
 

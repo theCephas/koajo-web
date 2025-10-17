@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { ChangeEventHandler, ReactNode, useState } from "react";
 import cn from "clsx";
 import styles from "./Field.module.sass";
 import Icon from "@/components2/usefull/Icon";
@@ -13,11 +13,11 @@ type FieldProps = {
     textarea?: boolean;
     type?: string;
     value: string;
-    onChange: any;
+    onChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
     placeholder?: string;
     required?: boolean;
-    children?: any;
-    autoFocus?: any;
+    children?: ReactNode;
+    autoFocus?: boolean;
     medium?: boolean;
     hideValue?: boolean;
 };
@@ -92,7 +92,7 @@ const Field = ({
                 )}
                 {(iconAfter || iconBefore) && (
                     <div className={styles.icon}>
-                        <Icon name={iconAfter || iconBefore} />
+                        <Icon name={iconAfter || iconBefore || ""} />
                     </div>
                 )}
             </div>

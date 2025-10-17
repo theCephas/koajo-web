@@ -1,0 +1,35 @@
+@import @/styles/helpers
+
+.foot
+    display: flex
+    justify-content: space-between
+    align-items: center
+    margin-top: 24px
+    padding-top: 24px
+    border-top: 1px solid $s1
+    +m
+        display: block
+    .select
+        min-width: 120px
+        .toggleSelect
+            height: 44px
+            border-radius: 8px
+            svg
+                width: 16px
+                height: 16px
+
+.sorting
+    display: flex
+    align-items: center
+    margin-left: 16px
+    +m
+        margin: 24px 0 0
+    .select
+        margin-left: auto
+
+.text
+    margin-right: 24px
+    font-weight: 600
+    opacity: .7
+    +m
+        color: $s4

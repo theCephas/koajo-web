@@ -2,21 +2,9 @@ import DatePicker from "react-datepicker";
 import cn from "clsx";
 import styles from "./DatePicker.module.sass";
 import Icon from "@/components2/usefull/Icon";
+import { DatePickerProps } from "react-datepicker";
 
-type DateChoiceProps = {
-    className?: string;
-    label?: string;
-    selected?: any;
-    selectsRange?: boolean;
-    startDate?: any;
-    endDate?: any;
-    onChange: any;
-    placeholderText?: string;
-    dateFormat?: string;
-    medium?: boolean;
-    icon?: boolean;
-    props?: any;
-};
+export type DateChoiceProps = DatePickerProps;
 
 const DateChoice = ({
     className,
@@ -30,7 +18,11 @@ const DateChoice = ({
     dateFormat,
     medium,
     icon,
-}: DateChoiceProps) => (
+}: DateChoiceProps & {
+    label?: string;
+    medium?: boolean;
+    icon?: boolean;
+}) => (
     <div
         className={cn(
             styles.date,
@@ -40,7 +32,7 @@ const DateChoice = ({
     >
         {label && <div className={styles.label}>{label}</div>}
         <div className={styles.wrap}>
-            <DatePicker
+            {/* <DatePicker
                 dateFormat={dateFormat}
                 selected={selected}
                 selectsRange={selectsRange}
@@ -48,7 +40,8 @@ const DateChoice = ({
                 endDate={endDate}
                 onChange={onChange}
                 placeholderText={placeholderText}
-            />
+                selectsMultiple={undefined}
+            /> */}
             {icon && <Icon name="calendar" />}
         </div>
     </div>

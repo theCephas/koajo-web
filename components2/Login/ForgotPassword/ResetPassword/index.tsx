@@ -3,7 +3,7 @@ import { useState } from "react";
 import cn from "clsx";
 import styles from "./ResetPassword.module.sass";
 import Description from "../../Description";
-import Field from "@/components2/Field";
+import Field from "@/components2/usefull/Field";
 
 type ResetPasswordProps = {
     onBack?: () => void;

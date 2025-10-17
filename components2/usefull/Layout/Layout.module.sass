@@ -5,6 +5,7 @@
     flex-direction: column
     flex-grow: 1
     min-height: 100vh
+    background: #F4F4F7
     +m
         overflow: hidden
 
@@ -22,6 +23,10 @@
         font-size: 20px
 
 .breadcrumbs
+    display: flex
+    align-items: center
+    justify-content: center
+    width: fit-content
     margin-top: 12px
     font-size: 14px
     font-weight: 500
@@ -40,7 +45,9 @@
         color: $p0
 
 .text
-    display: inline
+    display: flex
+    justify-content: center
+    align-items: center
     font-weight: 600
     color: $p0
 

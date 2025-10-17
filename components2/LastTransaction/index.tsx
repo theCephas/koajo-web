@@ -2,7 +2,7 @@
 import { useState } from "react";
 import styles from "./LastTransaction.module.sass";
 import Card from "@/components2/usefull/Card";
-import Select from "@/mocks/Select";
+import Select from "@/components2/usefull/Select";
 import Transaction from "./Transaction";
 
 const durationOptions = [

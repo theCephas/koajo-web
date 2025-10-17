@@ -12,7 +12,7 @@ import {
 import millify from "millify";
 import styles from "./BalanceStatistics.module.sass";
 import Card from "@/components2/usefull/Card";
-import Select from "@/mocks/Select";
+import Select from "@/components2/usefull/Select";
 
 const durationOptions = [
     {

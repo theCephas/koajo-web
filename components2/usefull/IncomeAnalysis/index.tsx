@@ -1,11 +1,12 @@
+"use client"
 import {
-    BarChartFacade,
-    BarFacade,
-    XAxisFacade,
-    YAxisFacade,
-    CartesianGridFacade,
-    ResponsiveContainerFacade,
-} from "./facades";
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    ResponsiveContainer,
+} from "recharts";
 import millify from "millify";
 import styles from "./IncomeAnalysis.module.sass";
 import Analysis from "@/components2/usefull/Analysis";
@@ -39,8 +40,8 @@ const IncomeAnalysis = ({ items, expense, row }: IncomeAnalysisProps) => {
             row={row}
         >
             <div className={styles.chart}>
-                <ResponsiveContainerFacade width="100%" height="100%">
-                    <BarChartFacade
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
                         width={500}
                         height={300}
                         data={items}
@@ -52,8 +53,8 @@ const IncomeAnalysis = ({ items, expense, row }: IncomeAnalysisProps) => {
                             bottom: 0,
                         }}
                     >
-                        <CartesianGridFacade strokeDasharray="3 3" stroke="#DCE4E8" />
-                        <XAxisFacade
+                        <CartesianGrid strokeDasharray="3 3" stroke="#DCE4E8" />
+                        <XAxis
                             dataKey="name"
                             tickLine={false}
                             axisLine={false}
@@ -63,7 +64,7 @@ const IncomeAnalysis = ({ items, expense, row }: IncomeAnalysisProps) => {
                                 fill: "#ACB5BB",
                             }}
                         />
-                        <YAxisFacade
+                        <YAxis
                             tickFormatter={formatterYAxis}
                             type="number"
                             tickLine={false}
@@ -74,9 +75,9 @@ const IncomeAnalysis = ({ items, expense, row }: IncomeAnalysisProps) => {
                                 fill: "#ACB5BB",
                             }}
                         />
-                        <BarFacade dataKey="value" fill="#E7854D" />
-                    </BarChartFacade>
-                </ResponsiveContainerFacade>
+                        <Bar dataKey="value" fill="#E7854D" />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
         </Analysis>
     );

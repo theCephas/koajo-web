@@ -1,0 +1,28 @@
+@import @/styles/helpers
+
+.filters
+    display: flex
+    flex-wrap: wrap
+    margin: 0 -12px
+    +d
+        margin: 0 -8px
+    +m
+        display: block
+        margin: 24px 0 0
+
+.field
+    flex: 0 0 calc(25% - 24px)
+    width: calc(25% - 24px)
+    margin: 24px 12px 0
+    +d
+        flex: 0 0 calc(25% - 16px)
+        width: calc(25% - 16px)
+        margin: 24px 8px 0
+    +t
+        flex: 0 0 calc(50% - 16px)
+        width: calc(50% - 16px)
+    +m
+        width: 100%
+        margin: 0
+        &:not(:last-child)
+            margin-bottom: 16px

@@ -1,5 +1,6 @@
 import { legalPages } from "@/data/legal-pages";
 import { notFound } from "next/navigation";
+import "@/lib/utils/text-processing";
 
 const legalPageSlugs = legalPages.map((page) => page.slug);
 
@@ -7,8 +8,8 @@ export const generateStaticParams = async () => {
   return legalPageSlugs.map((slug) => ({ slug }));
 };
 
-export default function LegalsPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function LegalsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const data = legalPages.find((page) => page.slug === slug) || null;
 
   if (!data) {

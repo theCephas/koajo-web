@@ -1,7 +1,7 @@
-import Focus from "@/components/focus";
-import Team from "@/components/team";
-import Value from "@/components/value";
-import Hero from "@/components/hero-about";
+import Focus from "@/components/main/focus";
+import Team from "@/components/main/team";
+import Value from "@/components/main/value";
+import Hero from "@/components/main/hero-about";
 
 export default function AboutPage() {
   return (

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { ChangeEventHandler, FormEventHandler, useState } from "react";
 import cn from "clsx";
 import styles from "./Search.module.sass";
 import Icon from "@/components2/usefull/Icon";
@@ -9,8 +9,8 @@ type SearchProps = {
     classInput?: string;
     placeholder: string;
     value: string;
-    onChange: any;
-    onSubmit: any;
+    onChange: ChangeEventHandler<HTMLInputElement>;
+    onSubmit: FormEventHandler<HTMLFormElement>;
     light?: boolean;
     large?: boolean;
 };

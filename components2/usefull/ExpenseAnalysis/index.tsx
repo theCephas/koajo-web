@@ -17,15 +17,15 @@ type ExpenseAnalysisProps = {
 const ExpenseAnalysis = ({ items, expense, row }: ExpenseAnalysisProps) => {
     return (
         <Analysis
-            title="Expense Analysis"
+            title="Circle Duration"
             tooltip="Small description"
             price="$2,056,123"
             percent={-2.1}
             expense={expense}
             row={row}
         >
-            {/* <div className={styles.chart}>
-                <ResponsiveContainer width="100%" height="100%">
+             <div className={styles.chart}>
+           {/*     <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         width={730}
                         height={250}
@@ -69,8 +69,8 @@ const ExpenseAnalysis = ({ items, expense, row }: ExpenseAnalysisProps) => {
                             fill="url(#color)"
                         />
                     </AreaChart>
-                </ResponsiveContainer>
-            </div> */}
+                </ResponsiveContainer> */}
+            </div>
         </Analysis>
     );
 };

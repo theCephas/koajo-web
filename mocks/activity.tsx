@@ -1,7 +1,7 @@
 export const activity = [
     {
         id: "0",
-        title: "Figma Pro",
+        title: "Pod ID: #94044940",
         price: "-$23.21",
         description: "Subscriptions",
         time: "15/02/22 - 12.34",
@@ -9,7 +9,7 @@ export const activity = [
     },
     {
         id: "1",
-        title: "Adobe Collection",
+        title: "Pod ID: #42344234",
         price: "-$50.21",
         description: "Subscriptions",
         time: "14/02/22 - 8.55",
@@ -17,7 +17,7 @@ export const activity = [
     },
     {
         id: "2",
-        title: "Fiver Inter",
+        title: "Pod ID: #12311231",
         price: "+$100.00",
         description: "Receive",
         time: "11/02/22 - 13.33",
@@ -25,7 +25,7 @@ export const activity = [
     },
     {
         id: "3",
-        title: "Starbucks",
+        title: "Pod ID: #56435643",
         price: "-$50.00",
         description: "Transfer",
         time: "02/02/22 - 9.15",
@@ -33,7 +33,7 @@ export const activity = [
     },
     {
         id: "4",
-        title: "Upwork Inter",
+        title: "Pod ID: #12311231",
         price: "+$200.00",
         description: "Receive",
         time: "08/02/22 - 15.34",

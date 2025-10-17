@@ -9,6 +9,7 @@ import Image from "next/image";
 
 interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   className?: string;
+  linkClassName?: string;
   showArrow?: boolean;
   icon?: "arrow-right" | "plus" | React.ReactNode;
   variant?: "primary" | "secondary" | "gradient";
@@ -20,6 +21,7 @@ interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
 
 export function Button({
   className = "",
+  linkClassName = "",
   showArrow = true,
   icon = "arrow-right",
   variant = "primary",
@@ -78,7 +80,7 @@ export function Button({
   );
 
   if (href) {
-    return <Link href={href}>{buttonJsx}</Link>;
+    return <Link href={href} className={linkClassName}>{buttonJsx}</Link>;
   }
 
   return buttonJsx;

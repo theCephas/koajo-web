@@ -1,0 +1,56 @@
+@import @/styles/helpers
+
+.select,
+.notification
+    &:not(:last-child)
+        margin-bottom: 32px
+        +m
+            margin-bottom: 24px
+
+.label
+    margin-bottom: 14px
+    font-size: 12px
+    line-height: 1.6
+    font-weight: 500
+    color: $s3
+
+.notification
+    display: flex
+    justify-content: space-between
+    align-items: center
+
+.title
+    margin-bottom: 8px
+    font-size: 18px
+    font-weight: 600
+    color: $s4
+
+.content
+    +fs12
+    font-weight: 500
+    color: $s3
+
+.toggle
+    flex-shrink: 0
+    margin-left: 12px
+
+.btns
+    display: flex
+    margin-top: 32px
+    padding-top: 32px
+    border-top: 1px solid $s1
+    +m
+        margin-top: 24px
+        padding-top: 24px
+    .button
+        min-width: 175px
+        +m
+            flex: 0 0 calc(50% - 8px)
+            min-width: calc(50% - 8px)
+        &:first-child
+            margin-right: 24px
+            +m
+                margin-right: 8px
+        &:nth-child(2)
+            +m
+                margin-left: 8px

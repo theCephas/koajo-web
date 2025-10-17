@@ -64,17 +64,18 @@ const icons: IconsType = {
 
 type IconProps = {
     className?: string;
-    name: any;
+    name: string;
     size?: number | string;
     fill?: string;
 };
 
-const Icon = ({ className, name, size, fill }: IconProps) => (
+const Icon = ({ className, name, size, fill, ...props }: IconProps) => (
     <svg
         className={cn(styles.icon, className)}
         width={size || 24}
         height={size || 24}
         viewBox="0 0 24 24"
+        {...props}
     >
         <path fill={fill} d={icons[name]}></path>
     </svg>

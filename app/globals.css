@@ -6,19 +6,27 @@
   --color-primary: #e7854d;
   --color-secondary-100: #edf1f3;
   --color-secondary-300: #acb5bb;
+  --color-tertiary-100: #469da3;
   --color-text-100: #edf1f3;
   --color-text-200: #dce4e8;
   --color-text-300: #b9b9b9;
   --color-text-400: #6c6c6c;
-  --color-text-500: #171717; /* default */
-  --color-text-600: #04070e;
+  /* --color-text-500: #171717;  */
+  --color-text-500: #1a1c1e; /* default */
+  --color-text-600: #f04070e;
   --color-gray: #f3f4f6;
   --color-gray-100: #ebebeb;
+  --color-gray-200: #b8b8b8;
   --color-gray-400: #809092;
   --color-gray-700: #343434;
   --color-gray-900: #1b1b1b;
+  /* --color-gray-1000: #1A1C1E; */
   --color-teal-800: #032425;
   --color-cyan-100: #ecfcff;
+  --color-green-500: #22c55e;
+  --color-green-100: #f0fdf4;
+  --color-green-700: #44513E;
+
 
   /* Spacing */
   --page-max-width: 23.4375rem; /* 375px */
@@ -26,6 +34,10 @@
   --header-offset-horizontal: 1.5rem; /* 24px */
   --header-height: 5.25rem; /* 84px */
   --inner-offset-horizontal: 1.5rem; /* 24px */
+  --page-dashboard-max-width: 60rem; /* 960px */
+  --page-dashboard-offset-horizontal: 2rem; /* 60px */
+  --page-auth-max-width: 23.4375rem; /* 375px */
+  --page-auth-offset-horizontal: 1rem; /* 16px */
 }
 
 @media (min-width: 768px) {
@@ -35,6 +47,10 @@
     --header-offset-horizontal: 3.12rem; /* 50px */
     --header-height: 6.25rem; /* 100px */
     --inner-offset-horizontal: 2.5rem; /* 40px */
+    --page-dashboard-max-width: 60rem; /* 960px */
+    --page-dashboard-offset-horizontal: 3rem; /* 60px */
+    --page-auth-max-width: 32.5rem; /* 520px */
+    --page-auth-offset-horizontal: 1rem; /* 16px */
   }
 }
 
@@ -45,6 +61,10 @@
     --header-offset-horizontal: 5.62rem; /* 90px */
     --header-height: 6.25rem; /* 100px */
     --inner-offset-horizontal: 3.125rem; /* 50px */
+    --page-dashboard-max-width: 1600px; /* 1600px */
+    --page-dashboard-offset-horizontal: 3.625rem; /* 60px */
+    --page-auth-max-width: 88rem; /* 1408px */
+    --page-auth-offset-horizontal: 1rem; /* 16px */
   }
 }
 
@@ -67,6 +87,7 @@ body {
   --color-primary: var(--color-primary);
   --color-secondary-100: var(--color-secondary-100);
   --color-secondary-300: var(--color-secondary-300);
+  --color-tertiary-100: var(--color-tertiary-100);
   --color-text-100: var(--color-text-100);
   --color-text-200: var(--color-text-200);
   --color-text-300: var(--color-text-300);
@@ -75,12 +96,16 @@ body {
   --color-text-600: var(--color-text-600);
   --color-gray: var(--color-gray);
   --color-gray-100: var(--color-gray-100);
+  --color-gray-200: var(--color-gray-200);
   --color-gray-400: var(--color-gray-400);
   --color-gray-700: var(--color-gray-700);
   --color-gray-900: var(--color-gray-900);
+  /* --color-gray-1000: var(--color-gray-1000); */
   --color-teal-800: var(--color-teal-800);
   --color-cyan-100: var(--color-cyan-100);
-
+  --color-green-500: var(--color-green-500);
+  --color-green-100: var(--color-green-100);
+  --color-green-700: var(--color-green-700);
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -94,6 +119,9 @@ body {
   --spacing-header-offset-horizontal: var(--header-offset-horizontal);
   --spacing-header-height: var(--header-height);
   --spacing-inner-offset-horizontal: var(--inner-offset-horizontal);
+  --spacing-page-dashboard-max-width: var(--page-dashboard-max-width);
+  --spacing-page-auth-max-width: var(--page-auth-max-width);
+  --spacing-page-auth-offset-horizontal: var(--page-auth-offset-horizontal);
 }
 
 @layer components {
@@ -116,7 +144,20 @@ body {
     margin-right: auto;
   }
 
-  .inner_container{
+  .page_dashboard_container {
+    max-width: var(--page-dashboard-max-width);
+    margin: 0 auto;
+    padding-left: var(--page-dashboard-offset-horizontal);
+    padding-right: var(--page-dashboard-offset-horizontal);
+  }
+
+  .page_auth_container {
+    max-width: var(--page-auth-max-width);
+    margin: 0 auto;
+    padding: var(--page-auth-offset-horizontal);
+  }
+
+  .inner_container {
     width: 100%;
     padding-left: var(--inner-offset-horizontal);
     padding-right: var(--inner-offset-horizontal);
@@ -150,109 +191,113 @@ body {
     pointer-events: none;
   }
 
-/* Custom Scrollbar Styles */
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
+  /* Custom Scrollbar Styles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #9ca3af;
-  border-radius: 3px;
-}
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #9ca3af;
+    border-radius: 3px;
+  }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: #6b7280;
-}
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+  }
 
-.scrollbar-thumb-gray-400::-webkit-scrollbar-thumb {
-  background-color: #9ca3af;
-}
+  .scrollbar-thumb-gray-400::-webkit-scrollbar-thumb {
+    background-color: #9ca3af;
+  }
 
-.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
-  background-color: #d1d5db;
-}
+  /* Ensure transparent track across browsers */
+  .scrollbar-track-transparent {
+    scrollbar-color: #9ca3af transparent; /* Firefox: thumb color then track color */
+  }
 
-.scrollbar-track-transparent::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+  }
+
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 @layer utilities {
-  /* Text Styles */
+  /* Text Styles for main pages */
   .text-xs {
-    font-size: 0.75rem;
+    font-size: 0.75rem; /* 12px */
     line-height: normal;
     letter-spacing: -0.42px;
   }
 
   .text-sm {
-    font-size: 0.875rem;
+    font-size: 0.875rem; /* 14px */
     line-height: 1.4;
     letter-spacing: -0.49px;
   }
 
   .text-base {
-    font-size: 1rem;
+    font-size: 1rem; /* 16px */
     line-height: 1.4;
     letter-spacing: -0.56px;
   }
 
   .text-md {
-    font-size: 1.125rem;
+    font-size: 1.125rem; /* 18px */
     line-height: 1.4;
     letter-spacing: -0.63px;
   }
 
   .text-lg {
-    font-size: 1.25rem;
+    font-size: 1.25rem; /* 20px */
     line-height: 140%;
     letter-spacing: -0.7px;
   }
 
   .text-2lg {
-    font-size: 1.5rem;
+    font-size: 1.5rem; /* 24px */
     line-height: 1.4;
     letter-spacing: -0.84px;
   }
 
   .text-xl {
-    font-size: 2rem;
+    font-size: 2rem; /* 32px */
     line-height: 1.4;
     letter-spacing: -1.12px;
   }
 
   .text-2xl {
-    font-size: 2.25rem;
+    font-size: 2.25rem; /* 36px */
     line-height: 1.2;
     letter-spacing: -1.26px;
   }
 
   .text-3xl {
-    font-size: 2.5rem;
+    font-size: 2.5rem; /* 40px */
     line-height: 1.2;
     letter-spacing: -1.4px;
   }
 
   .text-4xl {
-    font-size: 3.5rem;
+    font-size: 3.5rem; /* 56px */
     line-height: 1.2;
     letter-spacing: -1.96px;
   }
 
   .text-5xl {
-    font-size: 4.5rem;
+    font-size: 4.5rem; /* 72px */
     line-height: 1.2;
     letter-spacing: -2.52px;
   }
-
 
   .text-highlight {
     font-family: var(--font-instrument-sans);
@@ -262,67 +307,67 @@ body {
 
   @media (min-width: 768px) {
     .md\:text-xs {
-      font-size: 0.75rem;
+      font-size: 0.75rem; /* 12px */
       line-height: normal;
       letter-spacing: -0.42px;
     }
 
     .md\:text-sm {
-      font-size: 0.875rem;
+      font-size: 0.875rem; /* 14px */
       line-height: 1.4;
       letter-spacing: -0.49px;
     }
 
     .md\:text-base {
-      font-size: 1rem;
+      font-size: 1rem; /* 16px */
       line-height: 1.4;
       letter-spacing: -0.56px;
     }
 
     .md\:text-md {
-      font-size: 1.125rem;
+      font-size: 1.125rem; /* 18px */
       line-height: 1.4;
       letter-spacing: -0.63px;
     }
 
     .md\:text-lg {
-      font-size: 1.25rem;
+      font-size: 1.25rem; /* 20px */
       line-height: 140%;
       letter-spacing: -0.7px;
     }
 
     .md\:text-2lg {
-      font-size: 1.5rem;
+      font-size: 1.5rem; /* 24px */
       line-height: 1.4;
       letter-spacing: -0.84px;
     }
 
     .md\:text-xl {
-      font-size: 2rem;
+      font-size: 2rem; /* 32px */
       line-height: 1.4;
       letter-spacing: -1.12px;
     }
 
     .md\:text-2xl {
-      font-size: 2.25rem;
+      font-size: 2.25rem; /* 36px */
       line-height: 1.2;
       letter-spacing: -1.26px;
     }
 
     .md\:text-3xl {
-      font-size: 2.5rem;
+      font-size: 2.5rem; /* 40px */
       line-height: 1.2;
       letter-spacing: -1.4px;
     }
 
     .md\:text-4xl {
-      font-size: 3.5rem;
+      font-size: 3.5rem; /* 56px */
       line-height: 1.2;
       letter-spacing: -1.96px;
     }
-    
+
     .md\:text-5xl {
-      font-size: 4.5rem;
+      font-size: 4.5rem; /* 72px */
       line-height: 1.2;
       letter-spacing: -2.52px;
     }
@@ -330,7 +375,7 @@ body {
 
   @media (min-width: 1024px) {
     .lg\:text-xs {
-      font-size: 0.75rem;
+      font-size: 0.75rem; /* 12px */
       line-height: normal;
       letter-spacing: -0.42px;
     }
@@ -342,59 +387,84 @@ body {
     }
 
     .lg\:text-base {
-      font-size: 1rem;
+      font-size: 1rem; /* 16px */
       line-height: 1.4;
       letter-spacing: -0.56px;
     }
 
     .lg\:text-md {
-      font-size: 1.125rem;
+      font-size: 1.125rem; /* 18px */
       line-height: 1.4;
       letter-spacing: -0.63px;
     }
 
     .lg\:text-lg {
-      font-size: 1.25rem;
+      font-size: 1.25rem; /* 20px */
       line-height: 140%;
       letter-spacing: -0.7px;
     }
 
     .lg\:text-2lg {
-      font-size: 1.5rem;
+      font-size: 1.5rem; /* 24px */
       line-height: 1.4;
       letter-spacing: -0.84px;
     }
 
     .lg\:text-xl {
-      font-size: 2rem;
+      font-size: 2rem; /* 32px */
       line-height: 1.4;
       letter-spacing: -1.12px;
     }
 
     .lg\:text-2xl {
-      font-size: 2.25rem;
+      font-size: 2.25rem; /* 36px */
       line-height: 1.2;
       letter-spacing: -1.26px;
     }
 
     .lg\:text-3xl {
-      font-size: 2.5rem;
+      font-size: 2.5rem; /* 40px */
       line-height: 1.2;
       letter-spacing: -1.4px;
     }
 
     .lg\:text-4xl {
-      font-size: 3.5rem;
+      font-size: 3.5rem; /* 56px */
       line-height: 1.2;
       letter-spacing: -1.96px;
     }
-    
+
     .lg\:text-5xl {
       font-size: 4.5rem;
       line-height: 1.2;
       letter-spacing: -2.52px;
     }
   }
+
+  /* Text Styles for admin pages */
+  .text-fs12 {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .text-fs32 {
+    font-size: 2rem; /* 32px */
+    letter-spacing: -0.03rem;
+  }
+
+  .text-fs36 {
+    font-size: 2.25rem; /* 36px */
+    letter-spacing: -0.03rem;
+  }
+
+  .text-fs40 {
+    font-size: 2.5rem; /* 40px */
+    letter-spacing: -0.03rem;
+  }
+
+  .text-fs72 {
+    font-size: 4.5rem; /* 72px */
+    letter-spacing: -0.04rem;
+  }
 }
-
-

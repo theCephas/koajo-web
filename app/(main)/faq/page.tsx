@@ -1,5 +1,5 @@
 import Hero from "@/components/shared/hero";
-import FaqListings from "@/components/faq-listings";
+import FaqListings from "@/components/main/faq-listings";
 
 export default function FaqPage() {
   return (

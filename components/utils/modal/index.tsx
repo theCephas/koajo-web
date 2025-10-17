@@ -6,16 +6,16 @@ import { CSSTransition } from "react-transition-group";
 import { useHotkeys } from "react-hotkeys-hook";
 import cn from "clsx";
 import styles from "./modal.module.sass";
-import CloseIcon from "@/public/media/icons/close.svg";
-import { Button } from "@/components/utils";
+// import CloseIcon from "@/public/media/icons/close.svg";
+// import { Button } from "@/components/utils";
 
 type ModalProps = {
   className?: string;
-  closeClassName?: string;
+  // closeClassName?: string;
   containerClassName?: string;
   visible: boolean;
   onClose?: () => void;
-  hideClose?: boolean;
+  // hideClose?: boolean;
   makeFullHeight?: boolean;
   children: React.ReactNode;
   position?: {
@@ -27,10 +27,10 @@ type ModalProps = {
 const Modal = ({
   className,
   containerClassName,
-  closeClassName,
+  // closeClassName,
   visible,
   onClose,
-  hideClose,
+  // hideClose,
   children,
   makeFullHeight = false,
   position = {
@@ -49,7 +49,11 @@ const Modal = ({
     if (initialRender.current) {
       initialRender.current = false;
     } else {
-      visible ? disablePageScroll() : enablePageScroll();
+      if (visible) {
+        disablePageScroll();
+      } else {
+        enablePageScroll();
+      }
     }
   }, [visible]);
 
@@ -67,7 +71,10 @@ const Modal = ({
           unmountOnExit
         >
           <div
-            className={cn(styles.modal, className, makeFullHeight && "!p-0"
+            className={cn(
+              "fixed inset-0 z-[990] flex w-full h-full overflow-auto bg-text-500/30  backdrop-blur-[6.5px] items-center justify-center",
+              className,
+              makeFullHeight && "!p-0"
             )}
             onClick={onClose}
             data-scroll-lock-scrollable

@@ -1,0 +1,43 @@
+@import @/styles/helpers
+
+.field
+    &:not(:last-child)
+        margin-bottom: 32px
+        +m
+            margin-bottom: 24px
+
+.row
+    display: flex
+    margin: 0 -10px
+    +m
+        display: block
+        margin: 0
+
+.select
+    flex: 0 0 calc(33.333% - 20px)
+    width: calc(33.333% - 20px)
+    margin: 0 10px
+    +m
+        width: 100%
+        margin: 0 0 24px
+
+.btns
+    display: flex
+    margin-top: 32px
+    padding-top: 32px
+    border-top: 1px solid $s1
+    +m
+        margin-top: 24px
+        padding-top: 24px
+    .button
+        min-width: 175px
+        +m
+            flex: 0 0 calc(50% - 8px)
+            min-width: calc(50% - 8px)
+        &:first-child
+            margin-right: 24px
+            +m
+                margin-right: 8px
+        &:nth-child(2)
+            +m
+                margin-left: 8px

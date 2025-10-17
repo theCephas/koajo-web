@@ -19,24 +19,24 @@ type RecentActivityProps = {
 
 const RecentActivity = ({ viewItems, items }: RecentActivityProps) => (
     <Card
-        title="Recent Activity"
-        tooltip="Small description"
+        title="Pod Activity"
+        tooltip="Recent Pod activity"
     >
         <div className={styles.list}>
             {items.slice(0, viewItems || 5).map((item) => (
                 <div className={styles.item} key={item.id}>
-                    <div className={styles.logo}>
+                    {/* <div className={styles.logo}>
                         <Image src={item.image} width={24} height={24} alt="" />
-                    </div>
+                    </div> */}
                     <div className={styles.details}>
                         <div className={styles.line}>
                             <div className={styles.title}>{item.title}</div>
                             <div className={styles.price}>{item.price}</div>
                         </div>
                         <div className={styles.line}>
-                            <div className={styles.description}>
+                            {/* <div className={styles.description}>
                                 {item.description}
-                            </div>
+                            </div> */}
                             <div className={styles.time}>{item.time}</div>
                         </div>
                     </div>

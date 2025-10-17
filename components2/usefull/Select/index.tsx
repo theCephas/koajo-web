@@ -18,6 +18,7 @@ type SelectProps = {
     classToggle?: string;
     label?: string;
     title?: string;
+    titlePrefix?: string;
     value: string;
     onChange: (value: string) => void;
     options: OptionType[];
@@ -29,6 +30,7 @@ type SelectProps = {
 const Select = ({
     className,
     classToggle,
+    titlePrefix = "",
     label,
     title,
     value,
@@ -72,6 +74,11 @@ const Select = ({
                         onClick={() => setVisible(!visible)}
                         type="button"
                     >
+                        {titlePrefix && (
+                            <div className={styles.titlePrefix}>
+                                {titlePrefix}
+                            </div>
+                        )}
                         {activeOption.length > 0 ? (
                             <>
                                 {activeOption[0].image && (

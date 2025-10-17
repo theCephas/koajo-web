@@ -1,0 +1,39 @@
+@import @/styles/helpers
+
+.head
+    display: flex
+    align-items: center
+    .search
+        width: 260px
+        margin-right: auto
+        +m
+            flex-grow: 1
+            width: auto
+            margin-right: 20px
+    .input
+        +m
+            white-space: nowrap
+            overflow: hidden
+            text-overflow: ellipsis
+
+.btns
+    display: flex
+    .button
+        padding: 0 18px
+        border-radius: 24px
+        +m
+            width: 48px
+            height: 48px
+            padding: 0 12px
+            font-size: 0
+        svg
+            margin-right: 16px
+            +m
+                margin: 0
+        &.active
+            background: $s1
+            border-color: $s2
+        &:not(:last-child)
+            margin-right: 24px
+            +m
+                margin-right: 12px
