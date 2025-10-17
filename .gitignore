@@ -46,3 +46,7 @@ public/media/videos/*
 !public/media/videos/*.js
 !public/media/videos/*.ts
 public/_next-video
+
+# Documentation
+*.private.md
+*.dbml
