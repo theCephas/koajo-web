@@ -40,6 +40,47 @@ export async function POST(request: NextRequest) {
       await handleVerificationRequiresInput(requiresInputSession);
       break;
 
+    // Financial Connections events
+    case 'financial_connections.account.created':
+      const createdAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Financial account created:', createdAccount.id);
+      
+      // Handle successful account connection
+      await handleAccountCreated(createdAccount);
+      break;
+
+    case 'financial_connections.account.deactivated':
+      const deactivatedAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Financial account deactivated:', deactivatedAccount.id);
+      
+      // Handle account deactivation
+      await handleAccountDeactivated(deactivatedAccount);
+      break;
+
+    case 'financial_connections.account.disconnected':
+      const disconnectedAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Financial account disconnected:', disconnectedAccount.id);
+      
+      // Handle account disconnection
+      await handleAccountDisconnected(disconnectedAccount);
+      break;
+
+    case 'financial_connections.session.succeeded':
+      const succeededSession = event.data.object as Stripe.FinancialConnections.Session;
+      console.log('Financial connections session succeeded:', succeededSession.id);
+      
+      // Handle successful session
+      await handleSessionSucceeded(succeededSession);
+      break;
+
+    case 'financial_connections.session.failed':
+      const failedSession = event.data.object as Stripe.FinancialConnections.Session;
+      console.log('Financial connections session failed:', failedSession.id);
+      
+      // Handle failed session
+      await handleSessionFailed(failedSession);
+      break;
+
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
@@ -67,4 +108,63 @@ async function handleVerificationRequiresInput(session: Stripe.Identity.Verifica
   // - Notify user that additional input is needed
   // - Update verification status in your database
   // - Send notification email
+}
+
+// Financial Connections event handlers
+async function handleAccountCreated(account: Stripe.FinancialConnections.Account) {
+  // Handle successful account connection
+  console.log('Account created successfully:', account.id);
+  console.log('Institution:', account.institution_name);
+  console.log('Account holder:', account.account_holder_name);
+  
+  // You can add logic here to:
+  // - Update user's connected accounts in your database
+  // - Send confirmation email
+  // - Trigger account verification process
+  // - Update user's onboarding status
+}
+
+async function handleAccountDeactivated(account: Stripe.FinancialConnections.Account) {
+  // Handle account deactivation
+  console.log('Account deactivated:', account.id);
+  console.log('Reason:', account.status);
+  
+  // You can add logic here to:
+  // - Update account status in your database
+  // - Notify user about account deactivation
+  // - Remove account from user's dashboard
+}
+
+async function handleAccountDisconnected(account: Stripe.FinancialConnections.Account) {
+  // Handle account disconnection
+  console.log('Account disconnected:', account.id);
+  
+  // You can add logic here to:
+  // - Remove account from your database
+  // - Notify user about disconnection
+  // - Update user's account list
+}
+
+async function handleSessionSucceeded(session: Stripe.FinancialConnections.Session) {
+  // Handle successful financial connections session
+  console.log('Financial connections session succeeded:', session.id);
+  console.log('User ID:', session.metadata?.user_id);
+  
+  // You can add logic here to:
+  // - Update user's onboarding progress
+  // - Send success notification
+  // - Redirect user to next step
+  // - Store session data
+}
+
+async function handleSessionFailed(session: Stripe.FinancialConnections.Session) {
+  // Handle failed financial connections session
+  console.log('Financial connections session failed:', session.id);
+  console.log('User ID:', session.metadata?.user_id);
+  
+  // You can add logic here to:
+  // - Log the failure reason
+  // - Notify user about the failure
+  // - Allow user to retry
+  // - Update error tracking
 }
