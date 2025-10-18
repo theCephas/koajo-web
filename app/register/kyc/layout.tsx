@@ -7,8 +7,6 @@ interface KycLayoutProps {
 
 export default function KycLayout({ children }: KycLayoutProps) {
   return (
-    <StripeProvider>
-      {children}
-    </StripeProvider>
+    <>{children}</>
   );
 }
