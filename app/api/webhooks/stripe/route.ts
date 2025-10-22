@@ -65,20 +65,37 @@ export async function POST(request: NextRequest) {
       await handleAccountDisconnected(disconnectedAccount);
       break;
 
-    case 'financial_connections.session.succeeded':
-      const succeededSession = event.data.object as Stripe.FinancialConnections.Session;
-      console.log('Financial connections session succeeded:', succeededSession.id);
+
+    case 'financial_connections.account.reactivated':
+      const reactivatedAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Financial account reactivated:', reactivatedAccount.id);
       
-      // Handle successful session
-      await handleSessionSucceeded(succeededSession);
+      // Handle account reactivation
+      await handleAccountReactivated(reactivatedAccount);
       break;
 
-    case 'financial_connections.session.failed':
-      const failedSession = event.data.object as Stripe.FinancialConnections.Session;
-      console.log('Financial connections session failed:', failedSession.id);
+    case 'financial_connections.account.refreshed_balance':
+      const balanceRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Account balance refreshed:', balanceRefreshedAccount.id);
       
-      // Handle failed session
-      await handleSessionFailed(failedSession);
+      // Handle balance refresh completion
+      await handleBalanceRefreshed(balanceRefreshedAccount);
+      break;
+
+    case 'financial_connections.account.refreshed_ownership':
+      const ownershipRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Account ownership refreshed:', ownershipRefreshedAccount.id);
+      
+      // Handle ownership refresh completion
+      await handleOwnershipRefreshed(ownershipRefreshedAccount);
+      break;
+
+    case 'financial_connections.account.refreshed_transactions':
+      const transactionsRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
+      console.log('Account transactions refreshed:', transactionsRefreshedAccount.id);
+      
+      // Handle transactions refresh completion
+      await handleTransactionsRefreshed(transactionsRefreshedAccount);
       break;
 
     default:
@@ -167,4 +184,52 @@ async function handleSessionFailed(session: Stripe.FinancialConnections.Session)
   // - Notify user about the failure
   // - Allow user to retry
   // - Update error tracking
+}
+
+async function handleAccountReactivated(account: Stripe.FinancialConnections.Account) {
+  // Handle account reactivation
+  console.log('Account reactivated:', account.id);
+  console.log('Institution:', account.institution_name);
+  
+  // You can add logic here to:
+  // - Update account status in your database
+  // - Notify user about account reactivation
+  // - Restore account functionality
+  // - Update user's account list
+}
+
+async function handleBalanceRefreshed(account: Stripe.FinancialConnections.Account) {
+  // Handle balance refresh completion
+  console.log('Balance refreshed for account:', account.id);
+  console.log('Balance refresh status:', account.balance_refresh?.status);
+  
+  // You can add logic here to:
+  // - Update account balance in your database
+  // - Trigger balance-related calculations
+  // - Update user's balance display
+  // - Handle refresh failures if status is 'failed'
+}
+
+async function handleOwnershipRefreshed(account: Stripe.FinancialConnections.Account) {
+  // Handle ownership refresh completion
+  console.log('Ownership refreshed for account:', account.id);
+  console.log('Ownership refresh status:', account.ownership_refresh?.status);
+  
+  // You can add logic here to:
+  // - Update account ownership data in your database
+  // - Verify account holder information
+  // - Update user's account details
+  // - Handle refresh failures if status is 'failed'
+}
+
+async function handleTransactionsRefreshed(account: Stripe.FinancialConnections.Account) {
+  // Handle transactions refresh completion
+  console.log('Transactions refreshed for account:', account.id);
+  console.log('Transaction refresh status:', account.transaction_refresh?.status);
+  
+  // You can add logic here to:
+  // - Update transaction data in your database
+  // - Process new transactions
+  // - Update user's transaction history
+  // - Handle refresh failures if status is 'failed'
 }
