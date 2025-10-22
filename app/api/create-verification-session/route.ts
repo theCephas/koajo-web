@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Return the verification URL instead of client secret
     return NextResponse.json({ 
+      client_secret: verificationSession.client_secret,
       verification_url: verificationSession.url,
       session_id: verificationSession.id
     });
