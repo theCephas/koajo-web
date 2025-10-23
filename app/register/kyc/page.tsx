@@ -26,17 +26,18 @@ export default function KycPage() {
       // Get user data from localStorage or context
       const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
       const userId = localStorage.getItem('userId') || 'user_123';
-      
+      const phone = localStorage.getItem('phoneNumber') || '+12222222222';
       // Start document verification
-      const documentResult = await verifyIdentity(userEmail, userId, { verificationType: 'document' });
-      if (documentResult.success) {
-        // Document verification started, set status and wait for return
-        localStorage.setItem('verificationStatus', 'document_complete');
-        setVerificationStatus('document_complete');
-        setCurrentStep("processing");
-      } else {
-        setError(documentResult.error || 'Document verification failed. Please try again.');
-      }
+      const documentResult = await verifyIdentity('document', { email: userEmail, userId, phone });
+      console.log("documentResult", documentResult)
+      // if (documentResult.success) {
+      //   // Document verification started, set status and wait for return
+      //   localStorage.setItem('verificationStatus', 'document_complete');
+      //   setVerificationStatus('document_complete');
+      //   setCurrentStep("processing");
+      // } else {
+      //   setError(documentResult.error || 'Document verification failed. Please try again.');
+      // }
     } catch (error) {
       console.error('Verification error:', error);
       setError('An unexpected error occurred. Please try again.');
@@ -51,26 +52,23 @@ export default function KycPage() {
       // Get user data from localStorage or context
       const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
       const userId = localStorage.getItem('userId') || 'user_123';
-      const firstName = localStorage.getItem('firstName') || '';
-      const lastName = localStorage.getItem('lastName') || '';
-      const phoneNumber = localStorage.getItem('phoneNumber') || '';
+      const phone = localStorage.getItem('phoneNumber') || '';
       
       // Start ID number verification
-      const idResult = await verifyIdentity(userEmail, userId, { 
-        verificationType: 'id_number',
-        firstName,
-        lastName,
-        phoneNumber
+      const idResult = await verifyIdentity('id_number', { 
+        email: userEmail,
+        userId,
+        phone,
       });
-      if (idResult.success) {
-        // ID verification started, set status and wait for return
-        localStorage.setItem('verificationStatus', 'id_complete');
-        setVerificationStatus('id_complete');
-        setCurrentStep("processing");
-      } else {
-        console.error('ID number verification failed:', idResult.error);
-        setError('ID number verification failed. Please try again.');
-      }
+      // if (idResult.success) {
+      //   // ID verification started, set status and wait for return
+      //   localStorage.setItem('verificationStatus', 'id_complete');
+      //   setVerificationStatus('id_complete');
+      //   setCurrentStep("processing");
+      // } else {
+      //   console.error('ID number verification failed:', idResult.error);
+      //   setError('ID number verification failed. Please try again.');
+      // }
     } catch (error) {
       console.error('Verification error:', error);
       setError('An unexpected error occurred. Please try again.');
