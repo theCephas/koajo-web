@@ -8,228 +8,228 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const signature = request.headers.get('stripe-signature')!;
+  // const body = await request.text();
+  // const signature = request.headers.get('stripe-signature')!;
 
-  let event: Stripe.Event;
+  // let event: Stripe.Event;
 
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
-  }
+  // try {
+  //   event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  // } catch (err) {
+  //   console.error('Webhook signature verification failed:', err);
+  //   return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  // }
 
-  console.log('Received webhook event:', event.type);
+  // console.log('Received webhook event:', event.type);
 
-  switch (event.type) {
-    case 'identity.verification_session.verified':
-      const verifiedSession = event.data.object as Stripe.Identity.VerificationSession;
-      console.log('Verification verified:', verifiedSession.id, 'type:', verifiedSession.type);
+  // switch (event.type) {
+  //   case 'identity.verification_session.verified':
+  //     const verifiedSession = event.data.object as Stripe.Identity.VerificationSession;
+  //     console.log('Verification verified:', verifiedSession.id, 'type:', verifiedSession.type);
       
-      // Handle successful verification
-      // You can update your database, send emails, etc.
-      await handleVerificationSuccess(verifiedSession);
-      break;
+  //     // Handle successful verification
+  //     // You can update your database, send emails, etc.
+  //     await handleVerificationSuccess(verifiedSession);
+  //     break;
 
-    case 'identity.verification_session.requires_input':
-      const requiresInputSession = event.data.object as Stripe.Identity.VerificationSession;
-      console.log('Verification requires input:', requiresInputSession.id, 'type:', requiresInputSession.type);
+  //   case 'identity.verification_session.requires_input':
+  //     const requiresInputSession = event.data.object as Stripe.Identity.VerificationSession;
+  //     console.log('Verification requires input:', requiresInputSession.id, 'type:', requiresInputSession.type);
       
-      // Handle verification that needs user input
-      await handleVerificationRequiresInput(requiresInputSession);
-      break;
+  //     // Handle verification that needs user input
+  //     await handleVerificationRequiresInput(requiresInputSession);
+  //     break;
 
-    // Financial Connections events
-    case 'financial_connections.account.created':
-      const createdAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Financial account created:', createdAccount.id);
+  //   // Financial Connections events
+  //   case 'financial_connections.account.created':
+  //     const createdAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Financial account created:', createdAccount.id);
       
-      // Handle successful account connection
-      await handleAccountCreated(createdAccount);
-      break;
+  //     // Handle successful account connection
+  //     await handleAccountCreated(createdAccount);
+  //     break;
 
-    case 'financial_connections.account.deactivated':
-      const deactivatedAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Financial account deactivated:', deactivatedAccount.id);
+  //   case 'financial_connections.account.deactivated':
+  //     const deactivatedAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Financial account deactivated:', deactivatedAccount.id);
       
-      // Handle account deactivation
-      await handleAccountDeactivated(deactivatedAccount);
-      break;
+  //     // Handle account deactivation
+  //     await handleAccountDeactivated(deactivatedAccount);
+  //     break;
 
-    case 'financial_connections.account.disconnected':
-      const disconnectedAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Financial account disconnected:', disconnectedAccount.id);
+  //   case 'financial_connections.account.disconnected':
+  //     const disconnectedAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Financial account disconnected:', disconnectedAccount.id);
       
-      // Handle account disconnection
-      await handleAccountDisconnected(disconnectedAccount);
-      break;
+  //     // Handle account disconnection
+  //     await handleAccountDisconnected(disconnectedAccount);
+  //     break;
 
 
-    case 'financial_connections.account.reactivated':
-      const reactivatedAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Financial account reactivated:', reactivatedAccount.id);
+  //   case 'financial_connections.account.reactivated':
+  //     const reactivatedAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Financial account reactivated:', reactivatedAccount.id);
       
-      // Handle account reactivation
-      await handleAccountReactivated(reactivatedAccount);
-      break;
+  //     // Handle account reactivation
+  //     await handleAccountReactivated(reactivatedAccount);
+  //     break;
 
-    case 'financial_connections.account.refreshed_balance':
-      const balanceRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Account balance refreshed:', balanceRefreshedAccount.id);
+  //   case 'financial_connections.account.refreshed_balance':
+  //     const balanceRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Account balance refreshed:', balanceRefreshedAccount.id);
       
-      // Handle balance refresh completion
-      await handleBalanceRefreshed(balanceRefreshedAccount);
-      break;
+  //     // Handle balance refresh completion
+  //     await handleBalanceRefreshed(balanceRefreshedAccount);
+  //     break;
 
-    case 'financial_connections.account.refreshed_ownership':
-      const ownershipRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Account ownership refreshed:', ownershipRefreshedAccount.id);
+  //   case 'financial_connections.account.refreshed_ownership':
+  //     const ownershipRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Account ownership refreshed:', ownershipRefreshedAccount.id);
       
-      // Handle ownership refresh completion
-      await handleOwnershipRefreshed(ownershipRefreshedAccount);
-      break;
+  //     // Handle ownership refresh completion
+  //     await handleOwnershipRefreshed(ownershipRefreshedAccount);
+  //     break;
 
-    case 'financial_connections.account.refreshed_transactions':
-      const transactionsRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
-      console.log('Account transactions refreshed:', transactionsRefreshedAccount.id);
+  //   case 'financial_connections.account.refreshed_transactions':
+  //     const transactionsRefreshedAccount = event.data.object as Stripe.FinancialConnections.Account;
+  //     console.log('Account transactions refreshed:', transactionsRefreshedAccount.id);
       
-      // Handle transactions refresh completion
-      await handleTransactionsRefreshed(transactionsRefreshedAccount);
-      break;
+  //     // Handle transactions refresh completion
+  //     await handleTransactionsRefreshed(transactionsRefreshedAccount);
+  //     break;
 
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
-  }
+  //   default:
+  //     console.log(`Unhandled event type: ${event.type}`);
+  // }
 
   return NextResponse.json({ received: true });
 }
 
-async function handleVerificationSuccess(session: Stripe.Identity.VerificationSession) {
-  // Update your database with successful verification
-  console.log('Verification successful for session:', session.id);
-  console.log('User ID:', session.metadata?.user_id);
+// async function handleVerificationSuccess(session: Stripe.Identity.VerificationSession) {
+//   // Update your database with successful verification
+//   console.log('Verification successful for session:', session.id);
+//   console.log('User ID:', session.metadata?.user_id);
   
-  // You can add logic here to:
-  // - Update user verification status in your database
-  // - Send confirmation email
-  // - Redirect user to next step
-}
+//   // You can add logic here to:
+//   // - Update user verification status in your database
+//   // - Send confirmation email
+//   // - Redirect user to next step
+// }
 
-async function handleVerificationRequiresInput(session: Stripe.Identity.VerificationSession) {
-  // Handle verification that needs user input
-  console.log('Verification requires input for session:', session.id);
-  console.log('User ID:', session.metadata?.user_id);
+// async function handleVerificationRequiresInput(session: Stripe.Identity.VerificationSession) {
+//   // Handle verification that needs user input
+//   console.log('Verification requires input for session:', session.id);
+//   console.log('User ID:', session.metadata?.user_id);
   
-  // You can add logic here to:
-  // - Notify user that additional input is needed
-  // - Update verification status in your database
-  // - Send notification email
-}
+//   // You can add logic here to:
+//   // - Notify user that additional input is needed
+//   // - Update verification status in your database
+//   // - Send notification email
+// }
 
-// Financial Connections event handlers
-async function handleAccountCreated(account: Stripe.FinancialConnections.Account) {
-  // Handle successful account connection
-  console.log('Account created successfully:', account.id);
-  console.log('Institution:', account.institution_name);
-  console.log('Account holder:', account.account_holder_name);
+// // Financial Connections event handlers
+// async function handleAccountCreated(account: Stripe.FinancialConnections.Account) {
+//   // Handle successful account connection
+//   console.log('Account created successfully:', account.id);
+//   console.log('Institution:', account.institution_name);
+//   console.log('Account holder:', account.account_holder_name);
   
-  // You can add logic here to:
-  // - Update user's connected accounts in your database
-  // - Send confirmation email
-  // - Trigger account verification process
-  // - Update user's onboarding status
-}
+//   // You can add logic here to:
+//   // - Update user's connected accounts in your database
+//   // - Send confirmation email
+//   // - Trigger account verification process
+//   // - Update user's onboarding status
+// }
 
-async function handleAccountDeactivated(account: Stripe.FinancialConnections.Account) {
-  // Handle account deactivation
-  console.log('Account deactivated:', account.id);
-  console.log('Reason:', account.status);
+// async function handleAccountDeactivated(account: Stripe.FinancialConnections.Account) {
+//   // Handle account deactivation
+//   console.log('Account deactivated:', account.id);
+//   console.log('Reason:', account.status);
   
-  // You can add logic here to:
-  // - Update account status in your database
-  // - Notify user about account deactivation
-  // - Remove account from user's dashboard
-}
+//   // You can add logic here to:
+//   // - Update account status in your database
+//   // - Notify user about account deactivation
+//   // - Remove account from user's dashboard
+// }
 
-async function handleAccountDisconnected(account: Stripe.FinancialConnections.Account) {
-  // Handle account disconnection
-  console.log('Account disconnected:', account.id);
+// async function handleAccountDisconnected(account: Stripe.FinancialConnections.Account) {
+//   // Handle account disconnection
+//   console.log('Account disconnected:', account.id);
   
-  // You can add logic here to:
-  // - Remove account from your database
-  // - Notify user about disconnection
-  // - Update user's account list
-}
+//   // You can add logic here to:
+//   // - Remove account from your database
+//   // - Notify user about disconnection
+//   // - Update user's account list
+// }
 
-async function handleSessionSucceeded(session: Stripe.FinancialConnections.Session) {
-  // Handle successful financial connections session
-  console.log('Financial connections session succeeded:', session.id);
-  console.log('User ID:', session.metadata?.user_id);
+// async function handleSessionSucceeded(session: Stripe.FinancialConnections.Session) {
+//   // Handle successful financial connections session
+//   console.log('Financial connections session succeeded:', session.id);
+//   console.log('User ID:', session.metadata?.user_id);
   
-  // You can add logic here to:
-  // - Update user's onboarding progress
-  // - Send success notification
-  // - Redirect user to next step
-  // - Store session data
-}
+//   // You can add logic here to:
+//   // - Update user's onboarding progress
+//   // - Send success notification
+//   // - Redirect user to next step
+//   // - Store session data
+// }
 
-async function handleSessionFailed(session: Stripe.FinancialConnections.Session) {
-  // Handle failed financial connections session
-  console.log('Financial connections session failed:', session.id);
-  console.log('User ID:', session.metadata?.user_id);
+// async function handleSessionFailed(session: Stripe.FinancialConnections.Session) {
+//   // Handle failed financial connections session
+//   console.log('Financial connections session failed:', session.id);
+//   console.log('User ID:', session.metadata?.user_id);
   
-  // You can add logic here to:
-  // - Log the failure reason
-  // - Notify user about the failure
-  // - Allow user to retry
-  // - Update error tracking
-}
+//   // You can add logic here to:
+//   // - Log the failure reason
+//   // - Notify user about the failure
+//   // - Allow user to retry
+//   // - Update error tracking
+// }
 
-async function handleAccountReactivated(account: Stripe.FinancialConnections.Account) {
-  // Handle account reactivation
-  console.log('Account reactivated:', account.id);
-  console.log('Institution:', account.institution_name);
+// async function handleAccountReactivated(account: Stripe.FinancialConnections.Account) {
+//   // Handle account reactivation
+//   console.log('Account reactivated:', account.id);
+//   console.log('Institution:', account.institution_name);
   
-  // You can add logic here to:
-  // - Update account status in your database
-  // - Notify user about account reactivation
-  // - Restore account functionality
-  // - Update user's account list
-}
+//   // You can add logic here to:
+//   // - Update account status in your database
+//   // - Notify user about account reactivation
+//   // - Restore account functionality
+//   // - Update user's account list
+// }
 
-async function handleBalanceRefreshed(account: Stripe.FinancialConnections.Account) {
-  // Handle balance refresh completion
-  console.log('Balance refreshed for account:', account.id);
-  console.log('Balance refresh status:', account.balance_refresh?.status);
+// async function handleBalanceRefreshed(account: Stripe.FinancialConnections.Account) {
+//   // Handle balance refresh completion
+//   console.log('Balance refreshed for account:', account.id);
+//   console.log('Balance refresh status:', account.balance_refresh?.status);
   
-  // You can add logic here to:
-  // - Update account balance in your database
-  // - Trigger balance-related calculations
-  // - Update user's balance display
-  // - Handle refresh failures if status is 'failed'
-}
+//   // You can add logic here to:
+//   // - Update account balance in your database
+//   // - Trigger balance-related calculations
+//   // - Update user's balance display
+//   // - Handle refresh failures if status is 'failed'
+// }
 
-async function handleOwnershipRefreshed(account: Stripe.FinancialConnections.Account) {
-  // Handle ownership refresh completion
-  console.log('Ownership refreshed for account:', account.id);
-  console.log('Ownership refresh status:', account.ownership_refresh?.status);
+// async function handleOwnershipRefreshed(account: Stripe.FinancialConnections.Account) {
+//   // Handle ownership refresh completion
+//   console.log('Ownership refreshed for account:', account.id);
+//   console.log('Ownership refresh status:', account.ownership_refresh?.status);
   
-  // You can add logic here to:
-  // - Update account ownership data in your database
-  // - Verify account holder information
-  // - Update user's account details
-  // - Handle refresh failures if status is 'failed'
-}
+//   // You can add logic here to:
+//   // - Update account ownership data in your database
+//   // - Verify account holder information
+//   // - Update user's account details
+//   // - Handle refresh failures if status is 'failed'
+// }
 
-async function handleTransactionsRefreshed(account: Stripe.FinancialConnections.Account) {
-  // Handle transactions refresh completion
-  console.log('Transactions refreshed for account:', account.id);
-  console.log('Transaction refresh status:', account.transaction_refresh?.status);
+// async function handleTransactionsRefreshed(account: Stripe.FinancialConnections.Account) {
+//   // Handle transactions refresh completion
+//   console.log('Transactions refreshed for account:', account.id);
+//   console.log('Transaction refresh status:', account.transaction_refresh?.status);
   
-  // You can add logic here to:
-  // - Update transaction data in your database
-  // - Process new transactions
-  // - Update user's transaction history
-  // - Handle refresh failures if status is 'failed'
-}
+//   // You can add logic here to:
+//   // - Update transaction data in your database
+//   // - Process new transactions
+//   // - Update user's transaction history
+//   // - Handle refresh failures if status is 'failed'
+// }
