@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
 
     // Check if Stripe secret key is available
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.error("STRIPE_SECRET_KEY is not set");
       return NextResponse.json(
         { error: "Stripe secret key not configured" },
         { status: 500 }
@@ -27,31 +26,24 @@ export async function POST(request: NextRequest) {
       phone: string;
     };
 
-// log this url
-console.log("return_url", `${
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-        }/register/kyc?verification=complete`)
-      console.log("NEXT_PUBLIC_BASE_URL", process.env.NEXT_PUBLIC_BASE_URL)
-    const verificationSession =
-      await stripe.identity.verificationSessions.create({
-        type,
-        provided_details: {
-          email: email || "user@example.com",
-          phone: phone,
-        },
-        metadata: {
-          user_id: userId || "user_123",
-        },
-      }). then ( s => {
-        console.log("verificationSession.url", s.url)
-        return s;
-      });
+    const verificationSession = await stripe.identity.verificationSessions.create({
+      type,
+      provided_details: {
+        email: email || "user@example.com",
+        phone: phone,
+      },
+      metadata: {
+        user_id: userId || "user_123",
+      },
+    });
 
-      // log the url
-      console.log("verificationSession.url", verificationSession.url)
-      console.log(verificationSession, "verificationSession")
+    console.log("Verification session created:", {
+      id: verificationSession.id,
+      status: verificationSession.status,
+      client_secret: verificationSession.client_secret?.substring(0, 20) + "...",
+      url: verificationSession.url
+    });
 
-    console.log("Verification session created:", verificationSession.id);
 
     // Return the verification URL instead of client secret
     return NextResponse.json({
