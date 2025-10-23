@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useStripe } from "../stripe-provider";
 
 interface VerificationResult {
@@ -17,7 +17,7 @@ export function useStripeIdentity() {
   const { stripe, loading } = useStripe();
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const verifyIdentity = async (
+  const verifyIdentity = useCallback(async (
     type: VerificationType,
     options: {
       email: string,
@@ -74,7 +74,7 @@ export function useStripeIdentity() {
     } finally {
       setIsVerifying(false);
     }
-  };
+  }, [])
 
   return {
     verifyIdentity,
