@@ -46,7 +46,7 @@ export default function KycPage() {
     }
   };
 
-  const handleIdVerification = useCallback(async () => {
+  const handleIdVerification = async () => {
     setIsLoading(true);
     try {
       // Get user data from localStorage or context
@@ -75,7 +75,7 @@ export default function KycPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [verifyIdentity, setError]);
+  }
 
   const handleDecline = () => {
     router.push("/register");
