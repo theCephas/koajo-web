@@ -50,6 +50,9 @@ export async function POST(request: NextRequest) {
       clientSecret: verificationSession.client_secret,
       verificationUrl: verificationSession.url,
       sessionId: verificationSession.id,
+    }, {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' }
     });
   } catch (error) {
     console.error("Error creating verification session:", error);
