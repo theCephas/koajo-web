@@ -11,6 +11,7 @@ export async function fetchVerificationSession(options: {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify({
         email,
         userId,
@@ -18,6 +19,9 @@ export async function fetchVerificationSession(options: {
         phone,
       }),
     });
+
+
+  if (!response.ok) throw new Error("Failed to create verification session");
 
     const { clientSecret, verificationUrl, sessionId } = await response.json();
     return { clientSecret, verificationUrl, sessionId };
