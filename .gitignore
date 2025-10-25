@@ -50,3 +50,4 @@ public/_next-video
 # Documentation
 *.private.md
 *.dbml
+*.private.json
