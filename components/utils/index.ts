@@ -4,6 +4,7 @@ export { Label } from './label';
 export { Input } from './input';
 export { Field } from './field';
 export { PasswordField } from './password-field';
+export { PhoneNumberField } from './phone-number-field';
 export { ProgressTracker, OnboardingIcons } from './progress-tracker';
 export type { MyImageProps, ResponsiveImageConfig } from './my-image';
 export { default as PlanCard } from './card-plan'; 
