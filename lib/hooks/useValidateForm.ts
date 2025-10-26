@@ -109,8 +109,12 @@ function getRules<T extends FieldValues>(
         return {
           required: FORM_FIELDS_MESSAGES.FORMATTED_PHONE_NUMBER.REQUIRED,
           pattern: {
-            value: FORM_FIELDS_PATTERNS.FORMATTED_PHONE_NUMBER,
+            value: FORM_FIELDS_PATTERNS.FORMATTED_PHONE_NUMBER.PATTERN,
             message: FORM_FIELDS_MESSAGES.FORMATTED_PHONE_NUMBER.PATTERN,
+          },
+          maxLength: {
+            value: FORM_FIELDS_PATTERNS.FORMATTED_PHONE_NUMBER.MAX_LENGTH,
+            message: FORM_FIELDS_MESSAGES.FORMATTED_PHONE_NUMBER.MAX_LENGTH,
           },
         } as RegisterOptions<T, Path<T>>;
       case "password":
