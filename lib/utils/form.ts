@@ -20,3 +20,7 @@ export const getPasswordStrength = (password: string): PasswordStrength => {
   if (score <= 4) return { score, label: "Good", color: "bg-blue-500" };
   return { score, label: "Strong", color: "bg-tertiary-100" };
 };
+
+export const getPhoneNumber = (phoneNumber: string): string => {
+  return "+1" + phoneNumber.replace(/\D/g, "");
+};
