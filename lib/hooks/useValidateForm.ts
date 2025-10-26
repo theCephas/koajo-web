@@ -134,7 +134,6 @@ function getRules<T extends FieldValues>(
       case "agreeToTerms":
         return {
           validate: (value: unknown) => {
-            console.log("agree to terms value", value);
             return Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED;
           },
         } as RegisterOptions<T, Path<T>>;
