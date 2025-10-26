@@ -107,10 +107,10 @@ function getRules<T extends FieldValues>(
         } as RegisterOptions<T, Path<T>>;
       case "phoneNumber":
         return {
-          required: FORM_FIELDS_MESSAGES.PHONE_NUMBER.REQUIRED,
+          required: FORM_FIELDS_MESSAGES.FORMATTED_PHONE_NUMBER.REQUIRED,
           pattern: {
-            value: FORM_FIELDS_PATTERNS.PHONE_NUMBER,
-            message: FORM_FIELDS_MESSAGES.PHONE_NUMBER.PATTERN,
+            value: FORM_FIELDS_PATTERNS.FORMATTED_PHONE_NUMBER,
+            message: FORM_FIELDS_MESSAGES.FORMATTED_PHONE_NUMBER.PATTERN,
           },
         } as RegisterOptions<T, Path<T>>;
       case "password":
@@ -133,8 +133,10 @@ function getRules<T extends FieldValues>(
         } as RegisterOptions<T, Path<T>>;
       case "agreeToTerms":
         return {
-          validate: (value: unknown) =>
-            Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED,
+          validate: (value: unknown) => {
+            console.log("agree to terms value", value);
+            return Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED;
+          },
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
