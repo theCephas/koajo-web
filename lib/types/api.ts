@@ -1,7 +1,3 @@
-/**
- * TypeScript types for Koajo API requests and responses
- * Based on the backend OpenAPI specification
- */
 
 // ===== AUTH TYPES =====
 
@@ -22,6 +18,7 @@ export interface LoginVerificationRequiredResponse {
   requiresVerification: boolean;
   verification: {
     expiresAt: string;
+    sentAt: string;
   };
 }
 
@@ -35,6 +32,7 @@ export interface SignupRequest {
 
 export interface SignupResponse {
   accountId: string;
+  id: string;
   email: string;
   phoneNumber: string;
   avatarUrl?: string;
