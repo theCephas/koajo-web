@@ -8,6 +8,7 @@ import CardAuth from "@/components/auth/card-auth";
 import { getPasswordStrength } from "@/lib/utils/form";
 import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "@/lib/constants";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
+import { AuthService } from "@/lib/services/authService";
 
 
 interface NewPasswordFormData {
@@ -19,7 +20,7 @@ interface NewPasswordFormData {
 export default function NewPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [failureMessage, setFailureMessage] = useState<string>("");
-
+  const [success, setSuccess] = useState(false);
   const {
     register,
     handleSubmit,
@@ -30,7 +31,7 @@ export default function NewPasswordPage() {
 
   const password = watch("newPassword");
 
-  const handleSubmitForm = async (data: NewPasswordFormData) => {
+  const onSubmit = async (data: NewPasswordFormData) => {
     if (data.newPassword !== data.repeatPassword) {
       setFailureMessage("Passwords do not match");
       return;
@@ -39,15 +40,16 @@ export default function NewPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Redirect to login page on success
+      const response = await AuthService.resetPassword({ email: "test@test.com", token: "1234567890", newPassword: data.newPassword });
+      if (response && "reset" in response && response.reset === true) {
+        setSuccess(true);
+      } else {
+        setFailureMessage("An error occurred. Please try again.");
+      }
     } catch (error) {
       setFailureMessage("An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    } 
+    setIsLoading(false);
   };
 
   if (isSubmitted)
@@ -61,7 +63,7 @@ export default function NewPasswordPage() {
     >
       {/* Form */}
       <form
-        onSubmit={handleSubmit(handleSubmitForm)}
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-6.5"
         noValidate
       >
