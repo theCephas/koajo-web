@@ -3,9 +3,9 @@ import { AuthUtils } from '@/lib/utils/auth';
 import type { LoginSuccessResponse } from '@/lib/types/api';
 import CryptoJS from 'crypto-js';
 
-const TOKEN_KEY = 'koajo_auth_token';
-const TOKEN_EXPIRY_KEY = 'koajo_token_expiry';
-const USER_KEY = 'koajo_user_data';
+const TOKEN_KEY = 'auth_token'; 
+const TOKEN_EXPIRY_KEY = 'token_expiry';
+const USER_KEY = 'user';
 
 const ENCRYPTION_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
 
@@ -27,7 +27,7 @@ const decrypt = (ciphertext: string): string => {
     return bytes.toString(CryptoJS.enc.Utf8);
   } catch (error) {
     console.error('Decryption failed:', error);
-    return ciphertext; // Fallback to return encrypted text
+    return ciphertext; 
   }
 };
 
@@ -265,5 +265,4 @@ export class HybridTokenManager {
   }
 }
 
-// Export the default token manager (localStorage-based)
 export default TokenManager;
