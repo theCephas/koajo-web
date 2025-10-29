@@ -1,8 +1,3 @@
-/**
- * Authentication Service for Koajo API
- * Handles all authentication-related API calls
- */
-
 import {
   API_ENDPOINTS,
   getApiUrl,
@@ -13,7 +8,6 @@ import type {
   LoginRequest,
   LoginResponse,
   LoginSuccessResponse,
-  LoginVerificationRequiredResponse,
   SignupRequest,
   SignupResponse,
   VerifyEmailRequest,
@@ -29,24 +23,9 @@ import type {
   UpdateNotificationPreferencesRequest,
   UpdateNotificationPreferencesResponse,
   ApiError,
-  User,
 } from "@/lib/types/api";
+import { ApiErrorClass } from "@/lib/utils/auth";
 
-export class ApiErrorClass implements ApiError {
-  public statusCode: number;
-  public error: string;
-  public message: string[];
-
-  constructor(statusCode: number, error: string, message: string[]) {
-    this.error = error;
-    this.message = message;
-    this.statusCode = statusCode;
-  }
-}
-
-/**
- * Generic API request handler with error handling
- */
 async function apiRequest<T>(
   url: string,
   options: RequestInit = {}
@@ -97,235 +76,180 @@ async function apiRequest<T>(
   }
 }
 
-/**
- * Authentication Service Class
- */
-export class AuthService {
-  /**
-   * Login user with email and password
-   */
-  static async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.LOGIN);
+async function login(credentials: LoginRequest): Promise<LoginResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.LOGIN);
 
-    return apiRequest<LoginSuccessResponse>(url, {
-      method: "POST",
-      headers: getDefaultHeaders(),
-      body: JSON.stringify(credentials),
-    }).then(response => ({
-      ...response,
-      user: {
-        ...response.user,
-        id: response.user.accountId,
-      },
-    }));
-  }
-
-  /**
-   * Register a new user account
-   */
-  static async signup(userData: SignupRequest): Promise<any> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.SIGNUP);
-
-    return apiRequest<any>(url, {
-      method: "POST",
-      headers: getDefaultHeaders(),
-      body: JSON.stringify(userData),
-    });
-  }
-
-  /**
-   * Verify email with token
-   */
-  static async verifyEmail(
-    data: VerifyEmailRequest
-  ): Promise<VerifyEmailResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.VERIFY_EMAIL);
-
-    return apiRequest<VerifyEmailResponse>(url, {
-      method: "POST",
-      headers: getDefaultHeaders(),
-      body: JSON.stringify(data),
-    }).then(response => {console.log("signup response", response); return response;});
-  }
-
-  /**
-   * Request password reset
-   */
-  static async forgotPassword(
-    data: ForgotPasswordRequest
-  ): Promise<ForgotPasswordResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.FORGOT_PASSWORD);
-
-    return apiRequest<ForgotPasswordResponse>(url, {
-      method: "POST",
-      headers: getDefaultHeaders(),
-      body: JSON.stringify(data),
-    });
-  }
-
-  /**
-   * Reset password with token
-   */
-  static async resetPassword(
-    data: ResetPasswordRequest
-  ): Promise<ResetPasswordResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.RESET_PASSWORD);
-
-    return apiRequest<ResetPasswordResponse>(url, {
-      method: "POST",
-      headers: getDefaultHeaders(),
-      body: JSON.stringify(data),
-    });
-  }
-
-  /**
-   * Change password (requires authentication)
-   */
-  static async changePassword(
-    data: ChangePasswordRequest,
-    token: string
-  ): Promise<ChangePasswordResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.CHANGE_PASSWORD);
-
-    return apiRequest<ChangePasswordResponse>(url, {
-      method: "POST",
-      headers: getAuthHeaders(token),
-      body: JSON.stringify(data),
-    });
-  }
-
-  /**
-   * Resend verification email
-   */
-  static async resendVerificationEmail(
-    email: string
-  ): Promise<{
-    email: string;
-    verification: { expiresAt: string; sentAt: string };
-  }> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.RESEND_EMAIL);
-
-    return apiRequest(url, {
-      method: "POST",
-      headers: getDefaultHeaders(),
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  /**
-   * Update user avatar (requires authentication)
-   */
-  static async updateAvatar(
-    data: UpdateAvatarRequest,
-    token: string
-  ): Promise<UpdateAvatarResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.PROFILE.AVATAR);
-
-    return apiRequest<UpdateAvatarResponse>(url, {
-      method: "PATCH",
-      headers: getAuthHeaders(token),
-      body: JSON.stringify(data),
-    });
-  }
-
-  /**
-   * Update notification preferences (requires authentication)
-   */
-  static async updateNotificationPreferences(
-    data: UpdateNotificationPreferencesRequest,
-    token: string
-  ): Promise<UpdateNotificationPreferencesResponse> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.PROFILE.NOTIFICATIONS);
-
-    return apiRequest<UpdateNotificationPreferencesResponse>(url, {
-      method: "PATCH",
-      headers: getAuthHeaders(token),
-      body: JSON.stringify(data),
-    });
-  }
-
-  /**
-   * Complete Stripe verification (requires authentication)
-   */
-  static async completeStripeVerification(
-    data: {
-      email: string;
-      firstName: string;
-      lastName: string;
-      stripeVerificationCompleted: boolean;
-      sessionId: string;
-      stripeReference: string;
-      verificationType: string;
-      verificationStatus: string;
+  return apiRequest<LoginSuccessResponse>(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify(credentials),
+  }).then((response) => ({
+    ...response,
+    user: {
+      ...response.user,
+      id: response.user.accountId,
     },
-    token: string
-  ): Promise<{
-    email: string;
-    stripeVerificationCompleted: boolean;
-    latestAttempt: {
-      id: string;
-      sessionId: string;
-      stripeReference: string;
-      status: string;
-      type: string;
-      recordedAt: string;
-      completedAt?: string;
-    };
-    verification?: {
-      expiresAt: string;
-      sentAt: string;
-    };
-  }> {
-    const url = getApiUrl(API_ENDPOINTS.AUTH.STRIPE_VERIFICATION);
-
-    return apiRequest(url, {
-      method: "POST",
-      headers: getAuthHeaders(token),
-      body: JSON.stringify(data),
-    });
-  }
+  }));
 }
 
-/**
- * Utility functions for authentication
- */
-export const AuthUtils = {
-  /**
-   * Check if login response indicates successful authentication
-   */
-  isLoginSuccess(response: LoginResponse): response is LoginSuccessResponse {
-    return "accessToken" in response;
-  },
+async function signup(userData: SignupRequest): Promise<SignupResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.SIGNUP);
 
-  /**
-   * Check if login response indicates verification is required
-   */
-  requiresVerification(
-    response: LoginResponse
-  ): response is LoginVerificationRequiredResponse {
-    return "requiresVerification" in response && response.requiresVerification;
-  },
+  console.log("signup userData", userData);
+  return apiRequest<SignupResponse>(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify(userData),
+  })
+    .then((response) => {
+      console.log("signup response", response);
+      return response;
+    })
+    .catch((error) => {
+      console.log("signup error", error);
+      console.error("signup error", error);
+      throw error;
+    });
+}
 
-  /**
-   * Extract token from successful login response
-   */
-  extractToken(response: LoginSuccessResponse): string {
-    return response.accessToken;
-  },
+async function verifyEmail(
+  data: VerifyEmailRequest
+): Promise<VerifyEmailResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.VERIFY_EMAIL);
 
-  /**
-   * Check if token is expired (basic check)
-   */
-  isTokenExpired(expiresAt: string): boolean {
-    return new Date(expiresAt) <= new Date();
-  },
+  return apiRequest<VerifyEmailResponse>(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify(data),
+  }).then((response) => {
+    console.log("signup response", response);
+    return response;
+  });
+}
 
-  /**
-   * Get token expiration time in milliseconds
-   */
-  getTokenExpirationTime(expiresAt: string): number {
-    return new Date(expiresAt).getTime();
+async function forgotPassword(
+  data: ForgotPasswordRequest
+): Promise<ForgotPasswordResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.FORGOT_PASSWORD);
+
+  return apiRequest<ForgotPasswordResponse>(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify(data),
+  });
+}
+
+async function resetPassword(
+  data: ResetPasswordRequest
+): Promise<ResetPasswordResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.RESET_PASSWORD);
+
+  return apiRequest<ResetPasswordResponse>(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify(data),
+  });
+}
+
+async function changePassword(
+  data: ChangePasswordRequest,
+  token: string
+): Promise<ChangePasswordResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.CHANGE_PASSWORD);
+
+  return apiRequest<ChangePasswordResponse>(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+async function resendVerificationEmail(email: string): Promise<{
+  email: string;
+  verification: { expiresAt: string; sentAt: string };
+}> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.RESEND_EMAIL);
+
+  return apiRequest(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify({ email }),
+  });
+}
+
+async function updateAvatar(
+  data: UpdateAvatarRequest,
+  token: string
+): Promise<UpdateAvatarResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.PROFILE.AVATAR);
+
+  return apiRequest<UpdateAvatarResponse>(url, {
+    method: "PATCH",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+async function updateNotificationPreferences(
+  data: UpdateNotificationPreferencesRequest,
+  token: string
+): Promise<UpdateNotificationPreferencesResponse> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.PROFILE.NOTIFICATIONS);
+
+  return apiRequest<UpdateNotificationPreferencesResponse>(url, {
+    method: "PATCH",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+async function completeStripeVerification(
+  data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    stripeVerificationCompleted: boolean;
+    sessionId: string;
+    stripeReference: string;
+    verificationType: string;
+    verificationStatus: string;
   },
+  token: string
+): Promise<{
+  email: string;
+  stripeVerificationCompleted: boolean;
+  latestAttempt: {
+    id: string;
+    sessionId: string;
+    stripeReference: string;
+    status: string;
+    type: string;
+    recordedAt: string;
+    completedAt?: string;
+  };
+  verification?: {
+    expiresAt: string;
+    sentAt: string;
+  };
+}> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.STRIPE_VERIFICATION);
+
+  return apiRequest(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+export const AuthService = {
+  login,
+  signup,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+  resendVerificationEmail,
+  updateAvatar,
+  updateNotificationPreferences,
+  completeStripeVerification,
 };
-
-export default AuthService;
