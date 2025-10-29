@@ -27,7 +27,6 @@ export default function NewPasswordPage() {
     formState: { errors: formErrors, isSubmitted },
   } = useForm<NewPasswordFormData>();
 
-  const formData = watch();
 
   const password = watch("newPassword");
 
