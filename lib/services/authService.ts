@@ -23,13 +23,16 @@ import type {
   UpdateNotificationPreferencesRequest,
   UpdateNotificationPreferencesResponse,
   ApiError,
+  ResendForgotPasswordRequest,
+  ResendForgotPasswordResponse,
+  ResendVerificationEmailResponse,
 } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
 
 async function apiRequest<T>(
   url: string,
   options: RequestInit = {}
-): Promise<T> {
+): Promise<T | ApiError> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -55,7 +58,11 @@ async function apiRequest<T>(
       );
     }
 
-    return await response.json();
+    const jsonResponse = await response.json();
+    if (jsonResponse && "error" in jsonResponse && "message" in jsonResponse && "statusCode" in jsonResponse) {
+      return jsonResponse as ApiError;
+    }
+    return jsonResponse as T;
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -76,23 +83,32 @@ async function apiRequest<T>(
   }
 }
 
-async function login(credentials: LoginRequest): Promise<LoginResponse> {
+async function login(
+  credentials: LoginRequest
+): Promise<LoginSuccessResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.LOGIN);
 
-  return apiRequest<LoginSuccessResponse>(url, {
+  console.log("login credentials", credentials);
+  return apiRequest<LoginSuccessResponse | ApiError>(url, {
     method: "POST",
     headers: getDefaultHeaders(),
     body: JSON.stringify(credentials),
-  }).then((response) => ({
-    ...response,
-    user: {
-      ...response.user,
-      id: response.user.accountId,
-    },
-  }));
+  }).then((response) => {
+    if (response && ("id" in response || "accountId" in response)) {
+      const loginResponse = response as LoginSuccessResponse;
+      return {
+        ...loginResponse,
+        user: {
+          ...loginResponse.user,
+          id: loginResponse.user.accountId,
+        },
+      } as LoginSuccessResponse;
+    }
+    else return response as ApiError;
+  });
 }
 
-async function signup(userData: SignupRequest): Promise<SignupResponse> {
+async function signup(userData: SignupRequest): Promise<SignupResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.SIGNUP);
 
   console.log("signup userData", userData);
@@ -102,11 +118,9 @@ async function signup(userData: SignupRequest): Promise<SignupResponse> {
     body: JSON.stringify(userData),
   })
     .then((response) => {
-      console.log("signup response", response);
       return response;
     })
     .catch((error) => {
-      console.log("signup error", error);
       console.error("signup error", error);
       throw error;
     });
@@ -114,7 +128,7 @@ async function signup(userData: SignupRequest): Promise<SignupResponse> {
 
 async function verifyEmail(
   data: VerifyEmailRequest
-): Promise<VerifyEmailResponse> {
+): Promise<VerifyEmailResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.VERIFY_EMAIL);
 
   return apiRequest<VerifyEmailResponse>(url, {
@@ -129,19 +143,32 @@ async function verifyEmail(
 
 async function forgotPassword(
   data: ForgotPasswordRequest
-): Promise<ForgotPasswordResponse> {
+): Promise<ForgotPasswordResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.FORGOT_PASSWORD);
 
   return apiRequest<ForgotPasswordResponse>(url, {
     method: "POST",
     headers: getDefaultHeaders(),
     body: JSON.stringify(data),
-  });
+  })
 }
+
+async function resendForgotPassword(
+  data: ResendForgotPasswordRequest
+): Promise<ResendForgotPasswordResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.FORGOT_PASSWORD);
+
+  return apiRequest<ResendForgotPasswordResponse>(url, {
+    method: "POST",
+    headers: getDefaultHeaders(),
+    body: JSON.stringify(data),
+  })
+}
+
 
 async function resetPassword(
   data: ResetPasswordRequest
-): Promise<ResetPasswordResponse> {
+): Promise<ResetPasswordResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.RESET_PASSWORD);
 
   return apiRequest<ResetPasswordResponse>(url, {
@@ -154,7 +181,7 @@ async function resetPassword(
 async function changePassword(
   data: ChangePasswordRequest,
   token: string
-): Promise<ChangePasswordResponse> {
+): Promise<ChangePasswordResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.CHANGE_PASSWORD);
 
   return apiRequest<ChangePasswordResponse>(url, {
@@ -164,23 +191,20 @@ async function changePassword(
   });
 }
 
-async function resendVerificationEmail(email: string): Promise<{
-  email: string;
-  verification: { expiresAt: string; sentAt: string };
-}> {
+async function resendVerificationEmail(data: ResendVerificationEmailResponse): Promise<ResendVerificationEmailResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.RESEND_EMAIL);
 
-  return apiRequest(url, {
+  return apiRequest<ResendVerificationEmailResponse>(url, {
     method: "POST",
     headers: getDefaultHeaders(),
-    body: JSON.stringify({ email }),
+    body: JSON.stringify(data),
   });
 }
 
 async function updateAvatar(
   data: UpdateAvatarRequest,
   token: string
-): Promise<UpdateAvatarResponse> {
+): Promise<UpdateAvatarResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.PROFILE.AVATAR);
 
   return apiRequest<UpdateAvatarResponse>(url, {
@@ -193,7 +217,7 @@ async function updateAvatar(
 async function updateNotificationPreferences(
   data: UpdateNotificationPreferencesRequest,
   token: string
-): Promise<UpdateNotificationPreferencesResponse> {
+): Promise<UpdateNotificationPreferencesResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.PROFILE.NOTIFICATIONS);
 
   return apiRequest<UpdateNotificationPreferencesResponse>(url, {
@@ -231,7 +255,7 @@ async function completeStripeVerification(
     expiresAt: string;
     sentAt: string;
   };
-}> {
+} | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.STRIPE_VERIFICATION);
 
   return apiRequest(url, {
@@ -246,6 +270,7 @@ export const AuthService = {
   signup,
   verifyEmail,
   forgotPassword,
+  resendForgotPassword,
   resetPassword,
   changePassword,
   resendVerificationEmail,
