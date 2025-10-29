@@ -61,6 +61,32 @@ export interface ForgotPasswordResponse {
   requested: boolean;
 }
 
+export interface ResendForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResendForgotPasswordResponse {
+  email: string;
+  requested: boolean;
+}
+
+export interface ResendVerificationEmailRequest {
+  email: string;
+}
+
+export interface ResendVerificationEmailResponse {
+  email: string;
+  verification: {
+    expiresAt: string;
+    sentAt: string;
+  };
+}
+
+export interface ForgotPasswordResponse {
+  email: string;
+  requested: boolean;
+}
+
 export interface ResetPasswordRequest {
   email: string;
   token: string;
