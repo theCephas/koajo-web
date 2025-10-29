@@ -70,7 +70,7 @@ type PodMembersProps = {
 const PodMembers = ({ className }: PodMembersProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const displayedMembers = members.slice(0, 4); // Show only first 4 members initially
+  const displayedMembers = members.slice(0, 4);
 
   return (
     <>
