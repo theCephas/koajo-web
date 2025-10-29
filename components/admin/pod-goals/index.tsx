@@ -16,7 +16,7 @@ const PodGoals = ({ className }: PodGoalsProps) => {
     return Math.min((current / target) * 100, 100);
   };
 
-  const displayedGoals = goals.slice(0, 1); // Show only first goal initially
+  const displayedGoals = goals.slice(0, 1);
 
   return (
     <>
