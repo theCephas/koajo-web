@@ -1,6 +1,16 @@
 # Git Collaboration Guidelines
 
-## 1. General Git Workflow
+## 1. Pull Request Rules
+
+- Keep your branch up-to-date with the latest `dev` before opening a PR.
+- Target `dev` for all feature work (including API integrations) and bug fixes.
+- Never push directly to `main`. Concern yourself only with the `dev` branch
+- Open a PR to `dev` only when the feature/fix is complete and ready for review. Use Draft PRs for early feedback; avoid merging WIP.
+- Always request at least one reviewer. Respond to feedback promptly.
+- Ensure the PR passes linting, type checks, and tests before requesting merge.
+- PR title format: `[#issue-id] <type>(<scope>): <short description>` (example: `[#123] feat(user-profile): add user avatar upload`).
+
+## 2. General Git Workflow
 
 The goal of our Git workflow is to maintain a clean and efficient codebase, promote collaboration, and ensure smooth deployment. The following are the key aspects of our Git collaboration process:
 
@@ -36,7 +46,7 @@ fix(button): correct color rendering issue on hover
 
 ### 1.2 Pull Requests
 
-Before creating a pull request (PR), ensure your branch is up-to-date with the latest `main` branch to avoid unnecessary conflicts.
+Before creating a pull request (PR), ensure your branch is up-to-date with the latest `dev` branch to avoid unnecessary conflicts.
 
 PR titles should start with the related issue ID (if applicable) and be followed by a short description. Example:
 
@@ -52,9 +62,7 @@ Provide a summary in the PR description explaining:
 
 ### 1.3 Code Review Process
 
-- Always assign at least one reviewer to your PR.
-- Reviewers should leave constructive feedback, asking for clarification if needed and ensuring code quality.
-- All code must pass linting and testing before being merged.
+Moved to Section 1: Pull Request Rules.
 
 ## 2. Branch Naming Conventions
 
@@ -63,7 +71,7 @@ Branch naming conventions are key to maintaining an organized and easily navigab
 ### 2.1 Main Branches
 
 - main: This branch contains the stable, production-ready code. Only fully reviewed and tested code should be merged here.
-- dev: This is the development branch, used for integrating features and bug fixes before merging into `main`.
+- dev: This is the development branch, the subject of your concern, used for integrating features and bug fixes before merging into `main`.
 
 ### 2.2 Feature Branches
 
@@ -80,6 +88,7 @@ Examples:
 ```
 feat/user-authentication
 feat/payment-integration
+feat/api-integration
 ```
 
 ### 2.3 Bugfix Branches
@@ -162,6 +171,13 @@ chore/code-cleanup
 - Merge to `dev`: All feature branches should be merged into `dev` via pull requests. This ensures that new features or bug fixes are tested in an integrated environment before they make it to production.
 - Merge to `main`: Once `dev` has been tested and is stable, a pull request should be created to merge `dev` into `main`.
 
+#### Collaboration Rules
+
+- `dev` is the integration branch. All new features and bug fixes must be merged into `dev` via pull requests.
+- Never push directly to `main`. The `main` branch only receives changes through a PR from `dev` after verification.
+- Only open a pull request to `dev` when the feature/fix is complete and ready for review (avoid WIP merges). Use Draft PRs if you need early feedback.
+- Do not push directly to `dev` either; always use PRs so reviews and checks can run.
+
 ### 3.2 Rebasing (if needed)
 
 If you’re working on a branch for an extended period, periodically rebase your branch onto the latest `dev` to stay up-to-date and avoid conflicts:
@@ -185,5 +201,37 @@ To enforce best practices, you may want to consider using Git hooks like Husky t
 - Frequently commit small, logical chunks of work to avoid large, difficult-to-review changes.
 - Use issues to track bugs, features, and improvements, and link them to corresponding PRs.
 - Avoid force-pushing to shared branches (`main`, `dev`).
+
+## 6. Naming Conventions
+
+### 6.1 File and Directory Names
+
+- Default to kebab-case for files and directories: `user-profile-card.tsx`, `payment-history.sass`.
+- Hooks use PascalCase starting with `use`: `useIsServerSide.tsx`, `useValidateForm.ts`.
+- Utility files exporting a single function may use camelCase matching the function: `formatDate.ts`, `encryptPayload.ts`.
+- Component names should match their file names (PascalCase in code; kebab-case on disk unless it’s a hook file).
+
+### 6.2 Variable, Function, and Type Names
+
+- Variables, functions: camelCase (`userId`, `fetchUserProfile`).
+- React components, classes, types, interfaces, and enums: PascalCase (`UserCard`, `ApiResponse`, `UserRole`).
+- Constants: UPPER_SNAKE_CASE (`MAX_RETRY_COUNT`).
+- Avoid abbreviations; prefer descriptive names. Align variable names with domain terms.
+
+### 6.3 Assets (images, icons, videos)
+
+- Use kebab-case, no spaces: `hero-banner.jpg`, `icon-user.svg`, `landing-illustration.webp`.
+- Include density/variant suffixes where relevant: `logo@2x.png`, `thumbnail-dark.png`.
+- Prefer modern, optimized formats: images `webp`/`svg` when possible; videos per platform guidance.
+- Place assets under appropriate folders in `public/media/` and keep names consistent with usage.
+
+## 7. Project Structure and Assets Policy
+
+- All assets must live under `public/media/`. Do not store assets elsewhere in the repository.
+- Required subfolders under `public/media/`:
+  - `public/media/icons/` – SVGs and icon assets
+  - `public/media/images/` – images and illustrations
+  - `public/media/videos/` – video files (managed by `next-video`)
+- Enforce naming via Section 6.3 and keep paths consistent across imports.
 
 
