@@ -1,20 +1,16 @@
-/**
- * API Configuration for Koajo Backend
- */
-
 export const API_CONFIG = {
   BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.koajo.com',
   VERSION: '/v1',
-  TIMEOUT: 10000, // 10 seconds
+  TIMEOUT: 10000,
 } as const;
 
 export const API_ENDPOINTS = {
-  // Auth endpoints
   AUTH: {
     LOGIN: '/auth/login',
     SIGNUP: '/auth/signup',
     VERIFY_EMAIL: '/auth/verify-email',
     FORGOT_PASSWORD: '/auth/forgot-password',
+    RESEND_FORGOT_PASSWORD: '/auth/forgot-password/resend',
     RESET_PASSWORD: '/auth/reset-password',
     CHANGE_PASSWORD: '/auth/change-password',
     RESEND_EMAIL: '/auth/resend-email',
@@ -24,7 +20,6 @@ export const API_ENDPOINTS = {
       NOTIFICATIONS: '/auth/profile/notifications',
     },
   },
-  // Pods endpoints
   PODS: {
     PLANS: '/pods/plans',
     OPEN: '/pods/open',
@@ -34,19 +29,15 @@ export const API_ENDPOINTS = {
     JOIN: (planCode: string) => `/pods/plans/${planCode}/join`,
     CUSTOM_INVITES_ACCEPT: '/pods/custom/invites/accept',
   },
-  // Payments endpoints
   PAYMENTS: {
     RECORD: '/payments',
   },
-  // Payouts endpoints
   PAYOUTS: {
     RECORD: '/payouts',
   },
-  // Achievements endpoints
   ACHIEVEMENTS: {
     SUMMARY: '/achievements/summary',
   },
-  // Admin endpoints
   ADMIN: {
     LOGIN: '/admin/auth/login',
     USERS: '/admin/users',
