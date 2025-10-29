@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Field } from "@/components/utils";
+import { Button, Field, Modal, ModalProps } from "@/components/utils";
 import { useForm } from "react-hook-form";
 import CardAuth from "@/components/auth/card-auth";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { AuthService } from "@/lib/services/authService";
 
 interface ForgotPasswordFormData {
   email: string;
@@ -24,55 +24,60 @@ export default function ForgotPasswordPage() {
     formState: { errors: formErrors, isSubmitting, isSubmitted },
     watch,
   } = useForm<ForgotPasswordFormData>();
-  const { recoverPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const formData = watch();
+  const [success, setSuccess] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const handleSubmitForm = async (data: ForgotPasswordFormData) => {
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
 
     try {
-      const success = await recoverPassword(data.email);
-
-      if (!success) {
-        // Handle login failure
-        return;
+      const response = await AuthService.forgotPassword({ email: data.email });
+      if (response && "email" in response && "requested" in response) {
+        setSuccess(response.requested === true);
+      } else if (
+        response &&
+        "error" in response &&
+        "message" in response &&
+        response.message.length > 0
+      ) {
+        setSuccess(false);
+        setErrorMessage(
+          response.message.join(", ") ||
+            "Failed to send reset link. Please check your email and try again."
+        );
       }
-
+      setModalVisible(true);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Forgot password error:", error);
+      setSuccess(false);
+      setErrorMessage(
+        "Failed to send reset link. Please check your email and try again."
+      );
+      setIsLoading(false);
+      setModalVisible(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Implement Google OAuth
-    console.log("Google login clicked");
-  };
-
-  if (isSubmitted) 
-    return <SuccessMessage />
-
-
-    return (
+  return (
+    <>
       <CardAuth
         title="Reset Your Password"
         description="Just follow the steps to get back into your Koajo account!"
       >
-        <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Email Field */}
-         <Field
-          label="Email"
-          type="email"
-          placeholder="yourname@gmail.com"
-          required
-          error={formErrors.email?.message}
-          {...register("email", { required: "Email is required" })}
-        />
-
-         
+          <Field
+            label="Email"
+            type="email"
+            placeholder="yourname@gmail.com"
+            required
+            error={formErrors.email?.message}
+            {...register("email", { required: "Email is required" })}
+          />
 
           {/* Continue Button */}
           <Button
@@ -85,17 +90,44 @@ export default function ForgotPasswordPage() {
           />
         </form>
       </CardAuth>
-    );
+
+      {isSubmitted && modalVisible && (
+        <MessageModal
+          visible={modalVisible}
+          onClose={() => {setSuccess(false); setModalVisible(false); setErrorMessage("");}}
+          type={success ? "success" : "error"}
+          title={success ? "Reset link Sent" : "Failed to send reset link"}
+          description={
+            success
+              ? "Please check your email, and click on the link to create your new password"
+              : errorMessage
+          }
+        />
+      )}
+    </>
+  );
 }
 
-const SuccessMessage = () => {
-  return (
-    <CardAuth
-      title="Reset Password Link Sent your email"
-      description="Please check your email, and create your new password"
-      showSuccessIcon={true}
-    >
-      {/* Login Button */}
+const MessageModal = ({
+  visible,
+  onClose,
+  title,
+  description,
+  type = "success",
+}: Pick<ModalProps, "visible" | "onClose"> & {
+  title: string;
+  description: string;
+  type: "success" | "error";
+}) => {
+  const cardAuthChildren = () => (
+    <>
+      <Button
+        text="Resend Link"
+        variant="secondary"
+        className="w-full"
+        showArrow={false}
+        onClick={onClose}
+      />
       <Link href="/auth/login">
         <Button
           text="Login now"
@@ -104,6 +136,19 @@ const SuccessMessage = () => {
           showArrow={false}
         />
       </Link>
-    </CardAuth>
+    </>
+  );
+  return type === "success" ? (
+    <Modal visible={visible} onClose={onClose}>
+      <CardAuth title={title} description={description} showSuccessIcon={true}>
+        {cardAuthChildren()}
+      </CardAuth>
+    </Modal>
+  ) : (
+    <Modal visible={visible} onClose={onClose}>
+      <CardAuth title={title} description={description} showErrorIcon={true}>
+        {cardAuthChildren()}
+      </CardAuth>
+    </Modal>
   );
 };
