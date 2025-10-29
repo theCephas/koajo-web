@@ -1,9 +1,5 @@
-/**
- * Token Management Utilities
- * Handles JWT token storage, retrieval, and validation
- */
 
-import { AuthUtils } from '@/lib/services/authService';
+import { AuthUtils } from '@/lib/utils/auth';
 import type { LoginSuccessResponse } from '@/lib/types/api';
 import CryptoJS from 'crypto-js';
 
@@ -11,19 +7,16 @@ const TOKEN_KEY = 'koajo_auth_token';
 const TOKEN_EXPIRY_KEY = 'koajo_token_expiry';
 const USER_KEY = 'koajo_user_data';
 
-// Encryption key (in production, this should be from an environment variable)
 const ENCRYPTION_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
 
-/**
- * Simple encryption/decryption utilities
- */
+
 const encrypt = (text: string): string => {
   try {
     if (!ENCRYPTION_KEY) throw new Error('Encryption key is not set');
     return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
   } catch (error) {
     console.error('Encryption failed:', error);
-    return text; // Fallback to plain text
+    return text; 
   }
 };
 
@@ -38,9 +31,6 @@ const decrypt = (ciphertext: string): string => {
   }
 };
 
-/**
- * Token Manager Class
- */
 export class TokenManager {
   /**
    * Store authentication token and user data
@@ -50,15 +40,12 @@ export class TokenManager {
     if (typeof window === 'undefined') return;
 
     try {
-      // Store token (encrypted)
       const encryptedToken = encrypt(loginResponse.accessToken);
       localStorage.setItem(TOKEN_KEY, encryptedToken);
       
-      // Store token expiry (encrypted)
       const encryptedExpiry = encrypt(loginResponse.expiresAt);
       localStorage.setItem(TOKEN_EXPIRY_KEY, encryptedExpiry);
       
-      // Store user data (encrypted)
       const encryptedUserData = encrypt(JSON.stringify(loginResponse.user));
       localStorage.setItem(USER_KEY, encryptedUserData);
       
@@ -82,11 +69,9 @@ export class TokenManager {
         return null;
       }
 
-      // Decrypt the data
       const token = decrypt(encryptedToken);
       const expiry = decrypt(encryptedExpiry);
 
-      // Check if token is expired
       if (AuthUtils.isTokenExpired(expiry)) {
         this.clearAuthData();
         return null;
@@ -185,7 +170,7 @@ export class TokenManager {
    * Refresh token (placeholder for future implementation)
    */
   static async refreshToken(): Promise<string | null> {
-    // TODO: Implement token refresh logic when backend supports it
+    // TODO: Implement token refresh logic
     console.warn('Token refresh not implemented yet');
     return null;
   }
