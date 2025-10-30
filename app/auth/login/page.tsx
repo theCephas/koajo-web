@@ -9,7 +9,7 @@ import CardAuth from "@/components/auth/card-auth";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/lib/services/authService";
 import { LoginSuccessResponse } from "@/lib/types/api";
-import { TokenManager } from "@/lib/utils/tokenManager";
+import { TokenManager } from "@/lib/utils/menory-manager";
 
 interface LoginFormData {
   email: string;

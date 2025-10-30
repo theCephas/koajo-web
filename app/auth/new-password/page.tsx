@@ -6,7 +6,7 @@ import { Button, PasswordField } from "@/components/utils";
 import { useForm } from "react-hook-form";
 import CardAuth from "@/components/auth/card-auth";
 import { getPasswordStrength } from "@/lib/utils/form";
-import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "@/lib/constants";
+import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "@/lib/constants/form";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 import { AuthService } from "@/lib/services/authService";
 
