@@ -2,7 +2,8 @@
 
 import { ReactNode, useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TokenManager } from "@/lib/utils/tokenManager";
+import { TokenManager } from "@/lib/utils/menory-manager";
+import { DashboardProvider } from "@/lib/dashboard-provider";
 
 interface AdminLayoutProps {
 	children: ReactNode;
@@ -25,5 +26,5 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 		return null;
 	}
 
-	return <>{children}</>;
+	return <DashboardProvider>{children}</DashboardProvider>;
 }
