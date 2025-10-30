@@ -1,4 +1,4 @@
-import { FORM_FIELDS_PATTERNS } from "../constants";
+import { FORM_FIELDS_PATTERNS } from "../constants/form";
 
 interface PasswordStrength {
   score: number;
