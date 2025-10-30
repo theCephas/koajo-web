@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Button,
@@ -16,6 +16,9 @@ import CardAuth from "@/components/auth/card-auth";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 import { getPhoneNumber } from "@/lib/utils/form";
 import { AuthService } from "@/lib/services/authService";
+import { TokenManager } from "@/lib/utils/menory-manager";
+import { useRouter } from "next/navigation";
+import { REGISTRATION_STAGE, REGISTRATION_STAGE_MAP, RegistrationStage } from "@/lib/constants/dashboard";
 
 interface RegisterFormData {
   email: string;
@@ -34,8 +37,22 @@ export default function RegisterPage() {
   } = useValidateForm("registration");
   const [isLoading, setIsLoading] = useState(false);
   const password = watch("password");
-  const [modalType, setModalType] = useState<"success" | "error">("success");
+  const [registrationStage, setRegistrationStage] = useState<RegistrationStage>(
+    TokenManager.getRegistrationStage() || REGISTRATION_STAGE.NONE
+  );
+  const [modalType, setModalType] = useState<"success" | "error" | "continue">(
+    registrationStage === REGISTRATION_STAGE.NONE ? "success" : "continue"
+  );
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (TokenManager.isRegistered() && registrationStage !== REGISTRATION_STAGE.NONE) {
+      setModalType("continue");
+      setModalVisible(true);
+    }
+  }, [registrationStage]);
+
   const onClose = () => {
     setModalVisible(false);
   };
@@ -48,9 +65,15 @@ export default function RegisterPage() {
         phoneNumber: getPhoneNumber(data.phoneNumber),
         password: data.password,
       });
-      if (response && ("id" in response || "accountId" in response)) {
+      if (
+        response &&
+        ("id" in response || "accountId" in response) &&
+        !("error" in response)
+      ) {
         setModalType("success");
         setModalVisible(true);
+        TokenManager.setUserId(response?.accountId || response?.id);
+        TokenManager.setRegistrationStage(REGISTRATION_STAGE.REGISTERED);
       }
     } catch (error) {
       setModalType("error");
@@ -59,6 +82,9 @@ export default function RegisterPage() {
       setIsLoading(false);
       setTimeout(() => {
         setModalVisible(false);
+        if (modalType === "success") {
+          router.push(REGISTRATION_STAGE_MAP[registrationStage.toUpperCase() as keyof typeof REGISTRATION_STAGE_MAP]);
+        }
       }, 4000);
     }
   };
@@ -183,6 +209,9 @@ export default function RegisterPage() {
       {modalType === "error" && modalVisible && (
         <ErrorModal visible={modalVisible} onClose={onClose} />
       )}
+      {true && (
+        <ContinueModal visible={true} onClose={onClose} registrationStage={registrationStage} />
+      )}
     </>
   );
 }
@@ -195,12 +224,12 @@ const SuccessModal = ({
     <Modal visible={visible} onClose={onClose}>
       <CardAuth
         title="Account Successfully Created"
-        description="Please try again"
-        showErrorIcon={true}
+        description="Let's constinue with your kyc verification"
+        showSuccessIcon={true}
       >
-        <Link href="/auth/login">
+        <Link href="/register/kyc">
           <Button
-            text="Login now"
+            text="Continue"
             variant="primary"
             className="w-full"
             showArrow={false}
@@ -225,6 +254,45 @@ const ErrorModal = ({
         <Button
           text="Try Again"
           variant="primary"
+          className="w-full"
+          showArrow={false}
+          onClick={onClose}
+        />
+      </CardAuth>
+    </Modal>
+  );
+};
+
+const ContinueModal = ({
+  visible,
+  onClose,
+  registrationStage,
+}: Pick<ModalProps, "visible" | "onClose"> & {
+  registrationStage: RegistrationStage;
+}) => {
+  const registrationStageUrl =
+    REGISTRATION_STAGE_MAP[
+      registrationStage.toUpperCase() as keyof typeof REGISTRATION_STAGE_MAP
+    ];
+
+  return (
+    <Modal visible={visible} onClose={onClose}>
+      <CardAuth
+        title="Resume where you left off"
+        description="Click the 'Yes, resume' button below to resume where you left off in your registration process or 'No, I want to create a new account'"
+        showInfoIcon={true}
+      >
+        <Link href={registrationStageUrl}>
+          <Button
+            text="Yes, resume"
+            variant="primary"
+            className="w-full"
+            showArrow={false}
+          />
+        </Link>
+        <Button
+          text="No, I want to create a new account"
+          variant="secondary"
           className="w-full"
           showArrow={false}
           onClick={onClose}
