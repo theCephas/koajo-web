@@ -9,7 +9,7 @@ import {
   type UseFormReturn,
   type DefaultValues,
 } from "react-hook-form";
-import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "../constants";
+import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "../constants/form";
 
 export type FormType = "login" | "registration" | "otp";
 
