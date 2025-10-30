@@ -3,7 +3,7 @@ import {
   getApiUrl,
   getDefaultHeaders,
   getAuthHeaders,
-} from "@/lib/config/api";
+} from "@/lib/constants/api";
 import type {
   LoginRequest,
   LoginResponse,
@@ -59,6 +59,8 @@ async function apiRequest<T>(
     }
 
     const jsonResponse = await response.json();
+
+    console.log("in apiRequest jsonResponse", jsonResponse);
     if (jsonResponse && "error" in jsonResponse && "message" in jsonResponse && "statusCode" in jsonResponse) {
       return jsonResponse as ApiError;
     }
@@ -118,6 +120,7 @@ async function signup(userData: SignupRequest): Promise<SignupResponse | ApiErro
     body: JSON.stringify(userData),
   })
     .then((response) => {
+      console.log("signup response", response);
       return response;
     })
     .catch((error) => {
