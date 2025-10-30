@@ -1,4 +1,4 @@
-import { LoginResponse, LoginSuccessResponse, LoginVerificationRequiredResponse, ApiError } from "../types/api";
+import { LoginResponse, LoginSuccessResponse, LoginVerificationRequiredResponse, ApiError, SignupResponse } from "../types/api";
 
 export class ApiErrorClass implements ApiError {
   public statusCode: number;
@@ -17,6 +17,10 @@ export const AuthUtils = {
    */
   isLoginSuccess(response: LoginResponse): response is LoginSuccessResponse {
     return "accessToken" in response;
+  },
+
+  isRegisterSuccess(response: SignupResponse): response is SignupResponse {
+    return "accountId" in response || "id" in response;
   },
 
   /**
