@@ -1,6 +1,6 @@
 "use client";
 
-import { FORM_FIELDS_PATTERNS } from "@/lib/constants";
+import { FORM_FIELDS_PATTERNS } from "@/lib/constants/form";
 import { getPasswordStrength } from "@/lib/utils/form";
 
 interface PasswordStrengthIndicatorProps {
