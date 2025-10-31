@@ -24,7 +24,7 @@ function ExagonIcon({
         <path
           d="M22.3662 3.3623C24.3056 2.24265 26.6944 2.24269 28.6338 3.3623L42.6201 11.4365C44.5593 12.5563 45.7539 14.6259 45.7539 16.8652V33.0137C45.7539 35.253 44.5593 37.3226 42.6201 38.4424L28.6338 46.5166C26.6944 47.6362 24.3056 47.6362 22.3662 46.5166L8.38086 38.4424C6.44141 37.3226 5.24609 35.2532 5.24609 33.0137V16.8652C5.24609 14.6258 6.44141 12.5563 8.38086 11.4365L22.3662 3.3623Z"
           stroke="white"
-          stroke-width="2.50736"
+          strokeWidth="2.50736"
         />
       </g>
       <defs>
@@ -35,9 +35,9 @@ function ExagonIcon({
           width="50.5367"
           height="54.8641"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -89,8 +89,8 @@ function ExagonIcon({
           y2="46.8788"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0.223549" stop-color={start} />
-          <stop offset="1" stop-color={stop} />
+          <stop offset="0.223549" stopColor={start} />
+          <stop offset="1" stopColor={stop} />
         </linearGradient>
       </defs>
     </svg>
