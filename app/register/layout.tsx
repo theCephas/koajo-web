@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import RegistrationSteps from "@/components/admin/registration-steps";
 import Link from "next/link";
 import Image from "next/image";
-import { StripeProvider } from "@/lib/stripe-provider";
+import { StripeProvider } from "@/lib/provider-stripe";
 
 interface RegisterLayoutProps {
   children: ReactNode;
