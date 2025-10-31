@@ -6,7 +6,6 @@ import { useOnboarding } from "@/lib/provider-onboarding";
 import { Field } from "../utils/field";
 import { POD_GOAL_CATEGORIES_MAP } from "@/lib/constants/pod";
 
-
 export default function PodGoalSetting() {
   const {
     close,
@@ -53,55 +52,55 @@ export default function PodGoalSetting() {
         Choose your financial goal by marking the box clearly.
       </div>
 
-<div className="mb-25">
-      <ul className="flex flex-wrap gap-4 mb-6.5">
-        {Object.values(POD_GOAL_CATEGORIES_MAP).map((value) => {
-          const isActive = selectedGoalCategoryValue === value;
-          return (
-            <li key={value}>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedGoalCategory(value);
-                  setSelectedGoalCategoryValue(value);
-                }}
-                className={`size-fit text-left px-6 py-4 md:p-5 rounded-2xl border transition-colors flex items-center justify-between hover:bg-primary/10 gap-4 ${
-                  isActive ? "border-tertiary-100" : "border-gray-100"
-                }`}
-              >
-                <span className="text-gray-900 text-sm font-medium capitalize">
-                  {value.replace("_", " ")}
-                </span>
-                <span
-                  className={`size-6 rounded-full  bg-white ${
-                    isActive
-                      ? "border-6 border-tertiary-100"
-                      : "border-1 border-gray-100"
+      <div className="mb-25">
+        <ul className="flex flex-wrap gap-4 mb-6.5">
+          {Object.values(POD_GOAL_CATEGORIES_MAP).map((value) => {
+            const isActive = selectedGoalCategoryValue === value;
+            return (
+              <li key={value}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedGoalCategory(value);
+                    setSelectedGoalCategoryValue(value);
+                  }}
+                  className={`size-fit text-left px-6 py-4 md:p-5 rounded-2xl border transition-colors flex items-center justify-between hover:bg-primary/10 gap-4 ${
+                    isActive ? "border-tertiary-100" : "border-gray-100"
                   }`}
-                  aria-hidden
-                />
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                >
+                  <span className="text-gray-900 text-sm font-medium capitalize">
+                    {value.replace("_", " ")}
+                  </span>
+                  <span
+                    className={`size-6 rounded-full  bg-white ${
+                      isActive
+                        ? "border-6 border-tertiary-100"
+                        : "border-1 border-gray-100"
+                    }`}
+                    aria-hidden
+                  />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
 
-      {selectedGoalCategory === "other" && (
-        <Field
-          name="customGoal"
-          label="Input Your Financial Goal"
-          placeholder="e.g. Marriage"
-          labelClassName="!text-sm !text-gray-900 !font-medium"
-          value={customGoal}
-          onChange={(e) => {
-            setCustomGoal(e.target.value);
-            setSelectedGoalCategoryValue(e.target.value);
-          }}
-          disabled={selectedGoalCategory !== "other"}
-          required
-        />
-      )}
-</div>
+        {selectedGoalCategory === "other" && (
+          <Field
+            name="customGoal"
+            label="Input Your Financial Goal"
+            placeholder="e.g. Marriage"
+            labelClassName="!text-sm !text-gray-900 !font-medium"
+            value={customGoal}
+            onChange={(e) => {
+              setCustomGoal(e.target.value);
+              setSelectedGoalCategoryValue(e.target.value);
+            }}
+            disabled={selectedGoalCategory !== "other"}
+            required
+          />
+        )}
+      </div>
       <div className="flex items-center justify-end">
         <Button
           disabled={!canProceed}

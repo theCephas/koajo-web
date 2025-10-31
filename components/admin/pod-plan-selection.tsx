@@ -51,7 +51,7 @@ export default function PodSelection() {
 
         {/* Title */}
         <div className="text-center text-2xl font-bold text-gray-900 mb-2">
-          Choose Pod
+          Choose Pod Plan
         </div>
 
         {/* Skip for now Button */}
