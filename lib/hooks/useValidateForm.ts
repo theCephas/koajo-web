@@ -11,7 +11,7 @@ import {
 } from "react-hook-form";
 import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "../constants/form";
 
-export type FormType = "login" | "registration" | "otp";
+export type FormType = "login" | "registration" | "otp" | "pod";
 
 export interface LoginFormValues {
   email: string;
@@ -31,10 +31,21 @@ export interface OtpFormValues {
   otp: string;
 }
 
+// Pod Details form (Onboarding)
+export interface PodFormValues {
+  podName: string;
+  amount: string; // currency string like "$9,000"
+  schedule: "bi_weekly" | "monthly";
+  members: string; // keep as string for input; validate as number
+  cycleWeeks: "12" | "24"; // select returns string; coerce upstream as needed
+  inviteEmail?: string;
+}
+
 export type FormValuesMap = {
   login: LoginFormValues;
   registration: RegistrationFormValues;
   otp: OtpFormValues;
+  pod: PodFormValues;
 };
 
 const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
@@ -52,6 +63,14 @@ const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
   },
   otp: {
     otp: "",
+  },
+  pod: {
+    podName: "",
+    amount: "",
+    schedule: "bi_weekly",
+    members: "",
+    cycleWeeks: "12",
+    inviteEmail: "",
   },
 };
 
@@ -155,6 +174,55 @@ function getRules<T extends FieldValues>(
             value: FORM_FIELDS_PATTERNS.OTP.PATTERN,
             message: FORM_FIELDS_MESSAGES.OTP.PATTERN,
           },
+        } as RegisterOptions<T, Path<T>>;
+      default:
+        return undefined;
+    }
+  }
+
+  if (formType === "pod") {
+    switch (name) {
+      case "podName":
+        return {
+          required: "Pod name is required",
+          minLength: { value: 3, message: "Pod name must be at least 3 characters" },
+          maxLength: { value: 60, message: "Pod name must be at most 60 characters" },
+        } as RegisterOptions<T, Path<T>>;
+      case "amount":
+        return {
+          required: "Amount is required",
+          pattern: {
+            // allows optional $, commas, and digits
+            value: /^\$?\d{1,3}(,\d{3})*(\.\d{1,2})?$|^\$?\d+(\.\d{1,2})?$/,
+            message: "Enter a valid amount",
+          },
+        } as RegisterOptions<T, Path<T>>;
+      case "schedule":
+        return {
+          required: "Please select a schedule",
+          validate: (v: unknown) =>
+            v === "bi_weekly" || v === "monthly" || "Invalid schedule",
+        } as RegisterOptions<T, Path<T>>;
+      case "members":
+        return {
+          required: "Number of members is required",
+          pattern: { value: /^\d+$/, message: "Members must be a number" },
+          validate: (val: unknown) => {
+            const n = Number(val);
+            if (Number.isNaN(n)) return "Members must be a number";
+            if (n < 2) return "Minimum of 2 members";
+            if (n > 1000) return "Maximum of 1000 members";
+            return true;
+          },
+        } as RegisterOptions<T, Path<T>>;
+      case "cycleWeeks":
+        return {
+          required: "Select your Pod Cycle",
+          validate: (v: unknown) => (v === "12" || v === "24") || "Invalid cycle",
+        } as RegisterOptions<T, Path<T>>;
+      case "inviteEmail":
+        return {
+          pattern: { value: FORM_FIELDS_PATTERNS.EMAIL, message: FORM_FIELDS_MESSAGES.EMAIL.PATTERN },
         } as RegisterOptions<T, Path<T>>;
       default:
         return undefined;
