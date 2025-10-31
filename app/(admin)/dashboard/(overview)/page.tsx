@@ -22,7 +22,9 @@ import { incomeAnalysis } from "@/mocks/incomeAnalysis";
 import { expenseAnalysis } from "@/mocks/expenseAnalysis";
 
 const Dashboard = () => {
+
   return (
+      <>
     <Layout
       title="Welcome back, Rainer Yaeger 👏🏻"
       breadcrumbs={breadcrumbs}
@@ -50,6 +52,7 @@ const Dashboard = () => {
         </div>
       </div>
     </Layout>
+    </>
   );
 };
 
