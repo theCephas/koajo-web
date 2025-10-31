@@ -261,7 +261,7 @@ export interface AchievementsSummary {
 
 export interface ApiError { 
   error: string;
-  message: string[];
+  message: string | string[];
   statusCode: number;
 }
 
@@ -285,6 +285,28 @@ export interface PaginatedResponse<T> {
   offset: number;
 }
 
+// ===== POD ACTIVITY TYPES =====
+
+export interface PodActivityActor {
+  accountId?: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
+export interface PodActivityItem {
+  id: string;
+  type: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  actor: PodActivityActor | null;
+}
+
+export interface PodActivitiesResponse {
+  total: number;
+  items: PodActivityItem[];
+}
+
 // ===== USER TYPES =====
 
 export interface User {
@@ -301,4 +323,66 @@ export interface User {
   lastLoginAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  emailNotificationsEnabled?: boolean;
+  transactionNotificationsEnabled?: boolean;
+  identityVerification?: {
+    id?: string;
+    identityId?: string | null;
+    sessionId?: string | null;
+    resultId?: string | null;
+    status?: string | null;
+    type?: string | null;
+    completedAt?: string | null;
+    recordedAt?: string | null;
+  };
+  customer?: {
+    id?: string;
+    ssnLast4?: string | null;
+    address?: unknown;
+  };
+  bankAccount?: {
+    id?: string;
+    customerId?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+export interface RawUserProfileResponse {
+  id: string;
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  email_verified: boolean;
+  agreed_to_terms: boolean;
+  date_of_birth?: string | null;
+  avatar_id?: string | null;
+  is_active: boolean;
+  emailNotificationsEnabled?: boolean;
+  transactionNotificationsEnabled?: boolean;
+  last_login_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  identity_verification?: {
+    id?: string;
+    identity_id?: string | null;
+    session_id?: string | null;
+    result_id?: string | null;
+    status?: string | null;
+    type?: string | null;
+    completed_at?: string | null;
+    recorded_at?: string | null;
+  };
+  customer?: {
+    id?: string;
+    ssn_last4?: string | null;
+    address?: unknown;
+  };
+  bank_account?: {
+    id?: string;
+    customer_id?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  };
 }

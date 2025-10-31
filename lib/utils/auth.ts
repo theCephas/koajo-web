@@ -3,9 +3,9 @@ import { LoginResponse, LoginSuccessResponse, LoginVerificationRequiredResponse,
 export class ApiErrorClass implements ApiError {
   public statusCode: number;
   public error: string;
-  public message: string[];
+  public message: string | string[];
 
-  constructor(statusCode: number, error: string, message: string[]) {
+  constructor(statusCode: number, error: string, message: string | string[]) {
     this.error = error;
     this.message = message;
     this.statusCode = statusCode;

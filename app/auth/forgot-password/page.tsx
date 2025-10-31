@@ -8,6 +8,24 @@ import CardAuth from "@/components/auth/card-auth";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/lib/services/authService";
 
+const resolveApiMessage = (
+  message: string | string[] | undefined,
+  fallback: string
+): string => {
+  if (Array.isArray(message)) {
+    const first = message.find(
+      (value) => typeof value === "string" && value.trim().length > 0
+    );
+    return first ? first.trim() : fallback;
+  }
+
+  if (typeof message === "string" && message.trim().length > 0) {
+    return message.trim();
+  }
+
+  return fallback;
+};
+
 interface ForgotPasswordFormData {
   email: string;
 }
@@ -36,16 +54,13 @@ export default function ForgotPasswordPage() {
       const response = await AuthService.forgotPassword({ email: data.email });
       if (response && "email" in response && "requested" in response) {
         setSuccess(response.requested === true);
-      } else if (
-        response &&
-        "error" in response &&
-        "message" in response &&
-        response.message.length > 0
-      ) {
+      } else if (response && "error" in response && "message" in response) {
         setSuccess(false);
         setErrorMessage(
-          response.message.join(", ") ||
+          resolveApiMessage(
+            response.message,
             "Failed to send reset link. Please check your email and try again."
+          )
         );
       }
       setModalVisible(true);

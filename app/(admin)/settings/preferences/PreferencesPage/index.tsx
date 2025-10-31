@@ -1,140 +1,251 @@
 "use client";
-import { useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import cn from "clsx";
 import styles from "./PreferencesPage.module.sass";
 import Layout from "@/components2/usefull/Layout";
 import Settings from "@/components2/Settings";
-import Select from "@/components2/usefull/Select";
 import Toggle from "@/components2/Toggle";
+import { AuthService } from "@/lib/services/authService";
+import { TokenManager } from "@/lib/utils/menory-manager";
+import { ApiError } from "@/lib/types/api";
+import { ApiErrorClass } from "@/lib/utils/auth";
 
 const breadcrumbs = [
-    {
-        title: "Settings",
-        url: "/settings",
-    },
-    {
-        title: "Preferences",
-    },
+  {
+    title: "Settings",
+    url: "/settings",
+  },
+  {
+    title: "Preferences",
+  },
 ];
 
-const languages = [
-    {
-        title: "English ( Australia )",
-        value: "English",
-    },
-    {
-        title: "German",
-        value: "german",
-    },
-    {
-        title: "French",
-        value: "french",
-    },
-];
+type StatusState = {
+  type: "success" | "error";
+  message: string;
+} | null;
 
-const colors = [
-    {
-        title: "Dark blue ( 1C2634 )",
-        value: "1C2634",
-        color: "#1C2634",
-    },
-    {
-        title: "Blue ( 4D81E7 )",
-        value: "4D81E7",
-        color: "#4D81E7",
-    },
-    {
-        title: "Green ( 82AD0C )",
-        value: "82AD0C",
-        color: "#82AD0C",
-    },
-];
+type StoredPreferences = {
+  emailNotificationsEnabled: boolean;
+  transactionNotificationsEnabled: boolean;
+};
 
+const resolveApiMessage = (
+  message: string | string[] | undefined,
+  fallback: string
+): string => {
+  if (Array.isArray(message)) {
+    const first = message.find(
+      (value) => typeof value === "string" && value.trim().length > 0
+    );
+    return first ? first.trim() : fallback;
+  }
+
+  if (typeof message === "string" && message.trim().length > 0) {
+    return message.trim();
+  }
+
+  return fallback;
+};
+
+const getStoredPreferences = (): StoredPreferences => {
+  const stored = TokenManager.getUserData();
+  const legacyPreferences = (stored as {
+    notificationPreferences?: {
+      emailNotificationsEnabled?: boolean;
+      transactionNotificationsEnabled?: boolean;
+    };
+  } | null)?.notificationPreferences;
+
+  const emailEnabled =
+    typeof stored?.emailNotificationsEnabled === "boolean"
+      ? stored.emailNotificationsEnabled
+      : legacyPreferences?.emailNotificationsEnabled;
+
+  const transactionEnabled =
+    typeof stored?.transactionNotificationsEnabled === "boolean"
+      ? stored.transactionNotificationsEnabled
+      : legacyPreferences?.transactionNotificationsEnabled;
+
+  return {
+    emailNotificationsEnabled:
+      typeof emailEnabled === "boolean" ? emailEnabled : true,
+    transactionNotificationsEnabled:
+      typeof transactionEnabled === "boolean" ? transactionEnabled : true,
+  };
+};
 
 const PreferencesPage = () => {
-    const [language, setLanguage] = useState<string>(languages[0].value);
-    const [color, setColor] = useState<string>(colors[0].value);
-    const [updateSystems, setUpdateSystems] = useState<boolean>(false);
-    const [transactions, setTransactions] = useState<boolean>(true);
-    const [emailNotification, setEmailNotification] = useState<boolean>(true);
+  const [initialPreferences, setInitialPreferences] =
+    useState<StoredPreferences>(getStoredPreferences);
+  const [transactions, setTransactions] = useState<boolean>(
+    initialPreferences.transactionNotificationsEnabled
+  );
+  const [emailNotification, setEmailNotification] = useState<boolean>(
+    initialPreferences.emailNotificationsEnabled
+  );
+  const [status, setStatus] = useState<StatusState>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const handleChangeLanguage = (value: string) => setLanguage(value);
-    const handleChangeColor = (value: string) => setColor(value);
+  const notifications = useMemo(
+    () => [
+      {
+        title: "Transactions",
+        content: "tell me about the information after making the transaction",
+        value: transactions,
+        onToggle: () => {
+          setStatus(null);
+          setTransactions((prev) => !prev);
+        },
+      },
+      {
+        title: "Email Notification",
+        content: "notify me of all notifications via email",
+        value: emailNotification,
+        onToggle: () => {
+          setStatus(null);
+          setEmailNotification((prev) => !prev);
+        },
+      },
+    ],
+    [emailNotification, transactions]
+  );
 
-    const notifications = [
-        {
-            title: "Update Systems",
-            content: "let me know if there is a new product update",
-            value: updateSystems,
-            setValue: setUpdateSystems,
-        },
-        {
-            title: "Transactions",
-            content:
-                "tell me about the information after making the transaction",
-            value: transactions,
-            setValue: setTransactions,
-        },
-        {
-            title: "Email Notification",
-            content: "notify me of all notifications via email",
-            value: emailNotification,
-            setValue: setEmailNotification,
-        },
-    ];
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    return (
-        <Layout title="Settings" breadcrumbs={breadcrumbs}>
-            <Settings title="Preferences" tooltip="Small description">
-                <Select
-                    className={styles.select}
-                    label="Language"
-                    value={language}
-                    onChange={handleChangeLanguage}
-                    options={languages}
-                />
-                <Select
-                    className={styles.select}
-                    label="Color themes"
-                    value={color}
-                    onChange={handleChangeColor}
-                    options={colors}
-                />
-                <div className={styles.notifications}>
-                    <div className={styles.label}>Notification</div>
-                    <div className={styles.list}>
-                        {notifications.map((notification, index) => (
-                            <div className={styles.notification} key={index}>
-                                <div className={styles.box}>
-                                    <div className={styles.title}>
-                                        {notification.title}
-                                    </div>
-                                    <div className={styles.content}>
-                                        {notification.content}
-                                    </div>
-                                </div>
-                                <Toggle
-                                    className={styles.toggle}
-                                    value={notification.value}
-                                    onChange={() =>
-                                        notification.setValue(
-                                            !notification.value
-                                        )
-                                    }
-                                />
-                            </div>
-                        ))}
-                    </div>
+    if (isSubmitting) {
+      return;
+    }
+
+    setStatus(null);
+
+    const token = TokenManager.getToken();
+
+    if (!token) {
+      setStatus({
+        type: "error",
+        message: "You need to be logged in to update preferences.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await AuthService.updateNotificationPreferences(
+        {
+          emailNotificationsEnabled: emailNotification,
+          transactionNotificationsEnabled: transactions,
+        },
+        token
+      );
+
+      if (response && "error" in response) {
+        const apiResponse = response as ApiError;
+        setStatus({
+          type: "error",
+          message: resolveApiMessage(
+            apiResponse.message,
+            "Unable to update preferences. Please try again."
+          ),
+        });
+        return;
+      }
+
+      setTransactions(response.transactionNotificationsEnabled);
+      setEmailNotification(response.emailNotificationsEnabled);
+      setInitialPreferences({
+        emailNotificationsEnabled: response.emailNotificationsEnabled,
+        transactionNotificationsEnabled:
+          response.transactionNotificationsEnabled,
+      });
+      TokenManager.updateUserData({
+        emailNotificationsEnabled: response.emailNotificationsEnabled,
+        transactionNotificationsEnabled:
+          response.transactionNotificationsEnabled,
+      });
+      setStatus({
+        type: "success",
+        message: "Preferences updated successfully.",
+      });
+    } catch (error) {
+      const fallback = "Unable to update preferences right now. Please try again.";
+      const message =
+        error instanceof ApiErrorClass
+          ? resolveApiMessage(error.message, fallback)
+          : error instanceof Error
+          ? error.message
+          : fallback;
+
+      setStatus({
+        type: "error",
+        message,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReset = () => {
+    setTransactions(initialPreferences.transactionNotificationsEnabled);
+    setEmailNotification(initialPreferences.emailNotificationsEnabled);
+    setStatus(null);
+  };
+
+  return (
+    <Layout title="Settings" breadcrumbs={breadcrumbs}>
+      <Settings title="Preferences" tooltip="Update preferences">
+        <form onSubmit={handleSubmit}>
+          <div className={styles.notifications}>
+            <div className={styles.label}>Notification</div>
+            <div className={styles.list}>
+              {notifications.map((notification, index) => (
+                <div className={styles.notification} key={index}>
+                  <div className={styles.box}>
+                    <div className={styles.title}>{notification.title}</div>
+                    <div className={styles.content}>{notification.content}</div>
+                  </div>
+                  <Toggle
+                    className={styles.toggle}
+                    value={notification.value}
+                    onChange={notification.onToggle}
+                  />
                 </div>
-                <div className={styles.btns}>
-                    <button className={cn("button-stroke", styles.button)}>
-                        Cancel
-                    </button>
-                    <button className={cn("button", styles.button)}>Yes</button>
-                </div>
-            </Settings>
-        </Layout>
-    );
+              ))}
+            </div>
+          </div>
+          {status && (
+            <div
+              className={cn(styles.status, {
+                [styles.statusSuccess]: status.type === "success",
+                [styles.statusError]: status.type === "error",
+              })}
+            >
+              {status.message}
+            </div>
+          )}
+          <div className={styles.btns}>
+            <button
+              type="button"
+              className={cn("button-stroke", styles.button)}
+              onClick={handleReset}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={cn("button", styles.button)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </Settings>
+    </Layout>
+  );
 };
 
 export default PreferencesPage;

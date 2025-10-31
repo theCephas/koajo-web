@@ -11,95 +11,102 @@ import FlashIcon from "@/public/media/icons/flash.svg";
 import KeyIcon from "@/public/media/icons/key.svg";
 import PieIcon from "@/public/media/icons/pie.svg";
 import ExagonIcon from "@/public/media/icons/exagon";
+import type { AchievementsSummary } from "@/lib/types/api";
 
-const achievements = [
-  {
-    id: 1,
-    title: "The Vault Master",
-    Icon: <StarIcon />,
-    gradientColors: { start: "#29C746", stop: "#1D912E" },
-    type: "recent",
-    progress: null,
-  },
-  {
-    id: 2,
-    title: "The Flash",
-    Icon: <FlashIcon />,
-    gradientColors: { start: "#3E86E4", stop: "#1A61BE" },
-    type: "recent",
-    progress: null,
-  },
-  {
-    id: 3,
-    title: "The Visionary",
-    Icon: <GrowthIcon />,
-    gradientColors: { start: "#F0933D", stop: "#E46B1B" },
-    type: "recent",
-    progress: null,
-  },
-  {
-    id: 4,
-    title: "The Safety Net Hero",
-    Icon: <KeyIcon />,
-    gradientColors: { start: "#29C746", stop: "#1D912E" },
-    type: "upcoming",
-    progress: { current: 1, target: 5 },
-  },
-  {
-    id: 5,
-    title: "Investment Milestone",
-    Icon: <PieIcon />,
-    gradientColors: { start: "#BC29C7", stop: "#891D91" },
-    type: "upcoming",
-    progress: { current: 6, target: 8 },
-  },
-  {
-    id: 6,
-    title: "The Budget Guru",
-    Icon: <MoneyIcon />,
-    gradientColors: { start: "#29C7BF", stop: "#1D918B" },
-    type: "upcoming",
-    progress: { current: 12, target: 15 },
-  },
-  {
-    id: 7,
-    title: "The Freedom Fighter",
-    Icon: <MuscleIcon />,
-    gradientColors: { start: "#555555", stop: "#363636" },
-    type: "upcoming",
-    progress: { current: 9, target: 10 },
-  },
-  {
-    id: 8,
-    title: "The Savings Champion",
-    Icon: <StarIcon />,
-    gradientColors: { start: "#3E86E4", stop: "#1A61BE" },
-    type: "upcoming",
-    progress: { current: 3, target: 7 },
-  },
-  {
-    id: 9,
-    title: "The Debt Destroyer",
-    Icon: <MoneyIcon />,
-    gradientColors: { start: "#3E86E4", stop: "#1A61BE" },
-    type: "upcoming",
-    progress: { current: 0, target: 4 },
-  },
-];
+type AchievementItem = {
+  id: string | number;
+  title: string;
+  Icon: React.ReactNode;
+  gradientColors: { start: string; stop: string };
+  type: "recent" | "upcoming";
+  progress: { current: number; target: number } | null;
+  description?: string;
+};
 
 type AchievementsProps = {
   className?: string;
+  summary?: AchievementsSummary | null;
+  loading?: boolean;
+  error?: string | null;
 };
 
-const Achievements = ({ className }: AchievementsProps) => {
+const iconPalette = [
+  <StarIcon key="icon-star" />,
+  <FlashIcon key="icon-flash" />,
+  <GrowthIcon key="icon-growth" />,
+  <KeyIcon key="icon-key" />,
+  <PieIcon key="icon-pie" />,
+  <MoneyIcon key="icon-money" />,
+  <MuscleIcon key="icon-muscle" />,
+];
+
+const gradientPalette = [
+  { start: "#29C746", stop: "#1D912E" },
+  { start: "#3E86E4", stop: "#1A61BE" },
+  { start: "#F0933D", stop: "#E46B1B" },
+  { start: "#BC29C7", stop: "#891D91" },
+  { start: "#29C7BF", stop: "#1D918B" },
+  { start: "#555555", stop: "#363636" },
+];
+
+const buildAchievementsFromSummary = (
+  summary: AchievementsSummary
+): AchievementItem[] => {
+  const earned = summary.earned.map((item, index) => ({
+    id: `earned-${item.code}-${index}`,
+    title: item.name,
+    Icon: iconPalette[index % iconPalette.length],
+    gradientColors: gradientPalette[index % gradientPalette.length],
+    type: "recent" as const,
+    progress: null,
+    description: item.description,
+  }));
+
+  const pending = summary.pending.map((item, index) => {
+    const paletteIndex = (earned.length + index) % gradientPalette.length;
+    const current = item.progress ?? 0;
+    const total = Math.max(current + (item.remaining ?? 0), 1);
+
+    return {
+      id: `pending-${item.code}-${index}`,
+      title: item.name,
+      Icon: iconPalette[(earned.length + index) % iconPalette.length],
+      gradientColors: gradientPalette[paletteIndex],
+      type: "upcoming" as const,
+      progress: {
+        current,
+        target: total,
+      },
+      description: item.description,
+    };
+  });
+
+  return [...earned, ...pending];
+};
+
+const Achievements = ({
+  className,
+  summary,
+  loading,
+  error,
+}: AchievementsProps) => {
   const [modalVisible, setModalVisible] = useState(false);
+
+  const achievements = summary ? buildAchievementsFromSummary(summary) : [];
 
   const recentAchievements = achievements.filter((a) => a.type === "recent");
   const upcomingAchievements = achievements.filter(
     (a) => a.type === "upcoming"
   );
-  const totalCollected = recentAchievements.length;
-  const totalAchievements = achievements.length;
+  const totalCollected =
+    (summary?.totalEarned ?? recentAchievements.length) || 0;
+  const totalAchievements =
+    (summary?.totalAvailable ?? achievements.length) || 0;
+
+  const bodyHasContent =
+    !loading &&
+    !error &&
+    (recentAchievements.length > 0 || upcomingAchievements.length > 0);
 
   return (
     <>
@@ -107,40 +114,70 @@ const Achievements = ({ className }: AchievementsProps) => {
         title="Achievement"
         tooltip="Track your financial achievements and progress"
         right={
-          <div className="text-sm text-gray-500">
-            Collected {totalCollected}/{totalAchievements}
+          <div className="flex items-center gap-3 text-sm text-gray-500">
+            <span>
+              Collected {totalCollected}/{totalAchievements}
+            </span>
+            {bodyHasContent && (
+              <button
+                type="button"
+                className="text-tertiary-100 hover:text-tertiary-100/80 transition-colors"
+                onClick={() => setModalVisible(true)}
+              >
+                View all
+              </button>
+            )}
           </div>
         }
         className={className}
       >
         <div className="space-y-8 mt-8">
-          {/* Recently earned section */}
-          <div>
-            <h4 className="text-xs font-medium text-gray-400 mb-4">
-              Recently earned
-            </h4>
-            <div className="flex gap-4 justify-between w-full">
-              {recentAchievements.map((achievement) => (
-                <RecentAchievement
-                  key={achievement.id}
-                  achievement={achievement}
-                />
-              ))}
-            </div>
-          </div>
+          {loading && (
+            <div className="text-sm text-gray-500">Loading achievements…</div>
+          )}
 
-          {/* Up next section */}
-          <div>
-            <h4 className="text-xs font-medium text-gray-400 mb-4">Up next</h4>
-            <div className="grid grid-cols-2 gap-4 justify-between w-full">
-              {upcomingAchievements.slice(0, 4).map((achievement) => (
-                <UpcomingAchievement
-                  key={achievement.id}
-                  achievement={achievement}
-                />
-              ))}
+          {error && !loading && (
+            <div className="text-sm text-red-500">{error}</div>
+          )}
+
+          {!loading &&
+            !error &&
+            recentAchievements.length === 0 &&
+            upcomingAchievements.length === 0 && (
+              <div className="text-sm text-gray-500">No achievements yet.</div>
+            )}
+
+          {!loading && !error && recentAchievements.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-gray-400 mb-4">
+                Recently earned
+              </h4>
+              <div className="flex gap-4 justify-between w-full">
+                {recentAchievements.map((achievement) => (
+                  <RecentAchievement
+                    key={achievement.id}
+                    achievement={achievement}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {!loading && !error && upcomingAchievements.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-gray-400 mb-4">
+                Up next
+              </h4>
+              <div className="grid grid-cols-2 gap-4 justify-between w-full">
+                {upcomingAchievements.slice(0, 4).map((achievement) => (
+                  <UpcomingAchievement
+                    key={achievement.id}
+                    achievement={achievement}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -162,37 +199,45 @@ const Achievements = ({ className }: AchievementsProps) => {
             </button>
           </div>
 
-          <div className="space-y-8">
-            {/* Recently earned in modal */}
-            <div>
-              <h4 className="text-xs font-medium text-gray-400 mb-4">
-                Recently earned
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-between w-full">
-                {recentAchievements.map((achievement) => (
-                  <RecentAchievement
-                    key={achievement.id}
-                    achievement={achievement}
-                  />
-                ))}
-              </div>
-            </div>
+          {loading && (
+            <div className="text-sm text-gray-500">Loading achievements…</div>
+          )}
 
-            {/* Up next in modal */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-4">
-                Up next
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                {upcomingAchievements.map((achievement) => (
-                  <UpcomingAchievement
-                    key={achievement.id}
-                    achievement={achievement}
-                  />
-                ))}
+          {error && !loading && (
+            <div className="text-sm text-red-500">{error}</div>
+          )}
+
+          {!loading && !error && (
+            <div className="space-y-8">
+              <div>
+                <h4 className="text-xs font-medium text-gray-400 mb-4">
+                  Recently earned
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-between w-full">
+                  {recentAchievements.map((achievement) => (
+                    <RecentAchievement
+                      key={achievement.id}
+                      achievement={achievement}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-4">
+                  Up next
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {upcomingAchievements.map((achievement) => (
+                    <UpcomingAchievement
+                      key={achievement.id}
+                      achievement={achievement}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </Modal>
     </>
@@ -209,7 +254,12 @@ const Badge = ({
   size?: "sm" | "lg";
 }) => {
   return (
-    <div className={cn("flex flex-col justify-center items-center relative", size === "sm" ? "w-10 h-11" : "w-16 h-18")}>
+    <div
+      className={cn(
+        "flex flex-col justify-center items-center relative",
+        size === "sm" ? "w-10 h-11" : "w-16 h-18"
+      )}
+    >
       <ExagonIcon
         className="size-full absolute z-0 top-0 left-0"
         gradientColors={gradientColors}
@@ -220,20 +270,16 @@ const Badge = ({
 };
 
 interface AchievementProps {
-  achievement: {
-    id: number;
-    title: string;
-    Icon: React.ReactNode;
-    gradientColors: { start: string; stop: string };
-    type: string;
-    progress: { current: number; target: number } | null;
-  };
+  achievement: AchievementItem;
 }
 
 const RecentAchievement = ({ achievement }: AchievementProps) => {
   return (
     <div className="flex flex-col items-center gap-2">
-      <Badge Icon={achievement.Icon} gradientColors={achievement.gradientColors} />
+      <Badge
+        Icon={achievement.Icon}
+        gradientColors={achievement.gradientColors}
+      />
       <span className="text-xs text-gray-900 text-center font-semibold">
         {achievement.title}
       </span>
@@ -249,7 +295,11 @@ const UpcomingAchievement = ({ achievement }: AchievementProps) => {
 
   return (
     <div className="flex gap-2">
-      <Badge Icon={achievement.Icon} gradientColors={achievement.gradientColors} size="sm"/>
+      <Badge
+        Icon={achievement.Icon}
+        gradientColors={achievement.gradientColors}
+        size="sm"
+      />
       <div className="flex-1 flex flex-col gap-1">
         {/* Title */}
         <span className="text-sm font-semibold text-gray-700">
