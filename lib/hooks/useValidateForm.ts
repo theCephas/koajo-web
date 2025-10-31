@@ -31,13 +31,13 @@ export interface OtpFormValues {
   otp: string;
 }
 
-// Pod Details form (Onboarding)
+// Pod Details ()
 export interface PodFormValues {
   podName: string;
-  amount: string; // currency string like "$9,000"
+  amount: string; 
   schedule: "bi_weekly" | "monthly";
-  members: string; // keep as string for input; validate as number
-  cycleWeeks: "12" | "24"; // select returns string; coerce upstream as needed
+  members: string; 
+  cycleWeeks: "12" | "24"; 
   inviteEmail?: string;
 }
 
@@ -192,7 +192,7 @@ function getRules<T extends FieldValues>(
         return {
           required: "Amount is required",
           pattern: {
-            // allows optional $, commas, and digits
+            // allows optional $, commas, and digit
             value: /^\$?\d{1,3}(,\d{3})*(\.\d{1,2})?$|^\$?\d+(\.\d{1,2})?$/,
             message: "Enter a valid amount",
           },
