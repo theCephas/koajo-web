@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
-import { PodOnboardingStep, PodDurationWeeks, PodPlanCode, PodGoalCategory } from "./types/pod";
+import { PodOnboardingStep, PodDurationWeeks, PodPlanCode, PodSchedule, MaximumMembers } from "./types/pod";
 import { POD_GOAL_CATEGORIES_MAP } from "./constants/pod";
 
 interface OnboardingContextValue {
@@ -23,6 +23,21 @@ interface OnboardingContextValue {
   setSelectedCycleWeeks: (weeks: PodDurationWeeks) => void;
   selectedGoalCategoryValue: string;
   setSelectedGoalCategoryValue: (value: string) => void;
+
+  // form (Pod Details)
+  
+  podName: string;
+  setPodName: (name: string) => void;
+  contributionAmountCents: number;
+  setContributionAmountCents: (amount: number) => void;
+  schedule: PodSchedule;
+  setSchedule: (s: PodSchedule) => void;
+  maxMembers: MaximumMembers;
+  setMaxMembers: (n: MaximumMembers) => void;
+  invitedEmails: string[];
+  setInvitedEmails: (emails: string[]) => void;
+  randomPosition: boolean;
+  setRandomPosition: (value: boolean) => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextValue | undefined>(
@@ -50,7 +65,13 @@ export function OnboardingProvider({
   const [selectedPlanCode, setSelectedPlanCode] = useState<PodPlanCode>("pod_100");
   const [selectedCycleWeeks, setSelectedCycleWeeks] = useState<PodDurationWeeks>(12);
   const [selectedGoalCategoryValue, setSelectedGoalCategoryValue] = useState<string>(POD_GOAL_CATEGORIES_MAP.MORTGAGE);
-
+  // pod form state
+  const [podName, setPodName] = useState<string>("");
+  const [contributionAmountCents, setContributionAmountCents] = useState<number>(0);
+  const [schedule, setSchedule] = useState<PodSchedule>("bi_weekly");
+  const [maxMembers, setMaxMembers] = useState<MaximumMembers>(6);
+  const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
+  const [randomPosition, setRandomPosition] = useState<boolean>(false);
  
 
   const next = () => {
@@ -101,8 +122,20 @@ export function OnboardingProvider({
       setSelectedCycleWeeks,
       selectedGoalCategoryValue,
       setSelectedGoalCategoryValue,
+      podName,
+      setPodName,
+      contributionAmountCents,
+      setContributionAmountCents,
+      schedule,
+      setSchedule,
+      maxMembers,
+      setMaxMembers,
+      invitedEmails,
+      setInvitedEmails,
+      randomPosition,
+      setRandomPosition,
     }),
-    [visible, step, selectedPlanCode, selectedCycleWeeks, selectedGoalCategoryValue]
+    [visible, step, selectedPlanCode, selectedCycleWeeks, selectedGoalCategoryValue, podName, contributionAmountCents, schedule, maxMembers, invitedEmails, randomPosition]
   );
 
   return (
