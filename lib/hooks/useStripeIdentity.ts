@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useStripe } from "../stripe-provider";
+import { useStripe } from "../provider-stripe";
 import { StripeError, VerificationSessionResult } from "@stripe/stripe-js";
 
 export function useStripeIdentity() {

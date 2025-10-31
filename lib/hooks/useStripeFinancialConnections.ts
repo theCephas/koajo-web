@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useStripe } from '../stripe-provider';
+import { useStripe } from '../provider-stripe';
 
 interface FinancialConnectionsResult {
   success: boolean;
