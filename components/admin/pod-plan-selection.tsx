@@ -134,7 +134,6 @@ export default function PodSelection() {
       <div className="flex items-center justify-end">
         <Button
           disabled={!selectedPlanCode}
-          showArrow={false}
           text="Next"
           variant="primary"
           onClick={next}
