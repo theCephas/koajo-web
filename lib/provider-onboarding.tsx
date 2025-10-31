@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
-import { PodOnboardingStep, PodDurationWeeks, PodPlanCode } from "./types/pod";
-
+import { PodOnboardingStep, PodDurationWeeks, PodPlanCode, PodGoalCategory } from "./types/pod";
+import { POD_GOAL_CATEGORIES_MAP } from "./constants/pod";
 
 interface OnboardingContextValue {
   // visibility
@@ -21,6 +21,8 @@ interface OnboardingContextValue {
   setSelectedPlanCode: (code: PodPlanCode ) => void;
   selectedCycleWeeks: PodDurationWeeks;
   setSelectedCycleWeeks: (weeks: PodDurationWeeks) => void;
+  selectedGoalCategoryValue: string;
+  setSelectedGoalCategoryValue: (value: string) => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextValue | undefined>(
@@ -47,6 +49,9 @@ export function OnboardingProvider({
   const [step, setStep] = useState<PodOnboardingStep>("pod_plan_selection");
   const [selectedPlanCode, setSelectedPlanCode] = useState<PodPlanCode>("pod_100");
   const [selectedCycleWeeks, setSelectedCycleWeeks] = useState<PodDurationWeeks>(12);
+  const [selectedGoalCategoryValue, setSelectedGoalCategoryValue] = useState<string>(POD_GOAL_CATEGORIES_MAP.MORTGAGE);
+
+ 
 
   const next = () => {
     setStep((step) => {
@@ -94,8 +99,10 @@ export function OnboardingProvider({
       setSelectedPlanCode,
       selectedCycleWeeks,
       setSelectedCycleWeeks,
+      selectedGoalCategoryValue,
+      setSelectedGoalCategoryValue,
     }),
-    [visible, step, selectedPlanCode, selectedCycleWeeks]
+    [visible, step, selectedPlanCode, selectedCycleWeeks, selectedGoalCategoryValue]
   );
 
   return (
