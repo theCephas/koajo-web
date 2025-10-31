@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@cloudinary/url-gen':
+    specifier: ^1.22.0
+    version: 1.22.0
   '@nivo/bar':
     specifier: ^0.99.0
     version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
@@ -1950,11 +1953,17 @@ packages:
   /@cloudinary/transformation-builder-sdk@1.18.0:
     resolution: {integrity: sha512-cUl+RoQLirwCuLo5sHlRkftAQ/bmE4GTgpue1ur0YgxGlQy05vRZwXDQ+gcbMneFYMy6BjTDUs4nVVxL/hk2WA==}
     dependencies:
-      '@cloudinary/url-gen': 1.15.0
+      '@cloudinary/url-gen': 1.22.0
     dev: false
 
   /@cloudinary/url-gen@1.15.0:
     resolution: {integrity: sha512-bjU67eZxLUgoRy/Plli4TQio7q6P31OYqnEgXxeN9TKXrzr6h0DeEdIUhKI9gy3HkEBWXWWJIPh7j7gkOJPnyA==}
+    dependencies:
+      '@cloudinary/transformation-builder-sdk': 1.18.0
+    dev: false
+
+  /@cloudinary/url-gen@1.22.0:
+    resolution: {integrity: sha512-le8RMlgyC0JN3+FlC/YAlPYfvmJdtw8QGcSKDjCsfhS2CIem0mJl6ayti8bMoZ0P5wDvBewvRB0/dUQvhCzy3g==}
     dependencies:
       '@cloudinary/transformation-builder-sdk': 1.18.0
     dev: false
