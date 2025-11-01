@@ -13,6 +13,7 @@ import {
 } from "@/lib/constants/form";
 import { ApiError } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
+import { resolveApiMessage } from "@/lib/utils/api-helpers";
 
 const breadcrumbs = [
   {
@@ -30,24 +31,6 @@ type StatusState = {
   type: "success" | "error" | "info";
   message: string;
 } | null;
-
-const resolveApiMessage = (
-  message: string | string[] | undefined,
-  fallback: string
-): string => {
-  if (Array.isArray(message)) {
-    const first = message.find(
-      (value) => typeof value === "string" && value.trim().length > 0
-    );
-    return first ? first.trim() : fallback;
-  }
-
-  if (typeof message === "string" && message.trim().length > 0) {
-    return message.trim();
-  }
-
-  return fallback;
-};
 
 const SecurityPage = () => {
   const [oldPassword, setOldPassword] = useState<string>("");

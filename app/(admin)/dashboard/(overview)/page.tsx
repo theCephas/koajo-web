@@ -22,6 +22,7 @@ import type {
   PodActivityItem,
 } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
+import { resolveApiMessage } from "@/lib/utils/api-helpers";
 
 const MAX_VISIBLE_ACTIVITIES = 6;
 
@@ -42,7 +43,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const token = TokenManager.getToken() || undefined;
+    const token = TokenManager.getToken();
+
+    if (!token) {
+      const message = "You need to be logged in to view dashboard data.";
+      setActivitiesError(message);
+      setAchievementsError(message);
+      setActivities([]);
+      setAchievementsSummary(null);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const fetchData = async () => {
       setActivitiesLoading(true);
@@ -55,7 +67,7 @@ const Dashboard = () => {
           [
             AuthService.getPodActivities(
               { limit: 50, offset: 2 },
-              token ?? undefined
+              token
             ),
             AuthService.getAchievementsSummary(token),
           ]
@@ -179,7 +191,7 @@ const Dashboard = () => {
   return (
     <>
       <Layout
-        title="Welcome back 👏🏻"
+        title={`Welcome back${TokenManager.getUserData()?.firstName ? ", " + TokenManager.getUserData()!.firstName : ""} 👏🏻`}
         breadcrumbs={breadcrumbs}
         head={<Navigation />}
       >
@@ -317,21 +329,3 @@ const formatActivityActor = (activity: PodActivityItem): string => {
 
 const hasMetadata = (metadata?: Record<string, unknown> | null): boolean =>
   !!metadata && Object.keys(metadata).length > 0;
-
-const resolveApiMessage = (
-  message: string | string[] | undefined,
-  fallback: string
-): string => {
-  if (Array.isArray(message)) {
-    const first = message.find(
-      (value) => typeof value === "string" && value.trim().length > 0
-    );
-    return first ? first.trim() : fallback;
-  }
-
-  if (typeof message === "string" && message.trim().length > 0) {
-    return message.trim();
-  }
-
-  return fallback;
-};

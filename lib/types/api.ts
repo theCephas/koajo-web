@@ -135,6 +135,36 @@ export interface PodPlan {
   active: boolean;
 }
 
+export interface PodPlanOpenPod {
+  podId: string;
+  planCode: string;
+  name?: string | null;
+  amount: number;
+  lifecycleWeeks: number;
+  maxMembers: number;
+  status: 'pending' | 'open' | 'grace' | 'active' | 'completed';
+  podType: 'system' | 'custom';
+  cadence?: 'bi-weekly' | 'monthly';
+  randomizePositions?: boolean | null;
+  expectedMemberCount?: number | null;
+  scheduledStartDate?: string | null;
+  startDate?: string | null;
+  graceEndsAt?: string | null;
+  lockedAt?: string | null;
+  payoutOrder?: number | null;
+  payoutDate?: string | null;
+  aheadOfYou?: PodMemberSlot[];
+  behindYou?: PodMemberSlot[];
+  orderedMembers?: PodMemberSlot[];
+  goalType?: string | null;
+  goalNote?: string | null;
+  totalContributed?: number | null;
+  totalContributionTarget?: string | null;
+  contributionProgress?: number | null;
+  nextPayoutDate?: string | null;
+  nextContributionDate?: string | null;
+}
+
 export interface PodMemberSlot {
   publicId: string;
   order: number;
@@ -305,6 +335,29 @@ export interface PodActivityItem {
 export interface PodActivitiesResponse {
   total: number;
   items: PodActivityItem[];
+}
+
+export interface CreateCustomPodRequest {
+  name: string;
+  amount: number;
+  cadence: 'bi-weekly' | 'monthly';
+  randomizePositions: boolean;
+  invitees: string[];
+}
+
+export interface CreateCustomPodResponse {
+  podId: string;
+  planCode: string;
+  status: string;
+}
+
+export interface JoinPodRequestPayload {
+  goal: string;
+  goalNote: string;
+}
+
+export interface AcceptCustomInviteRequest {
+  token: string;
 }
 
 // ===== USER TYPES =====

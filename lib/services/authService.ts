@@ -30,6 +30,12 @@ import type {
   AchievementsSummary,
   RawUserProfileResponse,
   User,
+  PodPlan,
+  PodPlanOpenPod,
+  CreateCustomPodRequest,
+  CreateCustomPodResponse,
+  JoinPodRequestPayload,
+  AcceptCustomInviteRequest,
 } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
 
@@ -320,6 +326,67 @@ async function getAchievementsSummary(
   });
 }
 
+async function getPodPlans(token?: string): Promise<PodPlan[] | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PODS.PLANS);
+
+  return apiRequest<PodPlan[]>(url, {
+    method: "GET",
+    headers: getAuthOrDefaultHeaders(token),
+  });
+}
+
+async function getPlanOpenPods(
+  planCode: string,
+  token?: string
+): Promise<PodPlanOpenPod[] | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PODS.PLAN_OPEN(planCode));
+
+  return apiRequest<PodPlanOpenPod[]>(url, {
+    method: "GET",
+    headers: getAuthOrDefaultHeaders(token),
+  });
+}
+
+async function createCustomPod(
+  data: CreateCustomPodRequest,
+  token: string
+): Promise<CreateCustomPodResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PODS.CUSTOM);
+
+  return apiRequest<CreateCustomPodResponse>(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+async function joinPod(
+  planCode: string,
+  data: JoinPodRequestPayload,
+  token: string
+): Promise<Record<string, unknown> | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PODS.JOIN(planCode));
+
+  return apiRequest<Record<string, unknown>>(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+async function acceptCustomInvite(
+  data: AcceptCustomInviteRequest,
+  token: string
+): Promise<Record<string, unknown> | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PODS.CUSTOM_INVITES_ACCEPT);
+
+  return apiRequest<Record<string, unknown>>(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
 const transformUserProfile = (profile: RawUserProfileResponse): User => {
   return {
     id: profile.id,
@@ -398,5 +465,10 @@ export const AuthService = {
   completeStripeVerification,
   getPodActivities,
   getAchievementsSummary,
+  getPodPlans,
+  getPlanOpenPods,
+  createCustomPod,
+  joinPod,
+  acceptCustomInvite,
   getMe,
 };

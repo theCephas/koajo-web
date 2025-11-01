@@ -9,6 +9,7 @@ import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/menory-manager";
 import { ApiError } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
+import { resolveApiMessage } from "@/lib/utils/api-helpers";
 
 const breadcrumbs = [
   {
@@ -28,24 +29,6 @@ type StatusState = {
 type StoredPreferences = {
   emailNotificationsEnabled: boolean;
   transactionNotificationsEnabled: boolean;
-};
-
-const resolveApiMessage = (
-  message: string | string[] | undefined,
-  fallback: string
-): string => {
-  if (Array.isArray(message)) {
-    const first = message.find(
-      (value) => typeof value === "string" && value.trim().length > 0
-    );
-    return first ? first.trim() : fallback;
-  }
-
-  if (typeof message === "string" && message.trim().length > 0) {
-    return message.trim();
-  }
-
-  return fallback;
 };
 
 const getStoredPreferences = (): StoredPreferences => {

@@ -7,24 +7,7 @@ import { useForm } from "react-hook-form";
 import CardAuth from "@/components/auth/card-auth";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/lib/services/authService";
-
-const resolveApiMessage = (
-  message: string | string[] | undefined,
-  fallback: string
-): string => {
-  if (Array.isArray(message)) {
-    const first = message.find(
-      (value) => typeof value === "string" && value.trim().length > 0
-    );
-    return first ? first.trim() : fallback;
-  }
-
-  if (typeof message === "string" && message.trim().length > 0) {
-    return message.trim();
-  }
-
-  return fallback;
-};
+import { resolveApiMessage } from "@/lib/utils/api-helpers";
 
 interface ForgotPasswordFormData {
   email: string;

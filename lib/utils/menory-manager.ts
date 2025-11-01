@@ -86,9 +86,7 @@ export class TokenManager {
     if (typeof window === "undefined") return null;
 
     try {
-      // const encryptedToken = localStorage.getItem(TOKEN_KEY);
-      const encryptedToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZjI0NDBlNy04N2EwLTQ3ZjYtYTc3Mi03YzhiYzg0YTc3NDYiLCJlbWFpbCI6ImlzcmFlbG9iYW5pamVzdTJAZ21haWwuY29tIiwic2NvcGUiOiJ1c2VyIiwiaWF0IjoxNzYxOTEyNTY2LCJleHAiOjE3NjE5MTYxNjYsImF1ZCI6ImtvYWpvLWNsaWVudHMiLCJpc3MiOiJrb2Fqby1hcGkifQ.V-p7q5W3isedcu0zOsQPRMOdUaL6HEpFU5CJxgYXjYM";
+      const encryptedToken = localStorage.getItem(TOKEN_KEY);
       const encryptedExpiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
 
       if (!encryptedToken || !encryptedExpiry) {
