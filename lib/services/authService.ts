@@ -6,7 +6,6 @@ import {
 } from "@/lib/constants/api";
 import type {
   LoginRequest,
-  LoginResponse,
   LoginSuccessResponse,
   SignupRequest,
   SignupResponse,
@@ -406,6 +405,7 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
     updatedAt: profile.updated_at,
     emailNotificationsEnabled: profile.emailNotificationsEnabled,
     transactionNotificationsEnabled: profile.transactionNotificationsEnabled,
+    identity_verification: profile.identity_verification_status ?? null,
     identityVerification: profile.identity_verification
       ? {
           id: profile.identity_verification.id,
