@@ -27,5 +27,6 @@ export async function fetchVerificationSession(options: {
     return { clientSecret, verificationUrl, sessionId };
   } catch (error) {
     console.error("Error fetching verification session:", error);
+    throw error;
   }
 }
