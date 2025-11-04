@@ -1,7 +1,16 @@
-import { PodDurationWeeks, PodPlanCode, PodType, MaximumMembers, PodGoalCategory } from "../types/pod";
+import {
+  PodDurationWeeks,
+  MaximumMembers,
+  PodGoalCategory,
+} from "../types/pod";
 
-export type PodPlanCodeKeys = "POD_100" | "POD_200" | "POD_500" | "POD_1000" | "CUSTOM";
-export type  PodTypeKeys = "STANDARD_6_MEMBER" | "STANDARD_12_MEMBER" | "CUSTOM";
+export type PodPlanCodeKeys =
+  | "POD_100"
+  | "POD_200"
+  | "POD_500"
+  | "POD_1000"
+  | "CUSTOM";
+export type PodTypeKeys = "STANDARD_6_MEMBER" | "STANDARD_12_MEMBER" | "CUSTOM";
 
 export const POD_PLAN_AMOUNT_CENTS: Record<PodPlanCodeKeys, number> = {
   POD_100: 10000,
@@ -24,10 +33,13 @@ export const POD_DURATION_CONTRIBUTIONS: Record<PodDurationWeeks, number> = {
 export const MAX_MEMBERS_COUNT: Record<PodTypeKeys, MaximumMembers> = {
   STANDARD_6_MEMBER: 6,
   STANDARD_12_MEMBER: 12,
-  CUSTOM: 6, 
+  CUSTOM: 6,
 };
 
-export const POD_PLAN_ICONS: Record<PodPlanCodeKeys, { id: string, alt: string }> = {
+export const POD_PLAN_ICONS: Record<
+  PodPlanCodeKeys,
+  { id: string; alt: string }
+> = {
   POD_100: {
     id: "pod_100_huibik",
     alt: "Icon of a 100-unit pod, simplified with minimal lines inside a rectangular outline",
@@ -51,18 +63,24 @@ export const POD_PLAN_ICONS: Record<PodPlanCodeKeys, { id: string, alt: string }
 };
 
 // Goals
- type POD_GOALCATEGORIES_KEYS = "MORTGAGE" | "HOME_IMPROVEMENT" | "COLLEGE_TUITION" | "DEBT_PAYOFF" | "JANUARY_RECOVERY" | "EMERGENCY_FUND" | "BUSINESS_CAPITAL" | "INVESTMENT_PORTFOLIO" | "DETTY_DECEMBER" | "SAVINGS" | "OTHER";
+type POD_GOALCATEGORIES_KEYS =
+  | "MORTGAGE"
+  | "COLLEGE_TUITION"
+  | "DEBT_PAYOFF"
+  | "EMERGENCY_FUND"
+  | "BUSINESS_CAPITAL"
+  | "SAVINGS"
+  | "OTHER";
 
-export const POD_GOAL_CATEGORIES_MAP: Record<POD_GOALCATEGORIES_KEYS, PodGoalCategory> = {
+export const POD_GOAL_CATEGORIES_MAP: Record<
+  POD_GOALCATEGORIES_KEYS,
+  PodGoalCategory
+> = {
   MORTGAGE: "mortgage",
-  HOME_IMPROVEMENT: "home_improvement",
   COLLEGE_TUITION: "college_tuition",
   DEBT_PAYOFF: "debt_payoff",
-  JANUARY_RECOVERY: "january_recovery",
   EMERGENCY_FUND: "emergency_fund",
   BUSINESS_CAPITAL: "business_capital",
-  INVESTMENT_PORTFOLIO: "investment_portfolio",
-  DETTY_DECEMBER: "detty_december",
   SAVINGS: "savings",
   OTHER: "other",
 };

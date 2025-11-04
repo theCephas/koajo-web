@@ -2,17 +2,18 @@ export type PodOnboardingStep =
   | "pod_plan_selection"
   | "pod_goal_setting"
   | "pod_form_filling"
+  | "pod_invite_acceptance"
   | "pod_onboarding_complete";
 
 export type PodDurationWeeks = 12 | 24;
 
-export type PodPlanCode = "pod_100" | "pod_200" | "pod_500" | "pod_1000" | "custom";
+export type PodPlanCode = string;
 
 export type PodStatus = "draft" | "active" | "completed" | "cancelled";
 
 export type PodType = "standard_6_member" | "standard_12_member" | "custom";
 
-export type PodSchedule = "bi_weekly" | "monthly";
+export type PodSchedule = "bi-weekly" | "monthly";
 
 export type MaximumMembers = 6 | 12;
 
@@ -50,15 +51,12 @@ export interface Pod {
 }
 
 export interface PodPlan {
-  id: string;
   code: PodPlanCode;
-  name: string;
+  amount: number;
+  lifecycleWeeks: number;
+  maxMembers: number;
+  active: boolean;
   description?: string;
-  amountCents: number;
-  currency: "USD" | "GBP" | "EUR";
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PodMember {

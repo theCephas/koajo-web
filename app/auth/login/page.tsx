@@ -11,6 +11,24 @@ import { AuthService } from "@/lib/services/authService";
 import { LoginSuccessResponse } from "@/lib/types/api";
 import { TokenManager } from "@/lib/utils/menory-manager";
 
+const resolveApiMessage = (
+  message: string | string[] | undefined,
+  fallback: string
+): string => {
+  if (Array.isArray(message)) {
+    const first = message.find(
+      (value) => typeof value === "string" && value.trim().length > 0
+    );
+    return first ? first.trim() : fallback;
+  }
+
+  if (typeof message === "string" && message.trim().length > 0) {
+    return message.trim();
+  }
+
+  return fallback;
+};
+
 interface LoginFormData {
   email: string;
   password: string;
@@ -41,7 +59,7 @@ export default function LoginPage() {
       const response = await AuthService.login({ email: data.email, password: data.password });
       
       if (response && "error" in response && "message" in response && response.message.length > 0) {
-        setFaillureMessage(response.message.join(", ") || "Invalid email or password");
+        setFaillureMessage(Array.isArray(response.message) ? response.message.join(", ") : response.message || "Invalid email or password");
         setModalVisible(true);
       } else if (response && ("id" in response || "accountId" in response || "accessToken" in response || "email" in response)) {
         const loginResponse = response as LoginSuccessResponse;

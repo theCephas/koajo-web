@@ -35,7 +35,7 @@ export interface OtpFormValues {
 export interface PodFormValues {
   podName: string;
   amount: string; 
-  schedule: "bi_weekly" | "monthly";
+  schedule: "bi-weekly" | "monthly";
   members: string; 
   cycleWeeks: "12" | "24"; 
   inviteEmail?: string;
@@ -67,7 +67,7 @@ const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
   pod: {
     podName: "",
     amount: "",
-    schedule: "bi_weekly",
+    schedule: "bi-weekly",
     members: "",
     cycleWeeks: "12",
     inviteEmail: "",
@@ -201,7 +201,7 @@ function getRules<T extends FieldValues>(
         return {
           required: "Please select a schedule",
           validate: (v: unknown) =>
-            v === "bi_weekly" || v === "monthly" || "Invalid schedule",
+            v === "bi-weekly" || v === "monthly" || "Invalid schedule",
         } as RegisterOptions<T, Path<T>>;
       case "members":
         return {

@@ -1,60 +1,88 @@
 "use client";
-import { useMemo, useState } from "react";
-import {
-  PodDurationWeeks,
-  PodPlanCode,
-  PodGoalCategory,
-  PodSchedule,
-  PodPlan,
-} from "@/lib/types/pod";
-import {
-  POD_PLAN_ICONS,
-  type PodPlanCodeKeys,
-  POD_PLAN_AMOUNT_CENTS,
-} from "@/lib/constants/pod";
+
+import cn from "clsx";
+import { useMemo } from "react";
 import { CldImage } from "next-cloudinary";
 import { Button } from "../utils/button";
-import { useOnboarding } from "@/lib/provider-onboarding";
+import { useOnboarding, CUSTOM_POD_PLAN_CODE } from "@/lib/provider-onboarding";
+import { POD_PLAN_ICONS, type PodPlanCodeKeys } from "@/lib/constants/pod";
+import { PodDurationWeeks } from "@/lib/types/pod";
 
-export interface PodSelectionData {
-  planCode: PodPlanCode;
-  durationWeeks: PodDurationWeeks;
-  goalCategory?: PodGoalCategory;
-  customGoalName?: string;
-}
+const MAX_VISIBLE_OPEN_PODS = 3;
 
-export interface PodFormData extends PodSelectionData {
-  name?: string;
-  schedule?: PodSchedule;
-  activationDate?: string;
-}
+const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+
+const formatDate = (value?: string | null): string => {
+  if (!value) return "Date pending";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Date pending";
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const getIconConfig = (amount: number) => {
+  const key = `POD_${Math.round(amount)}`.toUpperCase();
+  return POD_PLAN_ICONS[key as PodPlanCodeKeys] ?? POD_PLAN_ICONS.CUSTOM;
+};
 
 export default function PodSelection() {
-  const { close, prev, selectedCycleWeeks, setSelectedCycleWeeks, next, selectedPlanCode, setSelectedPlanCode } = useOnboarding();
+  const {
+    close,
+    prev,
+    next,
+    selectedPlanCode,
+    setSelectedPlanCode,
+    setSelectedCycleWeeks,
+    selectedCycleWeeks,
+    podPlans,
+    podPlansLoading,
+    podPlansError,
+    refreshPodPlans,
+  } = useOnboarding();
 
-  const plans: PodPlan[] = useMemo(
-    () => getPodPlanData(selectedCycleWeeks),
-    [selectedCycleWeeks]
-  );
+  const plans = useMemo(() => podPlans ?? [], [podPlans]);
+
+  const handleSelectPlan = (planCode: string, lifecycleWeeks?: number) => {
+    setSelectedPlanCode(planCode);
+    if (
+      lifecycleWeeks &&
+      (lifecycleWeeks === 12 || lifecycleWeeks === 24) &&
+      lifecycleWeeks !== selectedCycleWeeks
+    ) {
+      setSelectedCycleWeeks(lifecycleWeeks as PodDurationWeeks);
+    }
+  };
+
+  const handleNext = () => {
+    if (!selectedPlanCode) return;
+    next();
+  };
+
+  const isNextDisabled = !selectedPlanCode;
 
   return (
-    <div className="flex flex-col gap-6.5 w-full max-w-[calc(720rem/16)] relative p-6 md:p-8 bg-white rounded-2xl shadow-lg">
-      <div className="flex items-center justify-between gap-14">
-        {/* Back Button */}
+    <div className="flex flex-col gap-6.5 w-full max-w-[calc(720rem/16)] relative p-6 md:p-8 bg-white rounded-2xl shadow-lg max-h-[700px] overflow-y-scroll">
+      <div className="flex items-center justify-between gap-6">
         <button
-          className="text-sm text-gray-700 hover:text-gray-900  mr-16 flex items-center justify-center border border-gray-100 size-12 gap-2 px-2 py-4 rounded-2xl"
+          className="text-sm text-gray-700 hover:text-gray-900 flex items-center justify-center border border-gray-100 size-12 gap-2 rounded-2xl"
           aria-label="Go back"
           onClick={prev}
         >
           <span className="inline-block -ml-1 rotate-180">➜</span>
         </button>
 
-        {/* Title */}
-        <div className="text-center text-2xl font-bold text-gray-900 mb-2">
+        <div className="text-center text-2xl font-bold text-gray-900">
           Choose Pod Plan
         </div>
 
-        {/* Skip for now Button */}
         <button
           className="text-sm text-gray-700 hover:text-gray-900 border border-gray-100 px-8 py-3 rounded-full"
           onClick={close}
@@ -63,150 +91,160 @@ export default function PodSelection() {
         </button>
       </div>
 
-      <div
-        className="flex w-fit mx-auto items-center justify-center p-0.5 gap-2 border border-gray-100 rounded-full shadow-[6px_6px_32px_0px_#0000000F]
-"
-      >
-        {[12, 24].map((cycle) => (
+      {podPlansLoading && (
+        <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-primary">
+          Loading available pod plans…
+        </div>
+      )}
+
+      {podPlansError && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 flex items-center justify-between gap-4">
+          <span>{podPlansError}</span>
           <button
-            key={cycle}
-            onClick={() => setSelectedCycleWeeks(cycle as PodDurationWeeks)}
-            className={`px-3 py-1.5 rounded-full text-sm border ${
-              cycle === selectedCycleWeeks
-                ? "bg-primary text-white"
-                : "bg-white border border-gray-100 text-gray-700 shadow-[inset_0px_0px_8px_0px_#00000014]"
-            }`}
+            type="button"
+            className="underline underline-offset-2"
+            onClick={() => refreshPodPlans()}
           >
-            {cycle} Weeks Pod Cycle
+            Retry
           </button>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {!podPlansLoading && plans.length === 0 && !podPlansError && (
+        <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
+          No pod plans are currently available. You can still create a custom
+          pod below.
+        </div>
+      )}
 
       <ul className="flex flex-col gap-4">
-        {plans.map((plan) => {
+        {plans.map(({ plan, openPods }) => {
           const isActive = selectedPlanCode === plan.code;
+          const iconConfig = getIconConfig(plan.amount);
           return (
-            <li key={plan.id}>
+            <li key={plan.code} className="flex flex-col gap-3">
               <button
-                onClick={() => setSelectedPlanCode(plan.code as PodPlanCode)}
-                className={`w-full text-left p-4 md:p-5 rounded-xl border transition-colors flex items-center justify-between hover:bg-primary/10 gap-4 ${
+                type="button"
+                onClick={() => handleSelectPlan(plan.code, plan.lifecycleWeeks)}
+                className={cn(
+                  "w-full text-left p-4 md:p-5 rounded-xl border transition-colors flex items-center justify-between gap-4",
                   isActive
-                    ? "border-primary "
-                    : "border-gray-100"
-                }`}
+                    ? "border-primary bg-primary/5"
+                    : "border-gray-100 hover:bg-primary/10"
+                )}
               >
                 <div className="flex items-center gap-4">
                   <CldImage
-                    src={
-                      POD_PLAN_ICONS[plan.code.toUpperCase() as PodPlanCodeKeys]
-                        ?.id 
-                    }
-                    alt={
-                      POD_PLAN_ICONS[plan.code.toUpperCase() as PodPlanCodeKeys]
-                        ?.alt
-                    }
+                    src={iconConfig.id}
+                    alt={iconConfig.alt}
                     width={40}
                     height={40}
                     className="size-auto max-w-full max-h-full object-contain"
                   />
                   <div>
                     <div className="font-semibold text-gray-900">
-                      {plan.name}
+                      {formatCurrency(plan.amount)} Plan
                     </div>
                     <p className="text-sm text-gray-500 max-w-[56ch]">
-                      {plan.description}
+                      {plan.lifecycleWeeks}-week cycle · up to {plan.maxMembers}{" "}
+                      members
                     </p>
                   </div>
                 </div>
 
                 <div
-                  className={`size-6 rounded-full border-6 bg-white ${
+                  className={cn(
+                    "size-6 rounded-full border-6 bg-white",
                     isActive ? "border-tertiary-100" : "border-white"
-                  }`}
-                >
-                </div>
+                  )}
+                />
               </button>
+
+              {isActive && openPods.length > 0 && (
+                <div className="ml-12 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-semibold uppercase text-gray-500">
+                    Available pods
+                  </div>
+                  <ul className="mt-2 space-y-2 text-sm text-gray-700">
+                    {openPods.slice(0, MAX_VISIBLE_OPEN_PODS).map((pod) => (
+                      <li
+                        key={pod.podId}
+                        className="flex items-center justify-between gap-4"
+                      >
+                        <span className="truncate pr-4">
+                          {pod.name && typeof pod.name === "string"
+                            ? pod.name
+                            : `Pod ${pod.podId.slice(-6)}`}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Next contribution{" "}
+                          {formatDate(pod.nextContributionDate)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {openPods.length > MAX_VISIBLE_OPEN_PODS && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      +{openPods.length - MAX_VISIBLE_OPEN_PODS} more pods are
+                      open for this plan.
+                    </div>
+                  )}
+                </div>
+              )}
             </li>
           );
         })}
+
+        <li className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => handleSelectPlan(CUSTOM_POD_PLAN_CODE)}
+            className={cn(
+              "w-full text-left p-4 md:p-5 rounded-xl border transition-colors flex items-center justify-between gap-4",
+              selectedPlanCode === CUSTOM_POD_PLAN_CODE
+                ? "border-primary bg-primary/5"
+                : "border-gray-100 hover:bg-primary/10"
+            )}
+          >
+            <div className="flex items-center gap-4">
+              <CldImage
+                src={POD_PLAN_ICONS.CUSTOM.id}
+                alt={POD_PLAN_ICONS.CUSTOM.alt}
+                width={40}
+                height={40}
+                className="size-auto max-w-full max-h-full object-contain"
+              />
+              <div>
+                <div className="font-semibold text-gray-900">
+                  Create a custom pod
+                </div>
+                <p className="text-sm text-gray-500 max-w-[56ch]">
+                  Define your own contribution amount, cadence, and invitees.
+                  Perfect for private savings circles.
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "size-6 rounded-full border-6 bg-white",
+                selectedPlanCode === CUSTOM_POD_PLAN_CODE
+                  ? "border-tertiary-100"
+                  : "border-white"
+              )}
+            />
+          </button>
+        </li>
       </ul>
 
       <div className="flex items-center justify-end">
         <Button
-          disabled={!selectedPlanCode}
+          disabled={isNextDisabled}
           text="Next"
           variant="primary"
-          onClick={next}
+          onClick={handleNext}
         />
       </div>
     </div>
   );
 }
-
-const getPodPlanData = (cycle: number): PodPlan[] => {
-  const months = cycle === 12 ? 3 : 6;
-  const template =
-    "$${AMOUNT} contribution payment due on the 1st & 16th of each month for {MONTHS} months.".replace(
-      "{MONTHS}",
-      String(months)
-    );
-
-  return [
-    {
-      id: "1",
-      code: "pod_100",
-      name: "$100 Pod Plan",
-      amountCents: POD_PLAN_AMOUNT_CENTS.POD_100,
-      currency: "USD",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      description: template.replaceAll("{AMOUNT}", "100"),
-    },
-    {
-      id: "2",
-      code: "pod_200",
-      name: "$200 Pod Plan",
-      amountCents: POD_PLAN_AMOUNT_CENTS.POD_200,
-      currency: "USD",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      description: template.replaceAll("{AMOUNT}", "200"),
-    },
-    {
-      id: "3",
-      code: "pod_500",
-      name: "$500 Pod Plan",
-      amountCents: POD_PLAN_AMOUNT_CENTS.POD_500,
-      currency: "USD",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      description: template.replaceAll("{AMOUNT}", "500"),
-    },
-    {
-      id: "4",
-      code: "pod_1000",
-      name: "$1000 Pod Plan",
-      amountCents: POD_PLAN_AMOUNT_CENTS.POD_1000,
-      currency: "USD",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      description: template.replaceAll("{AMOUNT}", "1000"),
-    },
-    {
-      id: "5",
-      code: "custom",
-      name: "Custom Pod Plan",
-      amountCents: POD_PLAN_AMOUNT_CENTS.CUSTOM,
-      currency: "USD",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      description:
-        "Choose your contribution; bi‑weekly payments on the 1st & 16th. Monthly option available. Select members and length.",
-    },
-  ];
-};
