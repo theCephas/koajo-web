@@ -394,8 +394,8 @@ export interface User {
   id: string;
   email: string;
   phoneNumber: string;
-  // firstName?: string;
-  // lastName?: string;
+  firstName?: string;
+  lastName?: string;
   emailVerified: boolean;
   agreedToTerms: boolean;
   dateOfBirth?: string;
@@ -447,6 +447,7 @@ export interface RawUserProfileResponse {
   last_login_at?: string | null;
   created_at?: string;
   updated_at?: string;
+  identity_verification_status?: "document_verified" | "id_number_verified" | "all_verified" | null;
   identity_verification?: {
     id?: string;
     identity_id?: string | null;
