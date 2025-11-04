@@ -39,11 +39,11 @@ export default function LoginPage() {
 
     try {
       const response = await AuthService.login({ email: data.email, password: data.password });
-
+      
       if (response && "error" in response && "message" in response && response.message.length > 0) {
         setFaillureMessage(response.message.join(", ") || "Invalid email or password");
         setModalVisible(true);
-      } else if (response && ("id" in response || "accountId" in response)) {
+      } else if (response && ("id" in response || "accountId" in response || "accessToken" in response || "email" in response)) {
         const loginResponse = response as LoginSuccessResponse;
         TokenManager.setAuthData(loginResponse);
         router.push("/dashboard");
