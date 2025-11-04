@@ -19,6 +19,7 @@ import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/menory-manager";
 import { useRouter } from "next/navigation";
 import { REGISTRATION_STAGE, REGISTRATION_STAGE_MAP, RegistrationStage } from "@/lib/constants/dashboard";
+import { SignupResponse, User } from "@/lib/types/api";
 
 interface RegisterFormData {
   email: string;
@@ -70,9 +71,17 @@ export default function RegisterPage() {
         ("id" in response || "accountId" in response) &&
         !("error" in response)
       ) {
+        const signupResponse = response as SignupResponse &  User ;
         setModalType("success");
         setModalVisible(true);
-        TokenManager.setUserId(response?.accountId || response?.id);
+        TokenManager.setUser({
+          id: response?.accountId || response?.id,
+          email: data.email,
+          phoneNumber: getPhoneNumber(data.phoneNumber),
+          emailVerified: false,
+          agreedToTerms: false,
+          isActive: false,
+        });
         TokenManager.setRegistrationStage(REGISTRATION_STAGE.REGISTERED);
       }
     } catch (error) {
