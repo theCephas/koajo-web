@@ -84,6 +84,16 @@ export class TokenManager {
     }
   }
 
+  static setUser(user: User): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      localStorage.setItem(USER_ID_KEY, user.id);
+    } catch (error) {
+      console.error('Failed to store user:', error);
+    }
+  }
+
   /**
    * Get stored authentication token
    */
