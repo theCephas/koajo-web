@@ -81,6 +81,7 @@ export default function RegisterPage() {
           emailVerified: false,
           agreedToTerms: false,
           isActive: false,
+          identity_verification: null,
         });
         TokenManager.setRegistrationStage(REGISTRATION_STAGE.REGISTERED);
       }
