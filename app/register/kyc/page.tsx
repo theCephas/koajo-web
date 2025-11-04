@@ -6,74 +6,6 @@ import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { fetchVerificationSession } from "@/lib/utils/stripe";
 import TokenManager from "@/lib/utils/menory-manager";
-/*
-import {
-  loadStripe,
-  Stripe,
-  VerificationSessionResult,
-} from "@stripe/stripe-js";
-
-// OLD: Modal-based verification using stripe.verifyIdentity()
-const runVerification = useCallback(
-  async (type: "document" | "id_number") => {
-    if (verificationTriggered) {
-      console.log("Verification already in progress");
-      return;
-    }
-    
-    setError(null);
-    setVerificationTriggered(true);
-
-    try {
-      const stripe: Stripe | null = await stripePromise;
-      if (!stripe) throw new Error("Stripe failed to load");
-
-      const verificationSession = await fetchVerificationSession({
-        email: TokenManager.getUserData()?.email || "user@example.com",
-        userId: TokenManager.getUserData()?.id || "user_123",
-        phone: TokenManager.getUserData()?.phoneNumber || "+12222222222",
-        type,
-      });
-
-      if (!verificationSession?.clientSecret) {
-        throw new Error("Failed to create verification session");
-      }
-
-      // OLD: Used modal approach
-      const result = await stripe.verifyIdentity(
-        verificationSession.clientSecret
-      );
-
-      if (result.error) {
-        if (result.error.code === "session_cancelled") {
-          console.log("Modal cancelled by user");
-          setVerificationTriggered(false);
-          return;
-        } else {
-          setError(result.error.message || "Verification failed");
-          return;
-        }
-      }
-
-      // Update state after successful completion
-      if (type === "document") {
-        setVerificationStatus("document_complete");
-        setCurrentStep("processing");
-      } else {
-        setVerificationStatus("id_complete");
-        setCurrentStep("success");
-      }
-    } catch (err) {
-      console.error("Verification error:", err);
-      setError("Verification failed. Please try again.");
-    } finally {
-      setVerificationTriggered(false);
-      setError(null);
-    }
-  },
-  [stripePromise, verificationTriggered]
-);
-
 
 export default function KycPage() {
   const router = useRouter();
@@ -87,9 +19,6 @@ export default function KycPage() {
   const verificationWindowRef = useRef<Window | null>(null);
   const searchParams = useSearchParams();
 
-  /**
-   * Handles the return from Stripe verification and retrieves session details
-   */
   const handleVerificationReturn = useCallback(async (sessionId: string) => {
     setIsLoading(true);
     setError(null);
@@ -97,7 +26,6 @@ export default function KycPage() {
     try {
       console.log('Retrieving verification session:', sessionId);
       
-      // Retrieve verification session details from our API (server-side)
       const response = await fetch(`/api/verification-session/${sessionId}`);
       
       if (!response.ok) {
@@ -114,7 +42,6 @@ export default function KycPage() {
         hasReport: !!verificationReport,
       });
 
-      // Sync with backend API
       const syncResponse = await fetch('/api/sync-verification', {
         method: 'POST',
         headers: {
@@ -133,7 +60,6 @@ export default function KycPage() {
         console.error('Failed to sync verification with backend');
       }
 
-      // Update UI based on verification status
       const type = localStorage.getItem('pendingVerificationType');
       
       if (session.status === 'verified') {
@@ -146,7 +72,6 @@ export default function KycPage() {
         setError('Verification requires additional input. Please try again.');
         setCurrentStep("verification");
       } else if (session.status === 'processing') {
-        // Show processing state
         setCurrentStep("processing");
       } else {
         setError('Verification failed. Please try again.');
@@ -164,7 +89,6 @@ export default function KycPage() {
     }
   }, []);
 
-  // Check if user returned from verification and retrieve session details
   useEffect(() => {
     const verification = searchParams.get('verification');
     const verificationSessionId = searchParams.get('verification_session');
@@ -172,7 +96,6 @@ export default function KycPage() {
     if (verification === 'complete' && verificationSessionId) {
       handleVerificationReturn(verificationSessionId);
     } else if (verification === 'complete') {
-      // Fallback if verification_session param is missing
       const type = localStorage.getItem('pendingVerificationType');
       if (type === 'document') {
         setCurrentStep("processing");
@@ -184,9 +107,6 @@ export default function KycPage() {
     }
   }, [searchParams, handleVerificationReturn]);
 
-  /**
-   * Opens verification in a new window instead of modal
-   */
   const runVerification = useCallback(
     async (type: "document" | "id_number") => {
       if (verificationTriggered) {
@@ -198,7 +118,6 @@ export default function KycPage() {
       setVerificationTriggered(true);
 
       try {
-        // Fetch verification session
         const verificationSession = await fetchVerificationSession({
           email: TokenManager.getUserData()?.email || "user@example.com",
           userId: TokenManager.getUserData()?.id || "user_123",
@@ -210,10 +129,8 @@ export default function KycPage() {
           throw new Error("Failed to create verification session");
         }
 
-        // Store verification type for when user returns
         localStorage.setItem('pendingVerificationType', type);
 
-        // Open verification URL in new window
         const width = 800;
         const height = 900;
         const left = (window.screen.width - width) / 2;
@@ -229,15 +146,12 @@ export default function KycPage() {
           throw new Error("Popup blocked. Please allow popups for this site.");
         }
 
-        // Monitor window closure (optional - user will be redirected to return_url)
         const checkWindow = setInterval(() => {
           if (verificationWindowRef.current?.closed) {
             clearInterval(checkWindow);
-            // Don't reset state here - wait for return_url redirect
           }
         }, 1000);
 
-        // Clean up interval after 10 minutes
         setTimeout(() => {
           clearInterval(checkWindow);
         }, 600000);
@@ -258,7 +172,6 @@ export default function KycPage() {
   const handleDecline = () => router.push("/register");
   const handleContinue = () => router.push("/dashboard");
 
-  // --- PROCESSING STEP ---
   if (currentStep === "processing") {
     return (
       <CardAuth
@@ -291,7 +204,7 @@ export default function KycPage() {
     );
   }
 
-  // --- SUCCESS STEP ---
+
   if (currentStep === "success") {
     return (
       <CardAuth
@@ -311,7 +224,6 @@ export default function KycPage() {
     );
   }
 
-  // --- INITIAL VERIFICATION STEP ---
   return (
     <CardAuth
       title="Document Verification"
