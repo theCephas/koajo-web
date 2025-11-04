@@ -8,7 +8,6 @@ export interface LoginRequest {
 
 export interface LoginSuccessResponse {
   accessToken: string;
-  tokenType: string;
   expiresAt: string;
   user: User & { accountId: string };
 }
@@ -123,6 +122,35 @@ export interface UpdateNotificationPreferencesRequest {
 export interface UpdateNotificationPreferencesResponse {
   emailNotificationsEnabled: boolean;
   transactionNotificationsEnabled: boolean;
+}
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  identity_verification?: 'document_verified' | 'id_number_verified' | 'all_verified' | null;
+}
+
+export interface UpdateUserResponse {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  identity_verification?: 'document_verified' | 'id_number_verified' | 'all_verified' | null;
+}
+
+export interface StripeVerificationRequest {
+  sessionId: string;
+  resultId: string;
+  verificationType: 'document' | 'id_number' | 'verification_flow';
+  verificationStatus: 'canceled' | 'processing' | 'requires_input' | 'verified';
+}
+
+export interface StripeVerificationResponse {
+  id: string;
+  userId: string;
+  resultId: string;
+  status: 'canceled' | 'processing' | 'requires_input' | 'verified';
+  type: 'document' | 'id_number' | 'verification_flow';
 }
 
 // ===== POD TYPES =====
@@ -291,8 +319,8 @@ export interface User {
   id: string;
   email: string;
   phoneNumber: string;
-  firstName?: string;
-  lastName?: string;
+  // firstName?: string;
+  // lastName?: string;
   emailVerified: boolean;
   agreedToTerms: boolean;
   dateOfBirth?: string;
@@ -301,4 +329,6 @@ export interface User {
   lastLoginAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  identity_verification: "document_verified" | "id_number_verified" | "all_verified" | null;
+
 }
