@@ -18,14 +18,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useLayoutEffect(() => {
     const isAuthed = TokenManager.isAuthenticated();
     if (!isAuthed) {
-      // router.replace("/auth/login");
+      router.replace("/auth/login");
       return;
     }
     setReady(true);
   }, [router]);
 
   if (!ready) {
-    // return null;
+    return null;
   }
 
   return (
