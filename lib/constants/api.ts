@@ -15,6 +15,8 @@ export const API_ENDPOINTS = {
     CHANGE_PASSWORD: '/auth/change-password',
     RESEND_EMAIL: '/auth/resend-email',
     STRIPE_VERIFICATION: '/auth/stripe-verification',
+    UPDATE_USER: '/auth/user', 
+    CREATE_CUSTOMER: '/auth/create-customer', 
     PROFILE: {
       AVATAR: '/auth/profile/avatar',
       NOTIFICATIONS: '/auth/profile/notifications',
