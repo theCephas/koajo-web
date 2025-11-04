@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
   try {
     console.log("Creating verification session...");
 
-    // Check if Stripe secret key is available
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Stripe secret key not configured" },
@@ -17,7 +16,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user data from request body
     const body = await request.json();
     const { email, userId, type, phone } = body as {
       email?: string;
@@ -32,6 +30,7 @@ export async function POST(request: NextRequest) {
         email: email || "user@example.com",
         phone: phone,
       },
+      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/register/kyc?${type}=submitted`,
       metadata: {
         user_id: userId || "user_123",
       },
@@ -45,7 +44,6 @@ export async function POST(request: NextRequest) {
     });
 
 
-    // Return the verification URL instead of client secret
     return NextResponse.json({
       clientSecret: verificationSession.client_secret,
       verificationUrl: verificationSession.url,
@@ -57,7 +55,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating verification session:", error);
 
-    // Return more detailed error information
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     // const errorCode = (error as Error)?.code || 'unknown';
