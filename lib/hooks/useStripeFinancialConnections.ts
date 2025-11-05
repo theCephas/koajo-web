@@ -56,7 +56,7 @@ export function useStripeFinancialConnections() {
       permissions?: string[];
       filters?: {
         countries?: string[];
-        account_types?: string[];
+        account_subcategories?: string[];
       };
     }
   ): Promise<FinancialConnectionsResult> => {
@@ -83,7 +83,7 @@ export function useStripeFinancialConnections() {
           permissions: options?.permissions || ['ownership'],
           filters: options?.filters || {
             countries: ['US'],
-            account_types: ['checking', 'savings']
+            account_subcategories: ['checking', 'savings']
           }
         }),
       });
