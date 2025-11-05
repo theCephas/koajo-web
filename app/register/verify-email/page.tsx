@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/utils";
+import { Button, Modal } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
 import type { VerifyEmailRequest, VerifyEmailResponse } from "@/lib/types/api";
@@ -15,6 +15,7 @@ export default function VerifyEmailPage() {
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
 
   useEffect(() => {
@@ -92,36 +93,82 @@ export default function VerifyEmailPage() {
   };
 
   const handleContinue = () => {
-    router.push("/register/bank");
+    setShowSuccessModal(true);
+  };
+
+  const handleGoToLogin = () => {
+    router.push("/auth/login");
+  };
+
+  const handleGoToRegistration = () => {
+    router.push("/register/");
   };
 
   if (isVerified) {
     return (
-      <CardAuth
-        title="Email Verified!"
-        description="Your email has been successfully verified. You can now continue with your registration."
-      >
-        <div className="space-y-6">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+      <>
+        <CardAuth
+          title="Email Verified!"
+          description="Your email has been successfully verified. You can now continue with your registration."
+        >
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">
+                Your email address has been verified successfully.
+              </p>
             </div>
-            <p className="text-gray-600">
-              Your email address has been verified successfully.
-            </p>
-          </div>
 
-          <Button
-            onClick={handleContinue}
-            text="Continue"
-            variant="primary"
-            className="w-full"
-            showArrow={true}
-          />
-        </div>
-      </CardAuth>
+            <Button
+              onClick={handleContinue}
+              text="Continue"
+              variant="primary"
+              className="w-full"
+              showArrow={true}
+            />
+          </div>
+        </CardAuth>
+
+        <Modal
+          visible={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+        >
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Complete!</h2>
+              <p className="text-gray-600">
+                Your email has been successfully verified. You can now proceed to login.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={handleGoToLogin}
+                text="Go to Login"
+                variant="primary"
+                className="w-full"
+                showArrow={true}
+              />
+              {/* <Button
+                onClick={handleGoToRegistration}
+                text="Continue Registration"
+                variant="secondary"
+                className="w-full"
+                showArrow={false}
+              /> */}
+            </div>
+          </div>
+        </Modal>
+      </>
     );
   }
 
@@ -163,11 +210,11 @@ export default function VerifyEmailPage() {
             </div>
 
             <Button
-              onClick={() => router.push("/register")}
-              text="Back to Registration"
+              text="Continue"
               variant="secondary"
               className="w-full"
               showArrow={false}
+              href="/auth/login"
             />
           </>
         )}
