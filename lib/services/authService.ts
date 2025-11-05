@@ -21,6 +21,8 @@ import type {
   UpdateAvatarResponse,
   UpdateNotificationPreferencesRequest,
   UpdateNotificationPreferencesResponse,
+  UpdateUserRequest,
+  UpdateUserResponse,
   ApiError,
   ResendForgotPasswordRequest,
   ResendForgotPasswordResponse,
@@ -436,6 +438,19 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
   };
 };
 
+async function updateUser(
+  data: UpdateUserRequest,
+  token: string
+): Promise<UpdateUserResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.UPDATE_USER);
+
+  return apiRequest<UpdateUserResponse>(url, {
+    method: "PATCH",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
 async function getMe(token: string): Promise<User | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.ME);
 
@@ -462,6 +477,7 @@ export const AuthService = {
   resendVerificationEmail,
   updateAvatar,
   updateNotificationPreferences,
+  updateUser,
   completeStripeVerification,
   getPodActivities,
   getAchievementsSummary,
