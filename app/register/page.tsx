@@ -90,12 +90,12 @@ export default function RegisterPage() {
       setModalVisible(true);
     } finally {
       setIsLoading(false);
-      setTimeout(() => {
-        setModalVisible(false);
+      // setTimeout(() => {
+      //   setModalVisible(false);
         if (modalType === "success") {
           router.push(REGISTRATION_STAGE_MAP[registrationStage.toUpperCase() as keyof typeof REGISTRATION_STAGE_MAP]);
         }
-      }, 4000);
+      // }, 4000);
     }
   };
 
@@ -219,8 +219,8 @@ export default function RegisterPage() {
       {modalType === "error" && modalVisible && (
         <ErrorModal visible={modalVisible} onClose={onClose} />
       )}
-      {true && (
-        <ContinueModal visible={true} onClose={onClose} registrationStage={registrationStage} />
+      {modalType === "continue" && (
+        <ContinueModal visible={modalVisible} onClose={onClose} registrationStage={registrationStage} />
       )}
     </>
   );
