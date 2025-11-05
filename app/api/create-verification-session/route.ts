@@ -24,13 +24,23 @@ export async function POST(request: NextRequest) {
       phone: string;
     };
 
+    // Get the origin from the request headers
+    const origin = request.headers.get('origin') || 
+                   request.headers.get('referer')?.split('/').slice(0, 3).join('/') ||
+                   process.env.NEXT_PUBLIC_BASE_URL ||
+                   'http://localhost:3000';
+    
+    const returnUrl = `${origin}/register/kyc?${type}=submitted`;
+    
+    console.log('Creating verification session with return_url:', returnUrl);
+
     const verificationSession = await stripe.identity.verificationSessions.create({
       type,
       provided_details: {
         email: email || "user@example.com",
-        phone: phone,
+        // phone: phone,
       },
-      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/register/kyc?${type}=submitted`,
+      return_url: returnUrl,
       metadata: {
         user_id: userId || "user_123",
       },
