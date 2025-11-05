@@ -26,12 +26,64 @@ export async function GET(
     const session = await stripe.identity.verificationSessions.retrieve(sessionId);
 
     let verificationReport = null;
+    let firstName: string | null = null;
+    let lastName: string | null = null;
+    let ssnLast4: string | null = null;
+    let address: any = null;
+
     try {
       const reports = await stripe.identity.verificationReports.list({
         verification_session: sessionId,
         limit: 1,
       });
       verificationReport = reports.data[0] || null;
+      
+      if (verificationReport) {
+        const report = verificationReport as Stripe.Identity.VerificationReport & {
+          verified_outputs?: {
+            document?: { name?: string };
+            id_number?: {
+              first_name?: string;
+              last_name?: string;
+              ssn_last4?: string;
+              address?: {
+                line1?: string;
+                line2?: string | null;
+                city?: string;
+                state?: string;
+                postal_code?: string;
+                country?: string;
+              };
+            };
+          };
+        };
+        const outputs = report.verified_outputs;
+        
+        if (outputs) {
+          if (outputs.document?.name) {
+            const nameParts = outputs.document.name.split(' ');
+            if (nameParts.length > 0) {
+              firstName = nameParts[0] || null;
+              lastName = nameParts.slice(1).join(' ') || null;
+            }
+          }
+          
+          if (outputs.id_number) {
+            if (outputs.id_number.first_name) {
+              firstName = outputs.id_number.first_name;
+            }
+            if (outputs.id_number.last_name) {
+              lastName = outputs.id_number.last_name;
+            }
+            if (outputs.id_number.ssn_last4) {
+              ssnLast4 = outputs.id_number.ssn_last4;
+            }
+            if (outputs.id_number.address) {
+              address = outputs.id_number.address;
+            }
+          }
+        }
+      }
     } catch (error) {
       console.log('No verification report available yet:', error);
     }
@@ -50,6 +102,10 @@ export async function GET(
         type: verificationReport.type,
         created: verificationReport.created,
       } : null,
+      firstName,
+      lastName,
+      ssnLast4,
+      address,
     });
   } catch (error) {
     console.error('Error retrieving verification session:', error);
