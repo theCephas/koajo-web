@@ -6,6 +6,7 @@ import { TokenManager } from "@/lib/utils/menory-manager";
 import { DashboardProvider } from "@/lib/provider-dashboard";
 import { OnboardingProvider } from "@/lib/provider-onboarding";
 import Onboarding from "@/components/admin/onbording";
+import OnboardingProgressButton from "@/components/admin/onboarding-progress-button";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -31,7 +32,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <DashboardProvider>
       <OnboardingProvider defaultVisible={true}>
-        <Onboarding>{children}</Onboarding>
+        <Onboarding>
+          {children}
+          <OnboardingProgressButton />
+        </Onboarding>
       </OnboardingProvider>
     </DashboardProvider>
   );
