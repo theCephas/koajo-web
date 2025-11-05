@@ -141,7 +141,7 @@ async function handleVerificationStatusChange(
     }
 
     const verificationType = (session.type || 'document') as 'document' | 'id_number' | 'verification_flow';
-
+  
     // Sync verification status with backend (updates identity_verification_session table)
     // Also updates user's identity_verification field if applicable
     const result: {
