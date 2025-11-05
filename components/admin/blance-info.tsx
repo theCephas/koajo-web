@@ -9,10 +9,11 @@ export default function BalanceInfo() {
             <span>Total Contribution</span>
             <Tooltip content="Total amount you contributed into this pod since joining it" />
           </div>
-          <div className="text-2xl font-bold">$12,000</div>
+          <div className="text-2xl font-bold">$0</div>
           <p className="text-base text-text-500 font-medium">
-            Your payout date is{" "}
-            <span className="text-tertiary-100">Jun 30th, 2025</span>
+            {/* Your payout date is{" "}
+            <span className="text-tertiary-100">Jun 30th, 2025</span> */}
+            No payout date yet
           </p>
         </div>
 
@@ -23,7 +24,7 @@ export default function BalanceInfo() {
             <span>Total Payout</span>
             <Tooltip content="Total amount you will receive from this pod" />
           </div>
-          <div className="text-2xl font-bold">$12,000</div>
+          <div className="text-2xl font-bold">$0</div>
           <p className="text-base text-text-500 font-medium">
             Payment less 2.5% transaction fee
           </p>
