@@ -3,6 +3,7 @@ export type PodOnboardingStep =
   | "pod_goal_setting"
   | "pod_form_filling"
   | "pod_invite_acceptance"
+  | "bank_connection"
   | "pod_onboarding_complete";
 
 export type PodDurationWeeks = 12 | 24;
