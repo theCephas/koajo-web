@@ -6,7 +6,7 @@ import { Button, Modal } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
 import type { VerifyEmailRequest, VerifyEmailResponse } from "@/lib/types/api";
-import TokenManager from "@/lib/utils/menory-manager";
+import TokenManager from "@/lib/utils/memory-manager";
 
 export default function VerifyEmailPage() {
   const router = useRouter();

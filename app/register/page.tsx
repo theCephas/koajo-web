@@ -16,7 +16,7 @@ import CardAuth from "@/components/auth/card-auth";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 import { getPhoneNumber } from "@/lib/utils/form";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { useRouter } from "next/navigation";
 import { REGISTRATION_STAGE, REGISTRATION_STAGE_MAP, RegistrationStage } from "@/lib/constants/dashboard";
 import { SignupResponse, User } from "@/lib/types/api";

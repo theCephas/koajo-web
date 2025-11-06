@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { fetchVerificationSession } from "@/lib/utils/stripe";
-import TokenManager from "@/lib/utils/menory-manager";
+import TokenManager from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
 import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
 
