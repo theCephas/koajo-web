@@ -3,6 +3,8 @@ import { useState } from "react";
 import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import Modal from "@/components/utils/modal";
+import LockedOverlay from "@/components/admin/locked-overlay";
+import { useDashboard } from "@/lib/provider-dashboard";
 import StarIcon from "@/public/media/icons/star.svg";
 import MoneyIcon from "@/public/media/icons/money.svg";
 import MuscleIcon from "@/public/media/icons/muscle.svg";
@@ -91,6 +93,8 @@ const Achievements = ({
   error,
 }: AchievementsProps) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const { emailVerified } = useDashboard();
+  const achievementsUnlocked = emailVerified;
 
   const achievements = summary ? buildAchievementsFromSummary(summary) : [];
 
@@ -110,6 +114,7 @@ const Achievements = ({
 
   return (
     <>
+      <div className="relative">
       <Card
         title="Achievement"
         tooltip="Track your financial achievements and progress"
@@ -129,7 +134,11 @@ const Achievements = ({
             )}
           </div>
         }
-        className={className}
+          className={cn(
+            className,
+            !achievementsUnlocked &&
+              "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+          )}
       >
         <div className="space-y-8 mt-8">
           {loading && (
@@ -180,6 +189,8 @@ const Achievements = ({
           )}
         </div>
       </Card>
+      {!achievementsUnlocked && <LockedOverlay />}
+      </div>
 
       <Modal
         visible={modalVisible}

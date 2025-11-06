@@ -1,8 +1,13 @@
+"use client";
+
 import { ReactNode } from "react";
+import cn from "clsx";
 import styles from "./RecentActivity.module.sass";
 import Card from "@/components2/usefull/Card";
 import Image from "@/components2/usefull/Image";
 import Icon from "@/components2/usefull/Icon";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
 export type RecentActivityItem = {
     id: string;
@@ -27,9 +32,19 @@ const RecentActivity = ({
     emptyPlaceholder,
 }: RecentActivityProps) => {
     const visibleItems = items.slice(0, viewItems || 5);
+    const { emailVerified } = useDashboard();
+    const isLocked = !emailVerified;
 
     return (
-        <Card title="Pod Activity" tooltip="Recent Pod activity">
+        <div className="relative">
+            <Card 
+                title="Pod Activity" 
+                tooltip="Recent Pod activity"
+                className={cn(
+                    isLocked &&
+                        "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+                )}
+            >
             <div className={styles.list}>
                 {visibleItems.length === 0 ? (
                     <div className={styles.empty}>
@@ -65,6 +80,8 @@ const RecentActivity = ({
             </div>
             {footer && <div className={styles.footer}>{footer}</div>}
         </Card>
+            {isLocked && <LockedOverlay />}
+        </div>
     );
 };
 

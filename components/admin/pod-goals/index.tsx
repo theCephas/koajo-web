@@ -4,6 +4,8 @@ import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import { Button } from "@/components/utils";
 import Modal from "@/components/utils/modal";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
 type PodGoalsProps = {
   className?: string;
@@ -18,13 +20,21 @@ const PodGoals = ({ className }: PodGoalsProps) => {
 
   const displayedGoals =  goals.slice(0, 1);
 
+  const { emailVerified } = useDashboard();
+  const isLocked = !emailVerified;
+
   return (
     <>
+      <div className="relative">
       <Card
         title="My Pod Goal"
         tooltip="Track your pod's progress towards financial goals"
         onSeeMore={() => setModalVisible(true)}
-        className={className}
+          className={cn(
+            className,
+            isLocked &&
+              "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+          )}
       >
         <div className="bg-white rounded-lg mt-6">
           {displayedGoals.map((goal) => {
@@ -36,6 +46,8 @@ const PodGoals = ({ className }: PodGoalsProps) => {
           })}
         </div>
       </Card>
+        {isLocked && <LockedOverlay />}
+      </div>
 
       <Modal
         visible={modalVisible}
