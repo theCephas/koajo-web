@@ -7,7 +7,7 @@ import { useOnboarding, CUSTOM_POD_PLAN_CODE } from "@/lib/provider-onboarding";
 import { Field } from "../utils/field";
 import { POD_GOAL_CATEGORIES_MAP } from "@/lib/constants/pod";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
 import { ApiErrorClass } from "@/lib/utils/auth";
 

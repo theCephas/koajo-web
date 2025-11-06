@@ -7,7 +7,7 @@ import { Field } from "../utils/field";
 import { MaximumMembers, PodSchedule } from "@/lib/types/pod";
 import { Label } from "../utils/label";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
 import { ApiErrorClass } from "@/lib/utils/auth";
 
