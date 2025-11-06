@@ -9,7 +9,7 @@ import {
   PasswordField,
 } from "@/components/utils";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GoogleIcon from "@/public/media/icons/google-g-letter.svg";
 import CardAuth from "@/components/auth/card-auth";
 import { useRouter } from "next/navigation";
@@ -51,6 +51,13 @@ export default function LoginPage() {
   const router = useRouter();
   const [faillureMessage, setFaillureMessage] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    const isAuthenticated = TokenManager.isAuthenticated();
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   const onClose = () => {
     setModalVisible(false);
