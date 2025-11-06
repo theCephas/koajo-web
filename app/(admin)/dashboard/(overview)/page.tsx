@@ -15,7 +15,7 @@ import BalanceInfo from "@/components/admin/blance-info";
 import CycleDuration from "@/components/admin/cycle-duration";
 import Modal from "@/components/utils/modal";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import type {
   AchievementsSummary,
   PodActivitiesResponse,

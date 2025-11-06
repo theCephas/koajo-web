@@ -2,7 +2,7 @@
 
 import { ReactNode, useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { DashboardProvider } from "@/lib/provider-dashboard";
 import { OnboardingProvider } from "@/lib/provider-onboarding";
 import Onboarding from "@/components/admin/onbording";

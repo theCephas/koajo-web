@@ -6,7 +6,7 @@ import Layout from "@/components2/usefull/Layout";
 import Settings from "@/components2/Settings";
 import Toggle from "@/components2/Toggle";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { ApiError } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
