@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { API_ENDPOINTS, getApiUrl, getAuthHeaders } from "@/lib/constants/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
@@ -21,6 +21,7 @@ interface DashboardContextValue {
   user: User | null;
   userLoading: boolean;
   refreshUser: () => Promise<void>;
+  logout: () => void;
 
   emailVerified: boolean;
   kycStatus: "document_verified" | "id_number_verified" | "all_verified" | null;
@@ -57,7 +58,7 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     TokenManager.setRegistrationStage(stage);
   };
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const token = TokenManager.getToken();
     if (!token) {
       setUser(null);
@@ -81,9 +82,24 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     } finally {
       setUserLoading(false);
     }
-  };
+  }, []);
 
-  const refresh = async () => {
+  const logout = useCallback(() => {
+    TokenManager.clearAuthData();
+    
+    setUser(null);
+    setData(null);
+    setError(null);
+    setLoading(false);
+    setUserLoading(false);
+    _setRegistrationStage(null);
+    
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/login";
+    }
+  }, []);
+
+  const refresh = useCallback(async () => {
     const token = TokenManager.getToken();
     if (!token) {
       setError("Not authenticated");
@@ -113,7 +129,7 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const emailVerified = user?.emailVerified ?? false;
   const kycStatus = user?.identity_verification ?? null;
@@ -134,7 +150,7 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     if (!isAuthed) return;
     void refresh();
     void refreshUser();
-  }, [autoFetch]);
+  }, [autoFetch, refresh, refreshUser]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -145,7 +161,7 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     }, 30000); // Every 30 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshUser]);
 
   const value = useMemo<DashboardContextValue>(() => ({
     loading,
@@ -157,12 +173,13 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     user,
     userLoading,
     refreshUser,
+    logout,
     emailVerified,
     kycStatus,
     kycCompleted,
     bankConnected,
     setupCompleted,
-  }), [loading, error, data, registrationStage, user, userLoading, emailVerified, kycStatus, kycCompleted, bankConnected, setupCompleted]);
+  }), [loading, error, data, registrationStage, user, userLoading, refresh, refreshUser, logout, emailVerified, kycStatus, kycCompleted, bankConnected, setupCompleted]);
 
   return (
     <DashboardContext.Provider value={value}>
