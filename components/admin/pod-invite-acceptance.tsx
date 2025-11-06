@@ -5,7 +5,7 @@ import { Button } from "../utils/button";
 import { Field } from "../utils/field";
 import { useOnboarding } from "@/lib/provider-onboarding";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
 import { ApiErrorClass } from "@/lib/utils/auth";
 
