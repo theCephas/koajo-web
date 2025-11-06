@@ -3,11 +3,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { PodOnboardingStep, PodDurationWeeks, PodPlanCode, PodSchedule, MaximumMembers } from "./types/pod";
 import { POD_GOAL_CATEGORIES_MAP } from "./constants/pod";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
 import type { PodPlan as ApiPodPlan, PodPlanOpenPod, ApiError } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
+
+let checkOnboardingPrerequisites: (() => { emailVerified: boolean; kycCompleted: boolean }) | null = null;
+
+export function setOnboardingPrerequisitesChecker(
+  checker: () => { emailVerified: boolean; kycCompleted: boolean }
+) {
+  checkOnboardingPrerequisites = checker;
+}
 
 const CUSTOM_PLAN_CODE = "custom";
 export const CUSTOM_POD_PLAN_CODE = CUSTOM_PLAN_CODE;
@@ -107,6 +115,23 @@ export function OnboardingProvider({
   const [podPlansError, setPodPlansError] = useState<string | null>(null);
 
   const [inviteToken, setInviteToken] = useState<string>("");
+
+  // Guarded setStep that checks prerequisites for sequential steps
+  const setStepGuarded = useCallback((newStep: PodOnboardingStep) => {
+    // Check prerequisites for steps that require email and KYC
+    if (newStep === "bank_connection" || newStep === "pod_plan_selection") {
+      if (checkOnboardingPrerequisites) {
+        const { emailVerified, kycCompleted } = checkOnboardingPrerequisites();
+        if (!emailVerified || !kycCompleted) {
+          console.warn(
+            `Cannot access ${newStep}: Email verification and KYC must be completed first.`
+          );
+          return; // Prevent step change
+        }
+      }
+    }
+    setStep(newStep);
+  }, []);
 
   const refreshPodPlans = useCallback(async () => {
     const token = TokenManager.getToken();
@@ -274,7 +299,7 @@ export function OnboardingProvider({
       open,
       close,
       step,
-      setStep,
+      setStep: setStepGuarded,
       next,
       prev,
       selectedPlanCode,
@@ -309,6 +334,7 @@ export function OnboardingProvider({
       open,
       close,
       step,
+      setStepGuarded,
       next,
       prev,
       selectedPlanCode,
