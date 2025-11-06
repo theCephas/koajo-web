@@ -17,11 +17,11 @@ interface DashboardContextValue {
   refresh: () => Promise<void>;
   registrationStage: RegistrationStage | null;
   setRegistrationStage: (stage: RegistrationStage) => void;
-  // User status tracking
+
   user: User | null;
   userLoading: boolean;
   refreshUser: () => Promise<void>;
-  // Computed status
+
   emailVerified: boolean;
   kycStatus: "document_verified" | "id_number_verified" | "all_verified" | null;
   kycCompleted: boolean;
@@ -115,14 +115,12 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     }
   };
 
-  // Computed status values
   const emailVerified = user?.emailVerified ?? false;
   const kycStatus = user?.identity_verification ?? null;
   const kycCompleted = kycStatus === "all_verified";
   const bankConnected = !!user?.bankAccount?.id;
   const setupCompleted = emailVerified && kycCompleted && bankConnected;
 
-  // Register prerequisites checker for onboarding provider
   useEffect(() => {
     setOnboardingPrerequisitesChecker(() => ({
       emailVerified,
@@ -138,7 +136,6 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     void refreshUser();
   }, [autoFetch]);
 
-  // Refresh user periodically
   useEffect(() => {
     const interval = setInterval(() => {
       const token = TokenManager.getToken();
