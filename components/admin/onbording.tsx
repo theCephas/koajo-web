@@ -27,13 +27,11 @@ export default function Onboarding({ children }: { children: React.ReactNode }) 
     <>
       {children}
       <Modal visible={visible} onClose={close}>
-        {/* {step === "pod_plan_selection" && <PodSelection />}
+        {step === "pod_plan_selection" && <PodSelection />}
         {step === "pod_goal_setting" && <PodGoalSetting />}
         {step === "pod_form_filling" && <PodFormFilling />}
-        {step === "pod_invite_acceptance" && <PodInviteAcceptance />} */}
-
-        {/* {step === "bank_connection" && <BankConnection />} */}
-        <BankConnection />
+        {step === "pod_invite_acceptance" && <PodInviteAcceptance />} 
+        {step === "bank_connection" && <BankConnection />}
       </Modal>
     </>
   );
