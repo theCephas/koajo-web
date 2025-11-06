@@ -1,91 +1,140 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useOnboarding } from "@/lib/provider-onboarding";
-import { TokenManager } from "@/lib/utils/menory-manager";
-import { AuthService } from "@/lib/services/authService";
-import type { User } from "@/lib/types/api";
+import { useDashboard } from "@/lib/provider-dashboard";
 import cn from "clsx";
 
-interface OnboardingStep {
+export type SetupStepStatus = "pending" | "in_progress" | "completed";
+
+export interface SetupStep {
   id: string;
   label: string;
-  completed: boolean;
+  status: SetupStepStatus;
+  subSteps?: SetupStep[];
 }
 
+const SETUP_GUIDE_CLOSED_KEY = "setup_guide_closed";
+
 export default function OnboardingProgressButton() {
+  const router = useRouter();
   const { open, setStep } = useOnboarding();
-  const [steps, setSteps] = useState<OnboardingStep[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+  const {
+    emailVerified,
+    kycCompleted,
+    kycStatus,
+    bankConnected,
+    setupCompleted,
+  } = useDashboard();
+
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
+  const [expandedStepId, setExpandedStepId] = useState<string | null>(null);
+
+  const canAccessBankConnection = emailVerified && kycCompleted;
+  const canAccessJoinPod = emailVerified && kycCompleted;
+
+  const setupSteps: SetupStep[] = useMemo(() => {
+    return [
+      {
+        id: "email_verification",
+        label: "Verify Email",
+        status: emailVerified ? "completed" : "pending",
+      },
+      {
+        id: "identity_verification",
+        label: "Complete Identity Verification",
+        status: kycCompleted
+          ? "completed"
+          : kycStatus
+          ? "in_progress"
+          : "pending",
+      },
+      {
+        id: "bank_connection",
+        label: "Connect Bank Account",
+        status: bankConnected ? "completed" : "pending",
+      },
+      {
+        id: "join_pod",
+        label: "Join a Pod",
+        status: "pending", // Always show as pending for now
+      },
+    ];
+  }, [emailVerified, kycCompleted, kycStatus, bankConnected]);
+
+  const isStepEnabled = (stepId: string): boolean => {
+    switch (stepId) {
+      case "email_verification":
+      case "identity_verification":
+        return true;
+      case "bank_connection":
+        return canAccessBankConnection;
+      case "join_pod":
+        return canAccessJoinPod;
+      default:
+        return true;
+    }
+  };
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      const token = TokenManager.getToken();
-      if (!token) return;
+    const closed = localStorage.getItem(SETUP_GUIDE_CLOSED_KEY);
+    if (closed === "true") {
+      const allCompleted = setupSteps.every(
+        (step) => step.status === "completed"
+      );
+      setIsClosed(allCompleted);
+    }
+  }, [setupSteps]);
 
-      try {
-        const response = await AuthService.getMe(token);
-        if (response && "error" in response) return;
+  const allCompleted = setupSteps.every((step) => step.status === "completed");
+  const completedCount = setupSteps.filter(
+    (step) => step.status === "completed"
+  ).length;
+  const totalSteps = setupSteps.length;
+  const progressPercentage = (completedCount / totalSteps) * 100;
 
-        const user = response as User;
-        
-        // Define onboarding steps
-        const onboardingSteps: OnboardingStep[] = [
-          {
-            id: "email_verification",
-            label: "Verify Email",
-            completed: user.emailVerified || false,
-          },
-          {
-            id: "identity_verification",
-            label: "Complete Identity Verification",
-            completed: user.identity_verification === "all_verified",
-          },
-          {
-            id: "bank_connection",
-            label: "Connect Bank Account",
-            completed: !!user.bankAccount?.id,
-          },
-          {
-            id: "join_pod",
-            label: "Join a Pod",
-            completed: false, // TODO: Check if user has joined a pod
-          },
-        ];
+  const handleClose = () => {
+    setIsClosed(true);
+    localStorage.setItem(SETUP_GUIDE_CLOSED_KEY, "true");
+  };
 
-        setSteps(onboardingSteps);
-        
-        // Show button if not all steps are completed
-        const allCompleted = onboardingSteps.every((step) => step.completed);
-        setIsVisible(!allCompleted);
-      } catch (error) {
-        console.error("Error checking onboarding status:", error);
-      }
-    };
+  const handleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
 
-    checkOnboardingStatus();
-    
-    // Refresh periodically
-    const interval = setInterval(checkOnboardingStatus, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleStepToggle = (stepId: string) => {
+    if (expandedStepId === stepId) {
+      setExpandedStepId(null);
+    } else {
+      setExpandedStepId(stepId);
+    }
+  };
 
   const handleStepClick = (stepId: string) => {
+    if (!isStepEnabled(stepId)) {
+      return;
+    }
+
     switch (stepId) {
+      case "email_verification":
+        router.push("/register/verify-email");
+        break;
+      case "identity_verification":
+        router.push("/register/kyc");
+        break;
       case "bank_connection":
+        if (!canAccessBankConnection) {
+          return;
+        }
         setStep("bank_connection");
         open();
         break;
-      case "email_verification":
-        // Redirect to email verification page
-        window.location.href = "/register/verify-email";
-        break;
-      case "identity_verification":
-        // Redirect to KYC page
-        window.location.href = "/register/kyc";
-        break;
       case "join_pod":
+        if (!canAccessJoinPod) {
+          return;
+        }
         setStep("pod_plan_selection");
         open();
         break;
@@ -95,89 +144,229 @@ export default function OnboardingProgressButton() {
     setIsExpanded(false);
   };
 
-  const completedCount = steps.filter((step) => step.completed).length;
-  const totalCount = steps.length;
-  const remainingCount = totalCount - completedCount;
-
-  if (!isVisible || steps.length === 0) {
+  if (isClosed || allCompleted || setupCompleted) {
     return null;
   }
 
-  return (
-    <div className="fixed bottom-6 left-6 z-50">
-      <div className="relative">
-        {isExpanded && (
-          <div className="absolute bottom-full left-0 mb-2 w-80 bg-white rounded-lg shadow-lg border border-secondary-100 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-text-900">Complete Your Onboarding</h3>
+  const nextStep = setupSteps.find(
+    (step) => step.status !== "completed" && isStepEnabled(step.id)
+  );
+
+  if (!isExpanded) {
+    return (
+      <div className="fixed bottom-6 left-6 z-50">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 max-w-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-gray-900">
+              Setup guide
+            </h3>
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsExpanded(false)}
-                className="text-text-400 hover:text-text-900"
+                onClick={handleExpand}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                aria-label="Expand setup guide"
               >
-                ✕
+                <svg
+                  className="w-4 h-4 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={handleClose}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                aria-label="Close setup guide"
+              >
+                <span className="text-gray-600 text-lg leading-none">×</span>
               </button>
             </div>
-            <div className="space-y-2">
-              {steps.map((step) => (
-                <button
-                  key={step.id}
-                  onClick={() => handleStepClick(step.id)}
-                  className={cn(
-                    "w-full text-left p-3 rounded-lg transition-colors",
-                    step.completed
-                      ? "bg-green-50 text-green-800 border border-green-200"
-                      : "bg-secondary-50 hover:bg-secondary-100 text-text-900 border border-secondary-200"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{step.label}</span>
-                    {step.completed ? (
-                      <span className="text-green-600">✓</span>
-                    ) : (
-                      <span className="text-primary">→</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 pt-3 border-t border-secondary-200">
-              <p className="text-xs text-text-400">
-                {remainingCount} of {totalCount} steps remaining
-              </p>
-            </div>
           </div>
-        )}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-full shadow-lg",
-            "hover:bg-primary/90 transition-all",
-            "font-medium text-sm"
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-              {remainingCount}
-            </span>
-            <span>Steps Left</span>
-          </div>
-          <svg
-            className={cn(
-              "w-4 h-4 transition-transform",
-              isExpanded && "rotate-180"
-            )}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
+
+          {/* Progress bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+            <div
+              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
             />
-          </svg>
-        </button>
+          </div>
+
+          {/* Next step */}
+          {nextStep && (
+            <div className="text-sm">
+              <span className="text-gray-600">Next: </span>
+              <button
+                onClick={() => handleStepClick(nextStep.id)}
+                className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer"
+              >
+                {nextStep.label}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded view - matching setup-guide.tsx style
+  return (
+    <div className="fixed bottom-6 left-6 z-50">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 max-w-sm">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-gray-900">Setup guide</h3>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExpand}
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              aria-label="Collapse setup guide"
+            >
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={handleClose}
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              aria-label="Close setup guide"
+            >
+              <span className="text-gray-600 text-lg leading-none">×</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div
+            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+
+          {/* Steps list */}
+        <div className="space-y-1">
+          {setupSteps.map((step) => {
+            const isStepExpanded = expandedStepId === step.id;
+            const hasSubSteps = step.subSteps && step.subSteps.length > 0;
+            const isCompleted = step.status === "completed";
+            const isInProgress = step.status === "in_progress";
+            const isPending = step.status === "pending";
+            const isEnabled = isStepEnabled(step.id);
+
+            return (
+              <div key={step.id}>
+                <div
+                  className={cn(
+                    "flex items-center justify-between py-2 px-3 rounded-lg transition-colors",
+                    {
+                      "bg-blue-50 border border-blue-200": isInProgress,
+                      "opacity-50 line-through": isCompleted && !hasSubSteps,
+                      "hover:bg-gray-50 cursor-pointer": !isCompleted && !isInProgress && isEnabled,
+                      "cursor-not-allowed opacity-60": !isCompleted && !isInProgress && !isEnabled,
+                    }
+                  )}
+                  onClick={() => {
+                    if (!isEnabled) {
+                      return;
+                    }
+                    if (hasSubSteps) {
+                      handleStepToggle(step.id);
+                    } else {
+                      handleStepClick(step.id);
+                    }
+                  }}
+                >
+                  <span
+                    className={cn("text-sm", {
+                      "text-gray-900 font-medium": isInProgress,
+                      "text-gray-400": (isCompleted && !hasSubSteps) || (!isEnabled && !isCompleted),
+                      "text-gray-600": (isPending || (isCompleted && hasSubSteps)) && isEnabled,
+                    })}
+                  >
+                    {step.label}
+                    {!isEnabled && !isCompleted && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        (Complete email & KYC first)
+                      </span>
+                    )}
+                  </span>
+                  {hasSubSteps && (
+                    <svg
+                      className={cn(
+                        "w-4 h-4 text-gray-400 transition-transform",
+                        {
+                          "rotate-180": isStepExpanded,
+                        }
+                      )}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  )}
+                </div>
+
+                {/* Sub-steps */}
+                {hasSubSteps && isStepExpanded && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {step.subSteps?.map((subStep) => (
+                      <div
+                        key={subStep.id}
+                        className="flex items-center gap-2 py-1 px-3 rounded hover:bg-gray-50 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStepClick(subStep.id);
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            "w-2 h-2 rounded-full",
+                            {
+                              "bg-gray-300": subStep.status === "pending",
+                              "bg-blue-500": subStep.status === "in_progress",
+                              "bg-green-500": subStep.status === "completed",
+                            }
+                          )}
+                        />
+                        <span
+                          className={cn("text-xs", {
+                            "text-gray-900": subStep.status === "in_progress",
+                            "text-gray-400": subStep.status === "completed",
+                            "text-gray-600": subStep.status === "pending",
+                          })}
+                        >
+                          {subStep.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
