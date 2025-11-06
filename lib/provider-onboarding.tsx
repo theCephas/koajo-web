@@ -116,9 +116,7 @@ export function OnboardingProvider({
 
   const [inviteToken, setInviteToken] = useState<string>("");
 
-  // Guarded setStep that checks prerequisites for sequential steps
   const setStepGuarded = useCallback((newStep: PodOnboardingStep) => {
-    // Check prerequisites for steps that require email and KYC
     if (newStep === "bank_connection" || newStep === "pod_plan_selection") {
       if (checkOnboardingPrerequisites) {
         const { emailVerified, kycCompleted } = checkOnboardingPrerequisites();
@@ -126,7 +124,7 @@ export function OnboardingProvider({
           console.warn(
             `Cannot access ${newStep}: Email verification and KYC must be completed first.`
           );
-          return; // Prevent step change
+          return; 
         }
       }
     }
