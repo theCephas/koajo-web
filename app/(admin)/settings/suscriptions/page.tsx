@@ -6,7 +6,7 @@ import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { useOnboarding } from "@/lib/provider-onboarding";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import type { User } from "@/lib/types/api";
 import BankIcon from "@/public/media/icons/bank.svg";
 

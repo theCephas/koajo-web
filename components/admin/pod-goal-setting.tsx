@@ -7,7 +7,7 @@ import { useOnboarding, CUSTOM_POD_PLAN_CODE } from "@/lib/provider-onboarding";
 import { Field } from "../utils/field";
 import { POD_GOAL_CATEGORIES_MAP } from "@/lib/constants/pod";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
 import { ApiErrorClass } from "@/lib/utils/auth";
 
@@ -130,13 +130,13 @@ export default function PodGoalSetting() {
             Help us tailor insights and tracking for your savings journey.
           </p>
         </div>
-
+{/* 
         <button
           className="text-sm text-gray-700 hover:text-gray-900 border border-gray-100 px-8 py-3 rounded-full"
           onClick={close}
         >
           Skip for now
-        </button>
+        </button> */}
       </div>
 
       <div className="text-text-500 font-semibold text-lg">
@@ -203,7 +203,7 @@ export default function PodGoalSetting() {
       )}
 
       <div className="flex items-center justify-end gap-3">
-        <Button text="Close" variant="secondary" onClick={close} />
+        {/* <Button text="Close" variant="secondary" onClick={close} /> */}
         <Button
           disabled={!canProceed || loading}
           text={loading ? "Submitting…" : "Join pod"}

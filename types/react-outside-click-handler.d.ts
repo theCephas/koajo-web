@@ -4,6 +4,7 @@ declare module 'react-outside-click-handler' {
   interface OutsideClickHandlerProps {
     onOutsideClick: () => void;
     children: ReactNode;
+    className?: string;
   }
   
   const OutsideClickHandler: React.FC<OutsideClickHandlerProps>;

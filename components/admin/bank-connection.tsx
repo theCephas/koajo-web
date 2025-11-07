@@ -5,10 +5,12 @@ import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { useOnboarding } from "@/lib/provider-onboarding";
-import TokenManager from "@/lib/utils/menory-manager";
+import { useDashboard } from "@/lib/provider-dashboard";
+import TokenManager from "@/lib/utils/memory-manager";
 
 export default function BankConnection() {
   const { close } = useOnboarding();
+  const { emailVerified, kycCompleted } = useDashboard();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stripe, setStripe] = useState<Stripe | null>(null);
@@ -40,7 +42,6 @@ export default function BankConnection() {
         throw new Error("Stripe is not loaded. Please wait a moment and try again.");
       }
 
-      // Fetch user data to get customer ID if not already available
       let customerId = userData?.customer?.id;
       if (!customerId) {
         try {
@@ -54,7 +55,6 @@ export default function BankConnection() {
         }
       }
 
-      // If no customer ID exists, create a Stripe customer
       if (!customerId) {
         try {
           console.log("Creating Stripe customer...");
@@ -95,7 +95,6 @@ export default function BankConnection() {
         }
       }
 
-      // Create Financial Connections session
       const response = await fetch('/api/create-financial-connections-session', {
         method: 'POST',
         headers: {
@@ -132,12 +131,10 @@ export default function BankConnection() {
         throw new Error(result.error.message || 'Failed to connect bank account');
       }
 
-      // Store session ID for reference
       if (session_id) {
         localStorage.setItem('pendingBankConnection', session_id);
       }
 
-      // Close modal - user will be redirected by Stripe's return_url
       close();
     } catch (err) {
       console.error('Bank connection error:', err);
@@ -145,6 +142,33 @@ export default function BankConnection() {
       setIsLoading(false);
     }
   };
+
+  if (!emailVerified || !kycCompleted) {
+    return (
+      <CardAuth
+        title="Connect Your Bank Account"
+        description="Securely connect your US bank account via Stripe to enable automated contributions and payouts. Your banking credentials are never stored by Koajo."
+      >
+        <div className="space-y-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800 text-sm">
+              {!emailVerified && !kycCompleted
+                ? "Please verify your email and complete KYC verification before connecting your bank account."
+                : !emailVerified
+                ? "Please verify your email before connecting your bank account."
+                : "Please complete KYC verification before connecting your bank account."}
+            </p>
+          </div>
+          <Button
+            onClick={close}
+            text="Close"
+            variant="secondary"
+            className="w-full"
+          />
+        </div>
+      </CardAuth>
+    );
+  }
 
   return (
     <CardAuth

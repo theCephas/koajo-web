@@ -4,10 +4,14 @@ import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import { Button } from "@/components/utils";
 import Modal from "@/components/utils/modal";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
 type PodGoalsProps = {
   className?: string;
 };
+
+const MAX_VISIBLE_GOALS = 2;
 
 const PodGoals = ({ className }: PodGoalsProps) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -16,15 +20,24 @@ const PodGoals = ({ className }: PodGoalsProps) => {
     return Math.min((current / target) * 100, 100);
   };
 
-  const displayedGoals =  goals.slice(0, 1);
+  const displayedGoals =  goals.slice(0, MAX_VISIBLE_GOALS);
+
+  const { emailVerified } = useDashboard();
+  const isLocked = !emailVerified;
 
   return (
     <>
+      <div className="relative">
       <Card
         title="My Pod Goal"
         tooltip="Track your pod's progress towards financial goals"
         onSeeMore={() => setModalVisible(true)}
-        className={className}
+          className={cn(
+            className,
+            isLocked &&
+              "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+          )}
+          showSeeMore={!isLocked && displayedGoals.length > MAX_VISIBLE_GOALS}
       >
         <div className="bg-white rounded-lg mt-6">
           {displayedGoals.map((goal) => {
@@ -36,6 +49,8 @@ const PodGoals = ({ className }: PodGoalsProps) => {
           })}
         </div>
       </Card>
+         <LockedOverlay />
+      </div>
 
       <Modal
         visible={modalVisible}

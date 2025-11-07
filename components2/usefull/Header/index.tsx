@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import cn from "clsx";
 import styles from "./Header.module.sass";
-import Logo from "@/components2/usefull/Logo";
 import Image from "@/components2/usefull/Image";
 import Search from "@/components2/usefull/Search";
 import Icon from "@/components2/usefull/Icon";
 import Notifications from "./Notifications";
+import { useDashboard } from "@/lib/provider-dashboard";
 
 import { notifications } from "@/mocks/notifications";
 
@@ -38,8 +38,14 @@ const Header = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [visibleSearch, setVisibleSearch] = useState<boolean>(false);
+  const { kycCompleted, logout } = useDashboard();
 
   const pathname = usePathname();
+
+  const handleLogout = () => {
+    logout();
+    closeMenu();
+  };
 
   const toggleMenu = () => {
     setVisible(!visible);
@@ -94,9 +100,9 @@ const Header = () => {
               </Link>
             ))}
           </nav>
-          <Link className={styles.logout} href="/auth/login">
+          <button className={styles.logout} onClick={handleLogout}>
             Log Out
-          </Link>
+          </button>
           <button className={styles.close} onClick={closeMenu}>
             <Icon name="close" />
           </button>
@@ -130,13 +136,30 @@ const Header = () => {
             </button>
           </div>
           <Notifications items={notifications} />
-          <Link className={styles.avatar} href="/settings">
+          <Link className={cn(styles.avatar, "relative")} href="/settings">
             <Image
               src="/media/images/avatar.jpg"
               fill
               style={{ objectFit: "cover" }}
               alt="Avatar"
             />
+            {kycCompleted && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            )}
           </Link>
         </div>
         <div

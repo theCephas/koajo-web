@@ -6,7 +6,7 @@ import Layout from "@/components2/usefull/Layout";
 import Settings from "@/components2/Settings";
 import Field from "@/components2/usefull/Field";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import {
   FORM_FIELDS_MESSAGES,
   FORM_FIELDS_PATTERNS,

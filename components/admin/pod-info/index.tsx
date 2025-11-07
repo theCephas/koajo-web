@@ -1,10 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import cn from "clsx";
 import styles from "./pod-info.module.sass";
 import Card from "@/components2/usefull/Card";
 import Select from "@/components2/usefull/Select";
-import { Button } from "@/components/utils";
+import { Button, ButtonProps } from "@/components/utils";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
 const cards = [
   {
@@ -29,36 +32,92 @@ type PodInfoProps = {
   percent?: number;
 };
 
-const PodInfo = ({ percent }: PodInfoProps) => {
+const PodInfo = ({}: PodInfoProps) => {
+  const router = useRouter();
+  const { emailVerified, kycCompleted, kycStatus } = useDashboard();
   const [card, setCard] = useState<string>(cards[0].value);
+  const isLocked = !emailVerified
 
   const handleChange = (value: string) => setCard(value);
 
+  const getButtonProps = (): ButtonProps => {
+    if (!emailVerified) {
+      return {
+        text: "Complete KYC",
+        disabled: true,
+        onClick: () => {},
+        variant: "secondary",
+      };
+    }
+
+    if (!kycCompleted) {
+      const kycFailed = kycStatus === null || kycStatus === "document_verified";
+      return {
+        text: kycFailed ? "Retry KYC" : "Complete KYC",
+        disabled: false,
+        onClick: () => router.push("/register/kyc"),
+        href: "/register/kyc",
+        variant: "secondary",
+      };
+    }
+
+    if (kycCompleted) {
+      return {
+        text: "Connect Bank",
+        disabled: false,
+        onClick: () => {
+          
+          // TODO: Navigate to bank connection
+        },
+        variant: "secondary",
+      };
+    }
+
+    return {
+      text: "Join More Pods",
+      disabled: false,
+      onClick: () => {},
+    variant: "primary",
+    };
+  };
+
+  const buttonProps = getButtonProps();
+
   return (
-    <Card
-      title="Current Pod"
-      tooltip="The pod your are currently viewing"
-      right={
-        <Select
-          className={styles.select}
-          titlePrefix="ID:"
-          value={card}
-          onChange={handleChange}
-          options={cards}
-          small
-        />
-      }
-    >
-      <div
-        className={cn(
-          styles.price,
-          "text-transparent bg-clip-text bg-[image:linear-gradient(107deg,#FD8B51_-2.13%,_#469DA3_49.87%,_#FD8B51_94.01%)]"
-        )}
+      <Card
+        title="Current Pod"
+        tooltip="The pod your are currently viewing"
+        right={
+          <Select
+            className={styles.select}
+            titlePrefix="ID:"
+            value={card}
+            onChange={handleChange}
+            options={cards}
+            small
+          />
+        }
+        className="relative"
       >
-        No Pods Found
-      </div>
-      <Button text="Join More Pods" className="w-full mt-4" />
-    </Card>
+        <div
+          className={cn(
+            styles.price,
+            "text-transparent bg-clip-text bg-[image:linear-gradient(107deg,#FD8B51_-2.13%,_#469DA3_49.87%,_#FD8B51_94.01%)]",
+            isLocked && "blur-sm select-none pointer-events-none"
+          )}
+        >
+          No Pods Found
+        </div>  
+        <Button
+          text={buttonProps.text}
+          className="w-full mt-4"
+          disabled={buttonProps.disabled}
+          onClick={buttonProps.onClick}
+          variant={buttonProps.variant}
+        />  
+
+        <LockedOverlay className="h-[60%]"/>
+      </Card>
   );
 };
 

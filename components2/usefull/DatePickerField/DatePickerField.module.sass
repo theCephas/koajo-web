@@ -1,0 +1,143 @@
+@use "@/styles/helpers" as *
+
+.datePickerField
+    &:not(:last-child)
+        margin-bottom: 32px
+        +m
+            margin-bottom: 24px
+
+    &.datePickerFieldMedium
+        .input
+            height: 48px
+            padding: 0 17px
+            border-radius: 24px
+        .icon
+            right: 18px
+        &.datePickerFieldIcon
+            .input
+                padding-right: 48px
+
+    &.datePickerFieldIcon
+        .input
+            padding-right: 60px
+
+.label
+    margin-bottom: 3px
+    font-size: 12px
+    line-height: 1.6
+    font-weight: 500
+    color: $s3
+
+.required
+    color: red
+    margin-left: 2px
+
+.wrap
+    position: relative
+    display: flex
+    align-items: center
+
+.datePickerWrapper
+    width: 100%
+    display: block
+
+.inputWrapper
+    position: relative
+    flex: 1
+    width: 100%
+    :global(.react-datepicker-wrapper)
+        width: 100%
+        display: block
+    :global(.react-datepicker__input-container)
+        width: 100%
+        display: block
+        input
+            width: 100%
+
+.input
+    width: 100%
+    height: 62px
+    padding: 0 23px
+    border: 1px solid $s2
+    background: $p0
+    border-radius: 15px
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    font-size: 14px
+    letter-spacing: 0
+    font-weight: 500
+    color: $s5
+    transition: border-color .2s
+    &::placeholder
+        color: rgba($s4, .7)
+    &:focus
+        border-color: $i5
+        outline: none
+    &:active
+        +m
+            font-size: 16px
+    &:disabled
+        opacity: 0.5
+        pointer-events: none
+        cursor: not-allowed
+
+.inputError
+    border-color: red
+
+.inputWithPrefix
+    :global(.react-datepicker__input-container input)
+        padding-left: 120px
+
+.inputWithSuffix
+    :global(.react-datepicker__input-container input)
+        padding-right: 120px
+
+.prefix
+    position: absolute
+    left: 12px
+    top: 0
+    bottom: 0
+    display: flex
+    align-items: center
+    z-index: 1
+    pointer-events: none
+
+.suffix
+    position: absolute
+    right: 12px
+    top: 0
+    bottom: 0
+    display: flex
+    align-items: center
+    z-index: 1
+    pointer-events: none
+
+.icon
+    position: absolute
+    top: 50%
+    right: 24px
+    transform: translateY(-50%)
+    pointer-events: none
+    z-index: 1
+
+.error
+    display: flex
+    align-items: center
+    gap: 8px
+    margin-top: 8px
+    color: red
+    font-size: 12px
+
+.errorIcon
+    width: 16px
+    height: 16px
+    background: red
+    border-radius: 50%
+    display: flex
+    align-items: center
+    justify-content: center
+    color: white
+    font-size: 10px
+    font-weight: bold
+

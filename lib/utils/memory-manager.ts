@@ -241,6 +241,13 @@ export class TokenManager {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(TOKEN_EXPIRY_KEY);
       localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(USER_ID_KEY);
+      localStorage.removeItem(REGISTRATION_STATUS_KEY);
+      
+      if (typeof document !== "undefined") {
+        document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      }
+      
       console.log("Auth data cleared successfully");
     } catch (error) {
       console.error("Failed to clear auth data:", error);

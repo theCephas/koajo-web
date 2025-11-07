@@ -15,7 +15,7 @@ import BalanceInfo from "@/components/admin/blance-info";
 import CycleDuration from "@/components/admin/cycle-duration";
 import Modal from "@/components/utils/modal";
 import { AuthService } from "@/lib/services/authService";
-import { TokenManager } from "@/lib/utils/menory-manager";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import type {
   AchievementsSummary,
   PodActivitiesResponse,
@@ -23,6 +23,8 @@ import type {
 } from "@/lib/types/api";
 import { ApiErrorClass } from "@/lib/utils/auth";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
+import { useDashboard } from "@/lib/provider-dashboard";
+import { DASHBOARD_BREADCRUMBS } from "@/lib/constants/dashboard";
 
 const MAX_VISIBLE_ACTIVITIES = 6;
 
@@ -40,6 +42,8 @@ const Dashboard = () => {
   const [achievementsError, setAchievementsError] = useState<string | null>(
     null
   );
+
+  const { user } = useDashboard();
 
   useEffect(() => {
     let isMounted = true;
@@ -191,8 +195,8 @@ const Dashboard = () => {
   return (
     <>
       <Layout
-        title={`Welcome back${TokenManager.getUserData()?.firstName ? ", " + TokenManager.getUserData()!.firstName : ""} 👏🏻`}
-        breadcrumbs={breadcrumbs}
+        title={`Welcome ${user?.lastLoginAt && "back"} ${user?.firstName ? ", " + user.firstName : ""} 👏🏻`}
+        breadcrumbs={DASHBOARD_BREADCRUMBS.OVERVIEW}
         head={<Navigation />}
       >
         <div className={styles.row}>
@@ -281,15 +285,6 @@ const Dashboard = () => {
 
 export default Dashboard;
 
-const breadcrumbs = [
-  {
-    title: "Dashboard",
-  },
-  {
-    title: "Overview",
-    url: "/dashboard",
-  },
-];
 
 const capitalize = (value: string): string =>
   value.replace(/\b\w/g, (char) => char.toUpperCase());

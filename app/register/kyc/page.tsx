@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { fetchVerificationSession } from "@/lib/utils/stripe";
-import TokenManager from "@/lib/utils/menory-manager";
+import TokenManager from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
 import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
+import { User } from "@/lib/types/api";
 
 const KYC_STORAGE_KEY = 'kyc_step';
 const PENDING_VERIFICATION_TYPE_KEY = 'pendingVerificationType';
 
-export default function KycPage() {
+function KycContent() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<
     "verification" | "processing" | "success" | "done"
@@ -37,29 +38,24 @@ export default function KycPage() {
     console.log('isDocument', isDocument);
   }, [searchParams]);
 
-  // Initialize step from localStorage or check verification status
   useEffect(() => {
     const initializeStep = async () => {
-      // First, check if we're returning from Stripe (has verification=complete in URL)
       const verification = searchParams.get('verification');
       const verificationSessionId = searchParams.get('verification_session');
 
       console.log('verification', verification);
       console.log('verificationSessionId', verificationSessionId);
       if (verification === 'complete' && verificationSessionId) {
-        // We're returning from Stripe, handle the return
         await handleVerificationReturn(verificationSessionId);
         return;
       }
 
-      // Check localStorage for persisted step
       const savedStep = localStorage.getItem(KYC_STORAGE_KEY) as "verification" | "processing" | "success" | null;
       if (savedStep) {
         setCurrentStep(savedStep);
         setVerificationStatusChecked(true);
       }
 
-      // Also check backend verification status
       const token = TokenManager.getToken();
       if (!token) {
         setVerificationStatusChecked(true);
@@ -73,15 +69,13 @@ export default function KycPage() {
           return;
         }
 
-        const user = response as any;
+        const user = response as User;
         const verificationStatus = user.identity_verification;
 
-        // If document is verified but ID number is not, show ID number verification step
         if (verificationStatus === "document_verified") {
           setCurrentStep("processing");
           localStorage.setItem(KYC_STORAGE_KEY, "processing");
         } else if (verificationStatus === "all_verified") {
-          // Both verifications complete, redirect to dashboard
           router.push("/dashboard");
           return;
         }
@@ -145,19 +139,16 @@ export default function KycPage() {
       
       if (session.status === 'verified') {
         if (type === 'document') {
-          // Document verified - move to ID number verification
           setCurrentStep("verification");
           localStorage.setItem(KYC_STORAGE_KEY, "verification");
           localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
         } else if (type === 'id_number') {
-          // ID number verified - create customer and update user
           setCurrentStep("success");
           localStorage.setItem(KYC_STORAGE_KEY, "success");
           localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
           const token = TokenManager.getToken();
           if (token) {
             try {
-              // Update user name if available
               if (firstName || lastName) {
                 const updateData: { firstName?: string; lastName?: string } = {};
                 if (firstName) updateData.firstName = firstName;
@@ -167,7 +158,6 @@ export default function KycPage() {
                 console.log('User name updated successfully:', { firstName, lastName });
               }
 
-              // Create customer with SSN and address if available from ID number verification
               if (ssnLast4 || address) {
                 try {
                   const customerResponse = await fetch(getApiUrl('/auth/create-customer'), {
@@ -396,5 +386,30 @@ export default function KycPage() {
         </div>
       </div>
     </CardAuth>
+  );
+}
+
+
+export default function KycPage() {
+  return (
+    <Suspense 
+    // fallback={
+    //   <CardAuth
+    //     title="Verify Your Email"
+    //     description="Loading..."
+    //   >
+    //     <div className="text-center">
+    //       <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+    //         <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    //         </svg>
+    //       </div>
+    //       <p className="text-gray-600">Loading...</p>
+    //     </div>
+    //   </CardAuth>
+    // }
+    >
+      <KycContent />
+    </Suspense>
   );
 }

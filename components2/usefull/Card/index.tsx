@@ -8,6 +8,7 @@ type CardProps = {
   className?: string;
   title: string;
   tooltip?: string;
+  showSeeMore?: boolean;
   onSeeMore?: () => void;
   center?: React.ReactNode;
   right?: React.ReactNode;
@@ -18,6 +19,7 @@ const Card = ({
   className,
   title,
   tooltip,
+  showSeeMore = true,
   onSeeMore,
   center,
   right,
@@ -30,7 +32,7 @@ const Card = ({
         {tooltip && <Tooltip className={styles.tooltip} content={tooltip} />}
       </div>
       {center}
-      {onSeeMore && (
+      {showSeeMore && onSeeMore && (
         <button className={styles.more} onClick={onSeeMore}>
           See more <Icon name="arrow-thick-right" size="14" />
         </button>

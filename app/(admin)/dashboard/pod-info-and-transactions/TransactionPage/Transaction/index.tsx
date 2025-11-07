@@ -10,6 +10,8 @@ import Details from "./Details";
 import { CheckboxProps } from "@/components2/Checkbox";
 import { TransactionType } from "@/types";
 
+import LockedOverlay from "@/components/admin/locked-overlay";
+
 
 
 type TransactionProps = {
@@ -34,7 +36,7 @@ const Transaction = ({ item, checkboxValue, onChange }: TransactionProps) => {
               />
             </div>
           </div>
-          <div className="flex grow justify-between items-center gap-4">
+          <div className="flex grow justify-between items-center gap-4 relative">
             <div className={styles.cell}>{item.invoice}</div>
             <div className={styles.cell}>
               <div className={styles.description}>
@@ -91,6 +93,8 @@ const Transaction = ({ item, checkboxValue, onChange }: TransactionProps) => {
                 <Delete />
               </div>
             </div>
+
+       <LockedOverlay />
           </div>
         </div>
         {visible && <Details item={item} />}

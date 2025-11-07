@@ -3,6 +3,8 @@ import { useState } from "react";
 import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import Modal from "@/components/utils/modal";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
 const members: MemberCardProps['member'][] = [
   // {
@@ -74,18 +76,28 @@ type PodMembersProps = {
   className?: string;
 };
 
+const MAX_VISIBLE_MEMBERS = 4;
+
 const PodMembers = ({ className }: PodMembersProps) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const { emailVerified } = useDashboard();
+  const isLocked = !emailVerified;
 
-  const displayedMembers = members.slice(0, 4); 
+  const displayedMembers = members.slice(0, MAX_VISIBLE_MEMBERS); 
 
   return (
     <>
+      <div className="relative">
       <Card
         title="Group Members"
         tooltip="View all members in your pod"
         onSeeMore={() => setModalVisible(true)}
-        className={className}
+          className={cn(
+            className,
+            isLocked &&
+              "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+          )}
+        showSeeMore={!isLocked && displayedMembers.length > MAX_VISIBLE_MEMBERS}
       >
         <div className="grid grid-cols-2 gap-4 mt-6">
           {/* {displayedMembers.map((member) => (
@@ -94,6 +106,8 @@ const PodMembers = ({ className }: PodMembersProps) => {
           No group members yet
         </div>
       </Card>
+        <LockedOverlay />
+      </div>
 
       <Modal
         visible={modalVisible}

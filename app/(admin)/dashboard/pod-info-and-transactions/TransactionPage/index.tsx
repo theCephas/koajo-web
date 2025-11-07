@@ -3,37 +3,41 @@ import { useState } from "react";
 import styles from "./TransactionPage.module.sass";
 import Layout from "@/components2/usefull/Layout";
 import Navigation from "@/components2/usefull/Navigation";
-import Checkbox, { CheckboxProps } from "@/components2/Checkbox";
+import Checkbox from "@/components2/Checkbox";
 import Icon from "@/components2/usefull/Icon";
 import Filters from "./Filters";
 import Head from "./Head";
 import Transaction from "./Transaction";
 import Foot from "./Foot";
-
+import BalanceInfo from "@/components/admin/blance-info";
+import PodMembers from "@/components/admin/pod-members";
+import CycleDuration from "@/components/admin/cycle-duration";
 import { captions, transactions } from "@/mocks/transactions";
 import { CheckboxValue, TransactionType } from "@/types";
-
-const breadcrumbs = [
-  {
-    title: "Dashboard",
-    url: "/",
-  },
-  {
-    title: "Transaction",
-  },
-];
+import { DASHBOARD_BREADCRUMBS } from "@/lib/constants/dashboard";
+import { useDashboard } from "@/lib/provider-dashboard";
+import cn from "clsx";
 
 const TransactionPage = () => {
+  const { emailVerified, kycCompleted } = useDashboard();
+  const isLocked = !emailVerified || !kycCompleted;
+  
   const [search, setSearch] = useState<string>("");
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
   const [choose, setChoose] = useState<CheckboxValue>("unchecked");
-  const [selectedFilters, setSelectedFilters] = useState<Array<TransactionType>>([]);
-  const [selectedTransactionIds, setSelectedTransactionIds] = useState<Array<string>>([]);
+  const [selectedFilters, setSelectedFilters] = useState<
+    Array<TransactionType>
+  >([]);
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState<
+    Array<string>
+  >([]);
 
   const handleChange = (transaction: TransactionType) => {
     setSelectedTransactionIds([...selectedTransactionIds, transaction.id]);
     if (selectedTransactionIds.includes(transaction.id)) {
-      setSelectedTransactionIds(selectedTransactionIds.filter((id) => id !== transaction.id));
+      setSelectedTransactionIds(
+        selectedTransactionIds.filter((id) => id !== transaction.id)
+      );
     }
   };
 
@@ -48,9 +52,22 @@ const TransactionPage = () => {
   return (
     <Layout
       title="Welcome back, Rainer Yaeger 👏🏻"
-      breadcrumbs={breadcrumbs}
+      breadcrumbs={DASHBOARD_BREADCRUMBS.POD_INFO_AND_TRANSACTIONS}
       head={<Navigation />}
     >
+      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-1">
+          <BalanceInfo inforType="contribution" />
+        </div>
+        <div className="col-span-2">
+          <PodMembers />
+        </div>
+        <div className="col-span-1">
+          <CycleDuration />
+        </div>
+      </div>
+
       <div className={styles.transaction}>
         <Head
           search={search}
@@ -60,7 +77,10 @@ const TransactionPage = () => {
           visible={visibleFilters}
         />
         {visibleFilters && <Filters />}
-        <div className={styles.inner}>
+        <div className={cn(
+          styles.inner,
+          isLocked && "[&>div]:blur-sm [&>div]:select-none [&>div]:pointer-events-none"
+        )}>
           <div className={styles.table}>
             <div className={styles.head}>
               <div className={styles.cell}>
@@ -88,16 +108,22 @@ const TransactionPage = () => {
             <div className={styles.body}>
               {transactions.map((transaction) => (
                 <Transaction
-                  checkboxValue={selectedTransactionIds.includes(transaction.id) ? "checked" : "unchecked"}
+                  checkboxValue={
+                    selectedTransactionIds.includes(transaction.id)
+                      ? "checked"
+                      : "unchecked"
+                  }
                   onChange={() => handleChange(transaction)}
                   item={transaction}
                   key={transaction.id}
                 />
               ))}
+
             </div>
           </div>
         </div>
         <Foot />
+      </div>
       </div>
     </Layout>
   );
