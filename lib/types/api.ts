@@ -44,6 +44,7 @@ export interface SignupResponse {
 export interface VerifyEmailRequest {
   email: string;
   token: string;
+  origin?: string;
 }
 
 export interface VerifyEmailResponse {
@@ -71,6 +72,7 @@ export interface ResendForgotPasswordResponse {
 
 export interface ResendVerificationEmailRequest {
   email: string;
+  origin?: string;
 }
 
 export interface ResendVerificationEmailResponse {
