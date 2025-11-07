@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode, useLayoutEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { ReactNode, useLayoutEffect, useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { DashboardProvider } from "@/lib/provider-dashboard";
 import { OnboardingProvider } from "@/lib/provider-onboarding";
@@ -14,16 +14,30 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
-  useLayoutEffect(() => {
+  const checkAuth = useCallback(() => {
     const isAuthed = TokenManager.isAuthenticated();
     if (!isAuthed) {
+      setReady(false);
       router.replace("/auth/login");
-      return;
+      return false;
     }
-    setReady(true);
+    return true;
   }, [router]);
+
+  useLayoutEffect(() => {
+    if (checkAuth()) {
+      setReady(true);
+    }
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (checkAuth()) {
+      setReady(true);
+    }
+  }, [pathname, checkAuth]);
 
   if (!ready) {
     return null;
