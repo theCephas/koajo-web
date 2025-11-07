@@ -13,12 +13,8 @@ const navigation = [
     url: "/dashboard",
   },
   {
-    title: "Transaction",
-    url: "/dashboard/transactions",
-  },
-  {
-    title: "Pod Information",
-    url: "/dashboard/pod-information",
+    title: "Pod Information & Transactions",
+    url: "/dashboard/pod-info-and-transactions",
   },
 ];
 
