@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { StripeProvider } from "@/lib/stripe-provider";
+import { StripeProvider } from "@/lib/provider-stripe";
 
 interface KycLayoutProps {
   children: ReactNode;
@@ -7,8 +7,6 @@ interface KycLayoutProps {
 
 export default function KycLayout({ children }: KycLayoutProps) {
   return (
-    <StripeProvider>
-      {children}
-    </StripeProvider>
+    <>{children}</>
   );
 }

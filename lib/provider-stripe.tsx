@@ -32,7 +32,6 @@ export function StripeProvider({ children }: StripeProviderProps) {
   useEffect(() => {
     const initializeStripe = async () => {
       try {
-        console.log('Initializing Stripe with key:', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 20) + '...');
         
         if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
           throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');

@@ -47,18 +47,20 @@ const Layout = ({
           <Header />
           <div className={styles.title}>{title}</div>
           <div className={styles.breadcrumbs}>
-            {breadcrumbs.map((item, index) =>
-              item.url ? (
+            {breadcrumbs.map((item, index) => {
+              const trimmedTitle = item.title.replace("/", "").trim();
+            
+              return item.url ? (
                 <Link className={styles.link} href={item.url} key={index}>
-                  {item.title}
+                  {trimmedTitle}{index < breadcrumbs.length - 1 && "/"}
                 </Link>
               ) : (
                 <div className={styles.text} key={index}>
                   <Icon name="arrow-next" size="12" />
-                  {item.title}
+                  {trimmedTitle}{index < breadcrumbs.length - 1 && "/"}
                 </div>
               )
-            )}
+            })}
           </div>
           {head}
         </div>

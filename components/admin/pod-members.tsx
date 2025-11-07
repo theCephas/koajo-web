@@ -4,63 +4,70 @@ import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import Modal from "@/components/utils/modal";
 
-const members = [
-  {
-    id: 1,
-    name: "John Doe",
-    userId: "#959505850",
-    avatar: "👨‍💼",
-    avatarBg: "bg-amber-800"
-  },
-  {
-    id: 2,
-    name: "Sarah Smith",
-    userId: "#959505850",
-    avatar: "👩‍💻",
-    avatarBg: "bg-yellow-500"
-  },
-  {
-    id: 3,
-    name: "Ahmed Hassan",
-    userId: "#959505850",
-    avatar: "👳‍♂️",
-    avatarBg: "bg-purple-400"
-  },
-  {
-    id: 4,
-    name: "Maria Garcia",
-    userId: "#959505850",
-    avatar: "👩‍🎨",
-    avatarBg: "bg-sky-300"
-  },
-  {
-    id: 5,
-    name: "David Chen",
-    userId: "#959505850",
-    avatar: "👨‍🔬",
-    avatarBg: "bg-green-500"
-  },
-  {
-    id: 6,
-    name: "Emma Wilson",
-    userId: "#959505850",
-    avatar: "👩‍🏫",
-    avatarBg: "bg-pink-400"
-  },
-  {
-    id: 7,
-    name: "Michael Brown",
-    userId: "#959505850",
-    avatar: "👨‍💻",
-    avatarBg: "bg-blue-500"
-  },
-  {
-    id: 8,
-    name: "Lisa Johnson",
-    userId: "#959505850",
-    avatar: "👩‍⚕️",
-    avatarBg: "bg-red-400"
-  }
+const members: MemberCardProps['member'][] = [
+  // {
+  //   id: 1,
+  //   name: "John Doe",
+  //   userId: "#959505850",
+  //   avatar: "👨‍💼",
+  //   avatarBg: "bg-amber-800"
+  // },
+  // {
+  //   id: 1,
+  //   name: "John Doe",
+  //   userId: "#959505850",
+  //   avatar: "👨‍💼",
+  //   avatarBg: "bg-amber-800"
+  // },
+  // {
+  //   id: 2,
+  //   name: "Sarah Smith",
+  //   userId: "#959505850",
+  //   avatar: "👩‍💻",
+  //   avatarBg: "bg-yellow-500"
+  // },
+  // {
+  //   id: 3,
+  //   name: "Ahmed Hassan",
+  //   userId: "#959505850",
+  //   avatar: "👳‍♂️",
+  //   avatarBg: "bg-purple-400"
+  // },
+  // {
+  //   id: 4,
+  //   name: "Maria Garcia",
+  //   userId: "#959505850",
+  //   avatar: "👩‍🎨",
+  //   avatarBg: "bg-sky-300"
+  // },
+  // {
+  //   id: 5,
+  //   name: "David Chen",
+  //   userId: "#959505850",
+  //   avatar: "👨‍🔬",
+  //   avatarBg: "bg-green-500"
+  // },
+  // {
+  //   id: 6,
+  //   name: "Emma Wilson",
+  //   userId: "#959505850",
+  //   avatar: "👩‍🏫",
+  //   avatarBg: "bg-pink-400"
+  // },
+  // {
+  //   id: 7,
+  //   name: "Michael Brown",
+  //   userId: "#959505850",
+  //   avatar: "👨‍💻",
+  //   avatarBg: "bg-blue-500"
+  // },
+  // {
+  //   id: 8,
+  //   name: "Lisa Johnson",
+  //   userId: "#959505850",
+  //   avatar: "👩‍⚕️",
+  //   avatarBg: "bg-red-400"
+  // }
 ];
 
 type PodMembersProps = {
@@ -70,7 +77,7 @@ type PodMembersProps = {
 const PodMembers = ({ className }: PodMembersProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const displayedMembers = members.slice(0, 4); // Show only first 4 members initially
+  const displayedMembers = members.slice(0, 4); 
 
   return (
     <>
@@ -81,9 +88,10 @@ const PodMembers = ({ className }: PodMembersProps) => {
         className={className}
       >
         <div className="grid grid-cols-2 gap-4 mt-6">
-          {displayedMembers.map((member) => (
+          {/* {displayedMembers.map((member) => (
             <MemberCard key={member.id} member={member} />
-          ))}
+          ))} */}
+          No group members yet
         </div>
       </Card>
 

@@ -16,7 +16,7 @@ const PodGoals = ({ className }: PodGoalsProps) => {
     return Math.min((current / target) * 100, 100);
   };
 
-  const displayedGoals = goals.slice(0, 1); // Show only first goal initially
+  const displayedGoals =  goals.slice(0, 1);
 
   return (
     <>
@@ -29,9 +29,10 @@ const PodGoals = ({ className }: PodGoalsProps) => {
         <div className="bg-white rounded-lg mt-6">
           {displayedGoals.map((goal) => {
             const percentage = getProgressPercentage(goal.current, goal.target);
-            return (
-              <GoalItem key={goal.id} goal={goal} percentage={percentage} />
-            );
+            // return (
+              // <GoalItem key={goal.id} goal={goal} percentage={percentage} />
+            // );
+            return null;
           })}
         </div>
       </Card>
@@ -128,42 +129,42 @@ const GoalItem = ({
 };
 
 const goals: GoalItemProps[] = [
-  {
-    id: 1,
-    title: "Dream Car",
-    subtitle: "Due date - August 15",
-    icon: "🚗",
-    target: 20000,
-    current: 5000,
-    unit: "$",
-  },
-  {
-    id: 2,
-    title: "Vacation Fund",
-    subtitle: "Due date - December 20",
-    icon: "✈️",
-    target: 8000,
-    current: 3200,
-    unit: "$",
-  },
-  {
-    id: 3,
-    title: "Home Renovation",
-    subtitle: "Due date - March 10",
-    icon: "🏠",
-    target: 25000,
-    current: 15000,
-    unit: "$",
-  },
-  {
-    id: 4,
-    title: "Emergency Fund",
-    subtitle: "Due date - Ongoing",
-    icon: "🛡️",
-    target: 15000,
-    current: 12000,
-    unit: "$",
-  },
+  // {
+  //   id: 1,
+  //   title: "Dream Car",
+  //   subtitle: "Due date - August 15",
+  //   icon: "🚗",
+  //   target: 20000,
+  //   current: 5000,
+  //   unit: "$",
+  // },
+  // {
+  //   id: 2,
+  //   title: "Vacation Fund",
+  //   subtitle: "Due date - December 20",
+  //   icon: "✈️",
+  //   target: 8000,
+  //   current: 3200,
+  //   unit: "$",
+  // },
+  // {
+  //   id: 3,
+  //   title: "Home Renovation",
+  //   subtitle: "Due date - March 10",
+  //   icon: "🏠",
+  //   target: 25000,
+  //   current: 15000,
+  //   unit: "$",
+  // },
+  // {
+  //   id: 4,
+  //   title: "Emergency Fund",
+  //   subtitle: "Due date - Ongoing",
+  //   icon: "🛡️",
+  //   target: 15000,
+  //   current: 12000,
+  //   unit: "$",
+  // },
 ];
 
 export default PodGoals;

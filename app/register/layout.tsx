@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import RegistrationSteps from "@/components/admin/registration-steps";
 import Link from "next/link";
 import Image from "next/image";
+import { StripeProvider } from "@/lib/provider-stripe";
 
 interface RegisterLayoutProps {
   children: ReactNode;
@@ -9,7 +10,8 @@ interface RegisterLayoutProps {
 
 export default function RegisterLayout({ children }: RegisterLayoutProps) {
   return (
-    <div className="bg-gray w-full h-dvh">
+    <StripeProvider>
+      <div className="bg-gray w-full h-dvh">
       {/* Background */}
       {/* <div className="absolute inset-0 flex gap-10 h-full p-page-auth-offset-horizontal"> */}
         {/* <div className="w-[calc((428/1396)*100%)] bg-[image:linear-gradient(180deg,#469DA3_0%,#1C2634_100%)] rounded-2xl" /> */}
@@ -51,5 +53,6 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
         </div>
       </div>
     </div>
+    </StripeProvider>
   );
 }

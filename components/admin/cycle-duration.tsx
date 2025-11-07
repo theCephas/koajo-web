@@ -6,10 +6,14 @@ export default function CycleDuration() {
       title="Cycle Duration"
       tooltip="The days left in the current cycle"
     >
-      <div className="text-2xl font-bold mt-4">36 days remaining</div>
+      <div className="text-2xl font-bold mt-4">
+        {/* 36 days remaining */}
+        No cycle duration yet
+        </div>
       <p className="text-base text-text-500 font-medium mt-4">
-        Expense increased by <span className="text-primary">$1000 </span>
-        this month.
+          {/* Expense increased by <span className="text-primary">$1000 </span>
+          this month. */}
+          No expense yet
       </p>
     </Card>
   );

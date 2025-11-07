@@ -55,7 +55,7 @@ const PodInfo = ({ percent }: PodInfoProps) => {
           "text-transparent bg-clip-text bg-[image:linear-gradient(107deg,#FD8B51_-2.13%,_#469DA3_49.87%,_#FD8B51_94.01%)]"
         )}
       >
-        $100 Pod
+        No Pods Found
       </div>
       <Button text="Join More Pods" className="w-full mt-4" />
     </Card>

@@ -1,13 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Field, PasswordField } from "@/components/utils";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { Button, Field, Modal, ModalProps, PasswordField } from "@/components/utils";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import GoogleIcon from "@/public/media/icons/google-g-letter.svg";
 import CardAuth from "@/components/auth/card-auth";
 import { useRouter } from "next/navigation";
+import { AuthService } from "@/lib/services/authService";
+import { LoginSuccessResponse } from "@/lib/types/api";
+import { TokenManager } from "@/lib/utils/menory-manager";
+
+const resolveApiMessage = (
+  message: string | string[] | undefined,
+  fallback: string
+): string => {
+  if (Array.isArray(message)) {
+    const first = message.find(
+      (value) => typeof value === "string" && value.trim().length > 0
+    );
+    return first ? first.trim() : fallback;
+  }
+
+  if (typeof message === "string" && message.trim().length > 0) {
+    return message.trim();
+  }
+
+  return fallback;
+};
 
 interface LoginFormData {
   email: string;
@@ -19,47 +39,59 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors: formErrors, isSubmitting },
-    watch,
+    formState: { errors: formErrors },
   } = useForm<LoginFormData>();
-  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const formData = watch();
-  const [faillureMessage, setFaillureMessage] = useState<string>("");
-  const handleSubmitForm = async (data: LoginFormData) => {
+  const [faillureMessage, setFaillureMessage] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  
+  const onClose = () => {
+    setModalVisible(false);
+    setFaillureMessage("");
+  };
+
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
 
     try {
-      const success = await login(data.email, data.password);
-
-      if (!success) {
-        setFaillureMessage("Invalid email or password");
-        return;
-      }
-
-      // Redirect to dashboard on success
-      router.push("/dashboard");
+      const response = await AuthService.login({ email: data.email, password: data.password });
+      
+      if (response && "error" in response && "message" in response && response.message.length > 0) {
+        setFaillureMessage(Array.isArray(response.message) ? response.message.join(", ") : response.message || "Invalid email or password");
+        setModalVisible(true);
+      } else if (response && ("id" in response || "accountId" in response || "accessToken" in response || "email" in response)) {
+        const loginResponse = response as LoginSuccessResponse;
+        TokenManager.setAuthData(loginResponse);
+        router.push("/dashboard");
+      } 
     } catch (error) {
       console.error("Login error:", error);
+      setFaillureMessage("Invalid email or password");
+      setModalVisible(true);
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 4000);
+      setFaillureMessage("");
     }
   };
 
   const handleGoogleLogin = () => {
-    // Implement Google OAuth
     console.log("Google login clicked");
   };
 
   return (
+    <>
     <CardAuth
       title="Login First to Your Account"
       description="Sign in to your Koajo account to access all Koajo products."
     >
       {/* Form */}
       <form
-        onSubmit={handleSubmit(handleSubmitForm)}
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-6.5"
         noValidate
       >
@@ -127,16 +159,16 @@ export default function LoginPage() {
             showArrow={false}
           />
 
-          <span className="text-sm text-gray-400">or login with</span>
+          {/* <span className="text-sm text-gray-400">or login with</span> */}
 
           {/* Google Login */}
-          <button
+          {/* <button
             onClick={handleGoogleLogin}
             className="cursor-pointer w-full flex items-center justify-center gap-1 px-8 py-3 border border-secondary-100 rounded-full text-text-500 hover:bg-gray transition-colors"
           >
             <GoogleIcon className="w-5 h-5" />
             Google
-          </button>
+          </button> */}
         </div>
       </form>
 
@@ -151,5 +183,22 @@ export default function LoginPage() {
         </Link>
       </div>
     </CardAuth>
+    {modalVisible && <ErrorModal visible={modalVisible} onClose={onClose} message={faillureMessage} />}
+    </>
   );
 }
+
+
+const ErrorModal = ({
+  visible,
+  onClose,
+  message,
+}: Pick<ModalProps, "visible" | "onClose"> & { message?: string }) => {
+  return (
+    <Modal visible={visible} onClose={onClose}>
+      <CardAuth title="Login Failed" description={message || "Please try again"} showErrorIcon={true} >
+        <Button text="Try Again" variant="primary" className="w-full" showArrow={false} onClick={onClose} />
+      </CardAuth>
+    </Modal>
+  );
+};

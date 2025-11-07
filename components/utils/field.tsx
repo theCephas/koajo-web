@@ -15,7 +15,9 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   children?: ReactNode;
+  chlidrenPosition?: 'left' | 'right';
   showError?: boolean;
+
 }
 
 export const Field = forwardRef<HTMLInputElement, FieldProps>(
@@ -33,6 +35,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
       error,
       onChange,
       children,
+      chlidrenPosition = 'right',
       showError = true,
       ...props
     },
@@ -47,6 +50,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
         </Label>
 
         <div className="relative">
+          {chlidrenPosition === 'left' && children}
           <Input
             ref={ref}
             id={name}
@@ -61,7 +65,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
             onChange={onChange}
             {...props}
           />
-          {children}
+          {chlidrenPosition === 'right' && children}
         </div>
 
         {hasError && showError && (

@@ -34,7 +34,15 @@ export const FORM_FIELDS_PATTERNS = {
     REQUIRED: "Enter the 6-digit code",
   },
 
-  PHONE_NUMBER: /^\+[1-9](?:[ -]?\d){1,14}$/, // E.164 with optional space or dash separators
+  PHONE_NUMBER: {
+    PATTERN: /^\+1\d{10}$/, // US phone number with country code: +1XXXXXXXXXX (10 digits)
+    MAX_LENGTH: 10,
+  },
+
+  FORMATTED_PHONE_NUMBER: {
+    PATTERN: /^\(\d{3}\) \d{3} \d{4}$/, // (XXX) XXX XXXX
+    MAX_LENGTH: 14,
+  },
 };
 
 export const FORM_FIELDS_MESSAGES = {
@@ -68,7 +76,14 @@ export const FORM_FIELDS_MESSAGES = {
   },
 
   PHONE_NUMBER: {
-    PATTERN: "Please enter a valid phone number with country code",
+    PATTERN: "Please enter a valid 10-digit US phone number",
+    MAX_LENGTH: "Phone number must be at most 10 digits",
+    REQUIRED: "Phone number is required",
+  },
+
+  FORMATTED_PHONE_NUMBER: {
+    PATTERN: "Please enter a valid 10-digit US phone number",
+    MAX_LENGTH: "Phone number must be at most 14 digits",
     REQUIRED: "Phone number is required",
   },
 

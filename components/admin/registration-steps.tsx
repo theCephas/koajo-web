@@ -31,17 +31,18 @@ export default function RegistrationSteps() {
         href: "/register",
         Icon: ProfileAddIcon,
       },
-      {
-        label: "Confirmation Code",
-        description: "Verify your email with the code sent to your inbox.",
-        href: "/register/otp",
-        Icon: VerifiedIcon,
-      },
+      
       {
         label: "KYC",
         description: "Verify your identity to Continue with Koajo",
         href: "/register/kyc",
         Icon: WalletMinusIcon,
+      },
+      {
+        label: "Verify Email",
+        description: "Verify your email with the code sent to your inbox.",
+        href: "/register/verify-email",
+        Icon: VerifiedIcon,
       },
       {
         label: "Complete",

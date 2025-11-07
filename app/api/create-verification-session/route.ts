@@ -1,72 +1,77 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
+  apiVersion: "2025-08-27.basil",
 });
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Creating verification session...');
-    
-    // Check if Stripe secret key is available
+    console.log("Creating verification session...");
+
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('STRIPE_SECRET_KEY is not set');
       return NextResponse.json(
-        { error: 'Stripe secret key not configured' },
+        { error: "Stripe secret key not configured" },
         { status: 500 }
       );
     }
 
-    // Get user data from request body
     const body = await request.json();
-    const { email, userId, verificationType, firstName, lastName, phoneNumber } = body as {
+    const { email, userId, type, phone } = body as {
       email?: string;
       userId?: string;
-      verificationType?: 'document' | 'id_number';
-      firstName?: string;
-      lastName?: string;
-      phoneNumber?: string;
+      type?: "document" | "id_number";
+      phone: string;
     };
 
-    console.log('User data:', { email, userId });
-
-    // Create the verification session
-    const type: 'document' | 'id_number' = verificationType === 'id_number' ? 'id_number' : 'document';
-
-    // Prepare provided details based on verification type
-    const providedDetails: { email: string, name: string, phone?: string } = {
-      email: email || 'user@example.com',
-      name: firstName + " " + lastName || "John Doe",
-      phone: phoneNumber || undefined
-    };
+    // Get the origin from the request headers
+    const origin = request.headers.get('origin') || 
+                   request.headers.get('referer')?.split('/').slice(0, 3).join('/') ||
+                   process.env.NEXT_PUBLIC_BASE_URL ||
+                   'http://localhost:3000';
     
+    const returnUrl = `${origin}/register/kyc?${type}=submitted`;
+    
+    console.log('Creating verification session with return_url:', returnUrl);
+
     const verificationSession = await stripe.identity.verificationSessions.create({
       type,
-      provided_details: providedDetails,
-      return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/register/kyc?verification=complete`,
+      provided_details: {
+        email: email || "user@example.com",
+        // phone: phone,
+      },
+      return_url: returnUrl,
       metadata: {
-        user_id: userId || 'user_123',
+        user_id: userId || "user_123",
       },
     });
 
-    console.log('Verification session created:', verificationSession.id);
+    console.log("Verification session created:", {
+      id: verificationSession.id,
+      status: verificationSession.status,
+      client_secret: verificationSession.client_secret?.substring(0, 20) + "...",
+      url: verificationSession.url
+    });
 
-    // Return the verification URL instead of client secret
-    return NextResponse.json({ 
-      verification_url: verificationSession.url,
-      session_id: verificationSession.id
+
+    return NextResponse.json({
+      clientSecret: verificationSession.client_secret,
+      verificationUrl: verificationSession.url,
+      sessionId: verificationSession.id,
+    }, {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' }
     });
   } catch (error) {
-    console.error('Error creating verification session:', error);
-    
-    // Return more detailed error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Error creating verification session:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     // const errorCode = (error as Error)?.code || 'unknown';
-    
+
     return NextResponse.json(
-      { 
-        error: 'Failed to create verification session',
+      {
+        error: "Failed to create verification session",
         details: errorMessage,
         // code: errorCode
       },

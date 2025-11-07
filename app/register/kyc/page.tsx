@@ -1,403 +1,400 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/utils";
- 
 import CardAuth from "@/components/auth/card-auth";
-import { useStripeIdentity } from "@/lib/hooks/useStripeIdentity";
+import { fetchVerificationSession } from "@/lib/utils/stripe";
+import TokenManager from "@/lib/utils/menory-manager";
+import { AuthService } from "@/lib/services/authService";
+import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
+
+const KYC_STORAGE_KEY = 'kyc_step';
+const PENDING_VERIFICATION_TYPE_KEY = 'pendingVerificationType';
 
 export default function KycPage() {
-  const [currentStep, setCurrentStep] = useState<"verification" | "mobile" | "processing" | "success">("verification");
-  const [isLoading, setIsLoading] = useState(false);
-  const [, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'document_complete' | 'id_complete' | 'both_complete'>('pending');
   const router = useRouter();
-  // const searchParams = useSearchParams();
-  const { verifyIdentity, isVerifying, loading: stripeLoading } = useStripeIdentity();
+  const [currentStep, setCurrentStep] = useState<
+    "verification" | "processing" | "success" | "done"
+  >("verification");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [verificationTriggered, setVerificationTriggered] = useState(false);
+  const [verificationStatusChecked, setVerificationStatusChecked] = useState(false);
+  const [isIdNumber, setIsIdNumber] = useState(false);
+  const [isDocument, setIsDocument] = useState(false);
 
-  const handleAgreeAndContinue = async () => {
-    setError(null);
-    setCountdown(null);
-    setIsLoading(true);
-    
-    try {
-      // Get user data from localStorage or context
-      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
-      const userId = localStorage.getItem('userId') || 'user_123';
-      
-      // Start document verification
-      const documentResult = await verifyIdentity(userEmail, userId, { verificationType: 'document' });
-      if (documentResult.success) {
-        // Document verification started, set status and wait for return
-        localStorage.setItem('verificationStatus', 'document_complete');
-        setVerificationStatus('document_complete');
-        setCurrentStep("processing");
-      } else {
-        setError(documentResult.error || 'Document verification failed. Please try again.');
+  const verificationWindowRef = useRef<Window | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const isIdNumber = searchParams.get('id_number') === 'submitted';
+    const isDocument = searchParams.get('document') === 'submitted';
+    setIsIdNumber(isIdNumber);
+    setIsDocument(isDocument);
+    console.log('isIdNumber', isIdNumber);
+    console.log('isDocument', isDocument);
+  }, [searchParams]);
+
+  // Initialize step from localStorage or check verification status
+  useEffect(() => {
+    const initializeStep = async () => {
+      // First, check if we're returning from Stripe (has verification=complete in URL)
+      const verification = searchParams.get('verification');
+      const verificationSessionId = searchParams.get('verification_session');
+
+      console.log('verification', verification);
+      console.log('verificationSessionId', verificationSessionId);
+      if (verification === 'complete' && verificationSessionId) {
+        // We're returning from Stripe, handle the return
+        await handleVerificationReturn(verificationSessionId);
+        return;
       }
-    } catch (error) {
-      console.error('Verification error:', error);
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleIdVerification = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Get user data from localStorage or context
-      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
-      const userId = localStorage.getItem('userId') || 'user_123';
-      const firstName = localStorage.getItem('firstName') || '';
-      const lastName = localStorage.getItem('lastName') || '';
-      const phoneNumber = localStorage.getItem('phoneNumber') || '';
-      
-      // Start ID number verification
-      const idResult = await verifyIdentity(userEmail, userId, { 
-        verificationType: 'id_number',
-        firstName,
-        lastName,
-        phoneNumber
-      });
-      if (idResult.success) {
-        // ID verification started, set status and wait for return
-        localStorage.setItem('verificationStatus', 'id_complete');
-        setVerificationStatus('id_complete');
-        setCurrentStep("processing");
-      } else {
-        console.error('ID number verification failed:', idResult.error);
-        setError('ID number verification failed. Please try again.');
+      // Check localStorage for persisted step
+      const savedStep = localStorage.getItem(KYC_STORAGE_KEY) as "verification" | "processing" | "success" | null;
+      if (savedStep) {
+        setCurrentStep(savedStep);
+        setVerificationStatusChecked(true);
       }
-    } catch (error) {
-      console.error('Verification error:', error);
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [verifyIdentity, setError]);
 
-  const handleDecline = () => {
-    router.push("/register");
-  };
+      // Also check backend verification status
+      const token = TokenManager.getToken();
+      if (!token) {
+        setVerificationStatusChecked(true);
+        return;
+      }
 
-  // Check if user returned from verification
-  // useEffect(() => {
-  //   const verification = searchParams.get('verification');
-  //   if (verification === 'complete') {
-  //     // User returned from verification, check what step we're on
-  //     const currentStatus = localStorage.getItem('verificationStatus') || 'pending';
-  //     setVerificationStatus(currentStatus as 'pending' | 'document_complete' | 'id_complete' | 'both_complete');
-      
-  //     if (currentStatus === 'document_complete') {
-  //       // Document verification completed, now start ID verification
-  //       handleIdVerification();
-  //     } else if (currentStatus === 'id_complete' || currentStatus === 'both_complete') {
-  //       // Both verifications completed
-  //       setCurrentStep("success");
-  //     }
-  //   }
-  // }, [searchParams, handleIdVerification]);
+      try {
+        const response = await AuthService.getMe(token);
+        if (response && "error" in response) {
+          setVerificationStatusChecked(true);
+          return;
+        }
 
-  
+        const user = response as any;
+        const verificationStatus = user.identity_verification;
 
-  const handleContinueToDashboard = () => {
-    router.push("/dashboard");
-  };
+        // If document is verified but ID number is not, show ID number verification step
+        if (verificationStatus === "document_verified") {
+          setCurrentStep("processing");
+          localStorage.setItem(KYC_STORAGE_KEY, "processing");
+        } else if (verificationStatus === "all_verified") {
+          // Both verifications complete, redirect to dashboard
+          router.push("/dashboard");
+          return;
+        }
 
-  // Processing step after verification submission
-  if (currentStep === "processing") {
-    const getProcessingMessage = () => {
-      switch (verificationStatus) {
-        case 'document_complete':
-          return {
-            title: "Document Verification Complete",
-            description: "Your document verification is complete. Please complete the ID number verification that will open in a new tab.",
-            showIdButton: true
-          };
-        case 'id_complete':
-          return {
-            title: "ID Verification Complete", 
-            description: "Your ID number verification is complete. Both verifications are now finished.",
-            showIdButton: false
-          };
-        default:
-          return {
-            title: "Verification Submitted",
-            description: "Your identity verification has been submitted and is being processed. This may take a few minutes.",
-            showIdButton: false
-          };
+        setVerificationStatusChecked(true);
+      } catch (err) {
+        console.error("Error checking verification status:", err);
+        setVerificationStatusChecked(true);
       }
     };
 
-    const { title, description, showIdButton } = getProcessingMessage();
+    initializeStep();
+  }, [router, searchParams]);
 
+  const handleVerificationReturn = useCallback(async (sessionId: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log('Retrieving verification session:', sessionId);
+      
+      const response = await fetch(`/api/verification-session/${sessionId}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to retrieve verification details');
+      }
+
+      const data = await response.json();
+      const { session, verificationReport, firstName, lastName, ssnLast4, address } = data;
+
+      console.log('Verification session retrieved:', {
+        status: session.status,
+        type: session.type,
+        hasReport: !!verificationReport,
+        firstName,
+        lastName,
+        hasSSN: !!ssnLast4,
+        hasAddress: !!address,
+      });
+
+      const syncResponse = await fetch('/api/sync-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: session.id,
+          resultId: verificationReport?.id || session.id,
+          verificationType: session.type,
+          verificationStatus: session.status,
+          userId: TokenManager.getUserData()?.id,
+        }),
+      });
+
+      if (!syncResponse.ok) {
+        console.error('Failed to sync verification with backend');
+      }
+
+      const type = localStorage.getItem(PENDING_VERIFICATION_TYPE_KEY) || session.type;
+      
+      if (session.status === 'verified') {
+        if (type === 'document') {
+          // Document verified - move to ID number verification
+          setCurrentStep("verification");
+          localStorage.setItem(KYC_STORAGE_KEY, "verification");
+          localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
+        } else if (type === 'id_number') {
+          // ID number verified - create customer and update user
+          setCurrentStep("success");
+          localStorage.setItem(KYC_STORAGE_KEY, "success");
+          localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
+          const token = TokenManager.getToken();
+          if (token) {
+            try {
+              // Update user name if available
+              if (firstName || lastName) {
+                const updateData: { firstName?: string; lastName?: string } = {};
+                if (firstName) updateData.firstName = firstName;
+                if (lastName) updateData.lastName = lastName;
+
+                await AuthService.updateUser(updateData, token);
+                console.log('User name updated successfully:', { firstName, lastName });
+              }
+
+              // Create customer with SSN and address if available from ID number verification
+              if (ssnLast4 || address) {
+                try {
+                  const customerResponse = await fetch(getApiUrl('/auth/create-customer'), {
+                    method: 'POST',
+                    headers: {
+                      ...getDefaultHeaders(),
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      ssn_last4: ssnLast4,
+                      address: address,
+                    }),
+                  });
+
+                  if (customerResponse.ok) {
+                    const customerData = await customerResponse.json();
+                    console.log('Customer created successfully:', customerData);
+                  } else {
+                    const errorData = await customerResponse.json();
+                    console.error('Failed to create customer:', errorData);
+                  }
+                } catch (customerErr) {
+                  console.error('Error creating customer:', customerErr);
+                  // Don't block the flow if customer creation fails
+                }
+              }
+            } catch (err) {
+              console.error('Error updating user:', err);
+            }
+          }
+          
+          setCurrentStep("success");
+          localStorage.setItem(KYC_STORAGE_KEY, "success");
+          localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
+        }
+      } else if (session.status === 'requires_input') {
+        setError('Verification requires additional input. Please try again.');
+        setCurrentStep("verification");
+        localStorage.setItem(KYC_STORAGE_KEY, "verification");
+        localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
+      } else if (session.status === 'processing') {
+        setCurrentStep("processing");
+        localStorage.setItem(KYC_STORAGE_KEY, "processing");
+      } else {
+        setError('Verification failed. Please try again.');
+        setCurrentStep("verification");
+        localStorage.setItem(KYC_STORAGE_KEY, "verification");
+        localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
+      }
+
+      setVerificationTriggered(false);
+    } catch (err) {
+      console.error('Error handling verification return:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process verification');
+      setCurrentStep("verification");
+      localStorage.setItem(KYC_STORAGE_KEY, "verification");
+      localStorage.removeItem(PENDING_VERIFICATION_TYPE_KEY);
+      setVerificationTriggered(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const verification = searchParams.get('verification');
+    const verificationSessionId = searchParams.get('verification_session');
+    
+    if (verification === 'complete' && verificationSessionId) {
+      handleVerificationReturn(verificationSessionId);
+    } else if (verification === 'complete') {
+      const type = localStorage.getItem('pendingVerificationType');
+      if (type === 'document') {
+        setCurrentStep("processing");
+      } else if (type === 'id_number') {
+        setCurrentStep("success");
+
+      }
+      localStorage.removeItem('pendingVerificationType');
+      setVerificationTriggered(false);
+    }
+  }, [searchParams, handleVerificationReturn]);
+
+  const runVerification = useCallback(
+    async (type: "document" | "id_number") => {
+      if (verificationTriggered) {
+        console.log("Verification already in progress");
+        return;
+      }
+
+      setError(null);
+      setVerificationTriggered(true);
+
+      try {
+        const verificationSession = await fetchVerificationSession({
+          email: TokenManager.getUserData()?.email || "user@example.com",
+          userId: TokenManager.getUserData()?.id || "user_123",
+          phone: TokenManager.getUserData()?.phoneNumber || "+12222222222",
+          type,
+        });
+
+        if (!verificationSession?.verificationUrl) {
+          throw new Error("Failed to create verification session");
+        }
+
+        localStorage.setItem('pendingVerificationType', type);
+
+        const width = 800;
+        const height = 900;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        verificationWindowRef.current = window.open(
+          verificationSession.verificationUrl,
+          'stripeVerification',
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+
+        if (!verificationWindowRef.current) {
+          throw new Error("Popup blocked. Please allow popups for this site.");
+        }
+
+        const checkWindow = setInterval(() => {
+          if (verificationWindowRef.current?.closed) {
+            clearInterval(checkWindow);
+          }
+        }, 1000);
+
+        setTimeout(() => {
+          clearInterval(checkWindow);
+        }, 600000);
+
+      } catch (err) {
+        console.error("Verification error:", err);
+        setError(err instanceof Error ? err.message : "Verification failed. Please try again.");
+        setVerificationTriggered(false);
+      }
+    },
+    [verificationTriggered]
+  );
+
+  const triggerVerification = async (type: "document" | "id_number") => {
+    await runVerification(type);
+    if (type === "id_number") setCurrentStep("done")
+  };
+
+  const handleDecline = () => router.push("/register");
+  const handleContinue = () => router.push("/dashboard");
+
+  if (!isIdNumber && isDocument) {
     return (
-      <div className="bg-white flex items-center justify-center p-4 rounded-2xl">
-        <div className="w-full max-w-md">
-          <CardAuth
-            title={title}
-            description={description}
-          >
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Processing Verification</h3>
-                <p className="text-gray-600">
-                  {description}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {verificationStatus === 'id_complete' && (
-                  <Button
-                    onClick={() => setCurrentStep("success")}
-                    text="Continue to Dashboard"
-                    variant="primary"
-                    className="w-full"
-                    showArrow={true}
-                  />
-                )}
-                
-                {showIdButton && (
-                  <Button
-                    onClick={handleIdVerification}
-                    text="Start ID Number Verification"
-                    variant="primary"
-                    className="w-full"
-                    disabled={isLoading || isVerifying}
-                    showArrow={true}
-                  />
-                )}
-                
-                <Button
-                  onClick={() => setCurrentStep("verification")}
-                  text="Try Again"
-                  variant="secondary"
-                  className="w-full"
-                  showArrow={false}
-                />
-              </div>
-            </div>
-          </CardAuth>
+      <CardAuth
+        title="Document Submitted"
+        description="Your document is being processed. Please continue with ID number verification."
+      >
+        <div className="space-y-6">
+          <Button
+            onClick={() => triggerVerification("id_number")}
+            text={verificationTriggered ? "Opening..." : "Start ID Number Verification"}
+            variant="primary"
+            className="w-full"
+            disabled={verificationTriggered}
+            showArrow
+          />
+          <Button
+            onClick={() => {
+              setVerificationTriggered(false);
+              setCurrentStep("verification");
+            }}
+            text="Try Again"
+            variant="secondary"
+            className="w-full"
+          />
+          {error && (
+            <p className="text-red-500 text-center text-sm pt-2">{error}</p>
+          )}
         </div>
-      </div>
+      </CardAuth>
     );
   }
 
-  // Success step after verification
-  if (currentStep === "success") {
-    return (
-      <div className="bg-white flex items-center justify-center p-4 rounded-2xl">
-        <div className="w-full max-w-md">
-          <CardAuth
-            title="Verification Successful!"
-            description="Your identity has been successfully verified. You can now proceed to your dashboard."
-          >
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Identity Verified</h3>
-                <p className="text-gray-600">
-                  Thank you for completing the verification process. Your account is now fully set up.
-                </p>
-              </div>
 
-              <Button
-                onClick={handleContinueToDashboard}
-                text="Continue to Dashboard"
-                variant="primary"
-                className="w-full"
-                showArrow={true}
-              />
-            </div>
-          </CardAuth>
+  if (isIdNumber) {
+    return (
+      <CardAuth
+        title="ID Number Submitted"
+        description="Your ID number is being processed. You will be notified within 24 hours through email and in your dashboard regarding the status of your verification. You can now proceed to your dashboard."
+      >
+        <div className="space-y-6 text-center">
+          <Button
+            onClick={handleContinue}
+            text="Continue to Email Verification"
+            variant="primary"
+            className="w-full"
+            showArrow
+            href="/register/verify-email"
+          />
         </div>
-      </div>
+      </CardAuth>
     );
   }
 
-  // if (currentStep === "verification") {
-    // return (
-    //   <div className=" bg-white flex items-center justify-center p-4 rounded-2xl">
-    //     <div className="w-full max-w-md">
-    //       {/* Header */}
-    //       <div className="flex items-center gap-4 mb-8">
-    //         <button
-    //           onClick={handleBack}
-    //           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-    //         >
-    //           <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
-    //         </button>
-    //         <div className="flex-1 text-center">
-    //           <div className="text-2xl font-bold text-black">stripe</div>
-    //         </div>
-    //       </div>
-
-          {/* Main Content */}
-         return  (<CardAuth
-            title="Verification"
-            description="Koajo is required by law to verify the identity of all our users to prevent fraud and comply with regulatory requirements.
-Koajo uses Stripe’s system to complete this verification process. 
-"
-          >
-            <div className="space-y-6">
-              {/* Verification Points */}
-              {/* <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <CameraIcon className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">
-
-                  </p>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <LockClosedIcon className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">
-                    Koajo will only have access to this verification data
-                  </p>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <InfoCircledIcon className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
-                  <p className="text-gray-700">
-                    Stripe uses biometric technology on your images to make sure it&apos;s you. You can delete your data at any time.
-                  </p>
-                </div>
-              </div> */}
-              {/* Footer Links */}
-              {/* <div className="flex justify-between text-sm text-gray-500 pt-4 border-t">
-                <Link href="#" className="hover:text-gray-700 transition-colors">
-                  Stripe Privacy Policy
-                </Link>
-                <Link href="#" className="hover:text-gray-700 transition-colors">
-                  English (United States)
-                </Link>
-              </div> */}
-
-                 {/* Countdown Message */}
-                 {/* {countdown && (
-                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                     <p className="text-blue-600 text-sm font-semibold">
-                       🚀 Get ready! Verification window opening in {countdown} seconds...
-                     </p>
-                   </div>
-                 )} */}
-
-                 {/* Error Message */}
-                 {/* {error && (
-                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                     <p className="text-red-600 text-sm">{error}</p>
-                   </div>
-                 )} */}
-
-                 {/* Action Buttons */}
-                 <div className="space-y-3 pt-4">
-                  <Button
-                     onClick={handleAgreeAndContinue}
-                     text={
-                       countdown ? `Opening in ${countdown}...` :
-                       isLoading || isVerifying ? "Processing..." : 
-                       "Agree and Continue"
-                     }
-                     variant="primary"
-                     className="w-full"
-                     disabled={isLoading || isVerifying || stripeLoading || countdown !== null}
-                     showArrow={true}
-                   />
-                
-                <Button
-                  onClick={handleDecline}
-                  text="Decline"
-                  variant="secondary"
-                  className="w-full"
-                  showArrow={false}
-                />
-              </div>
-
-            </div>
-          </CardAuth>
-      //   </div>
-      // </div>
-    );
-  // }
-
-  // return (  
-        {/* Header */}
-        // <div className="flex items-center gap-4 mb-8">
-        //   <button
-        //     onClick={handleBack}
-        //     className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-        //   >
-        //     <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
-        //   </button>
-        //   <div className="flex-1 text-center">
-        //     <div className="w-full bg-gray-200 rounded-full h-2">
-        //       <div className="bg-teal-500 h-2 rounded-full" style={{ width: "60%" }}></div>
-        //     </div>
-        //   </div>
-        // </div>
-
-        {/* Main Content */}
-        // <CardFaqTopic
-        //   title="Continue on your mobile device"
-        //   description="Scan the QR code to use the camera on your mobile device"
-        // >
-        //   <div className="space-y-6 text-center">
-            {/* Stripe Logo */}
-            {/* <div className="text-2xl font-bold text-black mb-4">stripe</div> */}
-            
-            {/* Instructions */}
-            {/* <div className="space-y-2">
-              <h2 className="text-xl font-bold text-gray-900">Continue on your mobile device</h2>
-              <p className="text-gray-600">
-                Scan the QR code to use the camera on your mobile device
-              </p>
-            </div> */}
-
-            {/* QR Code Placeholder */}
-            // <div className="flex justify-center py-8">
-            //   <div className="w-48 h-48 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center relative">
-            //     {/* QR Code Pattern */}
-            //     <div className="grid grid-cols-8 gap-1 w-32 h-32">
-            //       {Array.from({ length: 64 }, (_, i) => (
-            //         <div
-            //           key={i}
-            //           className={`w-3 h-3 ${
-            //             Math.random() > 0.5 ? "bg-black" : "bg-white"
-            //           }`}
-            //         />
-            //       ))}
-            //     </div>
-                {/* Crosshair overlay */}
-            //     <div className="absolute inset-0 pointer-events-none">
-            //       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 border-2 border-blue-500 rounded-full"></div>
-            //     </div>
-            //   </div>
-            // </div>
-
-            {/* Action Button */}
-    //         <Button
-    //           onClick={handleContinueOnMobile}
-    //           text={isLoading ? "Processing..." : "Continue on Mobile"}
-    //           variant="primary"
-    //           className="w-full"
-    //           disabled={isLoading}
-    //           showArrow={true}
-    //         />
-    //       </div>
-    //     </CardFaqTopic>
-    //   </div>
-    // </div>
-  // );
+  return (
+    <CardAuth
+      title="Document Verification"
+      description="Koajo is required by law to verify the identity of all users to prevent fraud and comply with regulations. We use Stripe's secure verification system."
+    >
+      <div className="space-y-6">
+        <div className="space-y-3 pt-4">
+          <Button
+            onClick={() => triggerVerification("document")}
+            text={isLoading || verificationTriggered ? "Processing..." : "Agree and Continue"}
+            variant="primary"
+            className="w-full"
+            disabled={isLoading || verificationTriggered}
+            showArrow
+          />
+          <Button
+            onClick={handleDecline}
+            text="Decline"
+            variant="secondary"
+            className="w-full"
+          />
+          {error && (
+            <p className="text-red-500 text-center text-sm pt-2">{error}</p>
+          )}
+        </div>
+      </div>
+    </CardAuth>
+  );
 }
