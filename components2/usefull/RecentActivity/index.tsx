@@ -80,7 +80,7 @@ const RecentActivity = ({
             </div>
             {footer && <div className={styles.footer}>{footer}</div>}
         </Card>
-            {isLocked && <LockedOverlay />}
+            <LockedOverlay />
         </div>
     );
 };

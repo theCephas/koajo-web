@@ -25,6 +25,7 @@ type SelectProps = {
     medium?: boolean;
     small?: boolean;
     dropdownUp?: boolean;
+    disabled?: boolean;
 };
 
 const Select = ({
@@ -39,12 +40,14 @@ const Select = ({
     medium,
     small,
     dropdownUp,
+    disabled,
 }: SelectProps) => {
     const [visible, setVisible] = useState<boolean>(false);
 
     const activeOption = options.filter((option) => option.value === value);
 
     const handleChange = (value: string) => {
+        if (disabled) return;
         onChange(value);
         setVisible(false);
     };
@@ -53,7 +56,7 @@ const Select = ({
             className={cn(
                 styles.select,
                 {
-                    [styles.active]: visible,
+                    [styles.active]: visible && !disabled,
                     [styles.selectMedium]: medium,
                     [styles.selectSmall]: small,
                 },
@@ -61,18 +64,20 @@ const Select = ({
             )}
         >
             {label && <div className={styles.label}>{label}</div>}
-            <OutsideClickHandler onOutsideClick={() => setVisible(false)}>
-                <div className={styles.inner}>
+            <OutsideClickHandler  onOutsideClick={() => !disabled && setVisible(false)}>
+                <div className={cn(styles.inner, disabled && "pointer-events-none  bg-gray-200/7 cursor-not-allowed") }>
                     <button
                         className={cn(
                             styles.toggle,
                             {
-                                [styles.active]: visible,
+                                [styles.active]: visible && !disabled,
                             },
-                            classToggle
+                            classToggle,
+                            "opacity-35"
                         )}
-                        onClick={() => setVisible(!visible)}
+                        onClick={() => !disabled && setVisible(!visible)}
                         type="button"
+                        disabled={disabled}
                     >
                         {titlePrefix && (
                             <div className={styles.titlePrefix}>
@@ -113,11 +118,11 @@ const Select = ({
                             <Icon name="arrow-down" />
                         </div>
                     </button>
-                    {visible && (
+                    {visible && !disabled && (
                         <div
                             className={cn(styles.dropdown, {
-                                [styles.dropdownUp]: dropdownUp,
-                            })}
+                                [styles.dropdownUp]: dropdownUp
+                            }, "opacity-35")}
                         >
                             {[
                                 options.map((option, index) => (
