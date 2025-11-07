@@ -87,13 +87,13 @@ const Layout = ({
               const trimmedTitle = item.title.replace("/", "").trim();
             
               return item.url ? (
-                <Link className={styles.link} href={item.url} key={index}>
-                  {trimmedTitle}{index < breadcrumbs.length - 1 && "/"}
+                <Link className={cn(styles.link, "flex items-center")} href={item.url} key={index}>
+                  {" "}{index !== 0 && <><Icon name="arrow-next" size="12" />{" "}</>}
+                  {trimmedTitle}{index < breadcrumbs.length - 1 }
                 </Link>
               ) : (
                 <div className={styles.text} key={index}>
-                  <Icon name="arrow-next" size="12" />
-                  {trimmedTitle}{index < breadcrumbs.length - 1 && "/"}
+                  {trimmedTitle}{index < breadcrumbs.length - 1}
                 </div>
               )
             })}
