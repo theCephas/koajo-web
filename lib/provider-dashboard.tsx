@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { API_ENDPOINTS, getApiUrl, getAuthHeaders } from "@/lib/constants/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
@@ -44,6 +45,7 @@ interface DashboardProviderProps {
 }
 
 export function DashboardProvider({ children, autoFetch = true }: DashboardProviderProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState<boolean>(autoFetch);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DashboardSummary | null>(null);
@@ -94,10 +96,8 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
     setUserLoading(false);
     _setRegistrationStage(null);
     
-    if (typeof window !== "undefined") {
-      window.location.href = "/auth/login";
-    }
-  }, []);
+    router.replace("/auth/login");
+  }, [router]);
 
   const refresh = useCallback(async () => {
     const token = TokenManager.getToken();
