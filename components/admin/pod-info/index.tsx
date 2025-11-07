@@ -5,7 +5,7 @@ import cn from "clsx";
 import styles from "./pod-info.module.sass";
 import Card from "@/components2/usefull/Card";
 import Select from "@/components2/usefull/Select";
-import { Button } from "@/components/utils";
+import { Button, ButtonProps } from "@/components/utils";
 import { useDashboard } from "@/lib/provider-dashboard";
 import LockedOverlay from "@/components/admin/locked-overlay";
 
@@ -36,15 +36,17 @@ const PodInfo = ({}: PodInfoProps) => {
   const router = useRouter();
   const { emailVerified, kycCompleted, kycStatus } = useDashboard();
   const [card, setCard] = useState<string>(cards[0].value);
+  const isLocked = !emailVerified
 
   const handleChange = (value: string) => setCard(value);
 
-  const getButtonProps = () => {
+  const getButtonProps = (): ButtonProps => {
     if (!emailVerified) {
       return {
         text: "Complete KYC",
         disabled: true,
         onClick: () => {},
+        variant: "secondary",
       };
     }
 
@@ -55,6 +57,7 @@ const PodInfo = ({}: PodInfoProps) => {
         disabled: false,
         onClick: () => router.push("/register/kyc"),
         href: "/register/kyc",
+        variant: "secondary",
       };
     }
 
@@ -66,6 +69,7 @@ const PodInfo = ({}: PodInfoProps) => {
           
           // TODO: Navigate to bank connection
         },
+        variant: "secondary",
       };
     }
 
@@ -73,11 +77,11 @@ const PodInfo = ({}: PodInfoProps) => {
       text: "Join More Pods",
       disabled: false,
       onClick: () => {},
+    variant: "primary",
     };
   };
 
   const buttonProps = getButtonProps();
-  const isLocked = !emailVerified;
 
   return (
       <Card
@@ -93,9 +97,8 @@ const PodInfo = ({}: PodInfoProps) => {
             small
           />
         }
+        className="relative"
       >
-            <div className="relative">
-
         <div
           className={cn(
             styles.price,
@@ -104,15 +107,16 @@ const PodInfo = ({}: PodInfoProps) => {
           )}
         >
           No Pods Found
-        </div>        {isLocked && <LockedOverlay />}
-  </div>
-
+        </div>  
         <Button
           text={buttonProps.text}
           className="w-full mt-4"
           disabled={buttonProps.disabled}
           onClick={buttonProps.onClick}
-        />
+          variant={buttonProps.variant}
+        />  
+
+        <LockedOverlay className="h-[60%]"/>
       </Card>
   );
 };
