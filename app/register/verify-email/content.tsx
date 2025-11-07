@@ -34,11 +34,13 @@ export default function VerifyEmailContent() {
   const verifyEmailToken = async (userEmail: string, token: string) => {
     setIsLoading(true);
     setError(null);
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || "https://koajo-frontend.vercel.app";
 
     try {
       const requestBody: VerifyEmailRequest = {
         email: userEmail,
         token: token,
+        origin
       };
 
       const response = await fetch(getApiUrl("/auth/verify-email"), {
@@ -71,12 +73,13 @@ export default function VerifyEmailContent() {
   const handleResendEmail = async () => {
     setIsLoading(true);
     setError(null);
-
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || "https://koajo-frontend.vercel.app";
+    
     try {
       const response = await fetch(getApiUrl("/auth/resend-email"), {
         method: "POST",
         headers: getDefaultHeaders(),
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, origin }),
       });
 
       if (!response.ok) {
