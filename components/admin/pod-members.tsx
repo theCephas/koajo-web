@@ -76,12 +76,14 @@ type PodMembersProps = {
   className?: string;
 };
 
+const MAX_VISIBLE_MEMBERS = 4;
+
 const PodMembers = ({ className }: PodMembersProps) => {
   const [modalVisible, setModalVisible] = useState(false);
   const { emailVerified } = useDashboard();
   const isLocked = !emailVerified;
 
-  const displayedMembers = members.slice(0, 4); 
+  const displayedMembers = members.slice(0, MAX_VISIBLE_MEMBERS); 
 
   return (
     <>
@@ -95,6 +97,7 @@ const PodMembers = ({ className }: PodMembersProps) => {
             isLocked &&
               "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
           )}
+        showSeeMore={!isLocked && displayedMembers.length > MAX_VISIBLE_MEMBERS}
       >
         <div className="grid grid-cols-2 gap-4 mt-6">
           {/* {displayedMembers.map((member) => (
@@ -103,7 +106,7 @@ const PodMembers = ({ className }: PodMembersProps) => {
           No group members yet
         </div>
       </Card>
-        {isLocked && <LockedOverlay />}
+        <LockedOverlay />
       </div>
 
       <Modal
