@@ -13,6 +13,14 @@ interface LockedCardWrapperProps {
   keepButtonVisible?: boolean;
 }
 
+/**
+ * Wrapper component to show a locked card with a lock icon overlay.
+ * @param {Object} props - Component props
+ * @param {ReactNode} props.children - The content to wrap
+ * @param {string} [props.className] - Additional CSS classes
+ * @param {boolean} [props.showLockIcon=true] - Whether to show the lock icon
+ * @param {boolean} [props.keepButtonVisible=false] - Whether to keep the button visible
+ */
 const LockedCardWrapper = ({
   children,
   className,
@@ -26,16 +34,13 @@ const LockedCardWrapper = ({
     return <>{children}</>;
   }
 
-  // If keepButtonVisible is true (pod-info case), only blur content, not button
   if (keepButtonVisible) {
     return (
       <div className={cn("relative", className)}>
-        {/* Blur only content text, keep title and button visible */}
         <div className="[&>div>div:first-child]:blur-0 [&>div>div:first-child]:select-auto [&>div>div:first-child]:pointer-events-auto [&>div>*:not(:first-child):not(:last-child)]:blur-sm [&>div>*:not(:first-child):not(:last-child)]:select-none [&>div>*:not(:first-child):not(:last-child)]:pointer-events-none [&>div>*:last-child]:blur-0 [&>div>*:last-child]:select-auto [&>div>*:last-child]:pointer-events-auto">
           {children}
         </div>
 
-        {/* Security icon overlay - positioned over content area only (not title, not button) */}
         {showLockIcon && (
           <div
             className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-lg pointer-events-none z-10"
@@ -56,15 +61,12 @@ const LockedCardWrapper = ({
     );
   }
 
-  // Default: blur content AND button text
   return (
     <div className={cn("relative", className)}>
-      {/* Blurred content and button - keep only title/header visible */}
       <div className="[&>div>div:first-child]:blur-0 [&>div>div:first-child]:select-auto [&>div>div:first-child]:pointer-events-auto [&>div>*:not(:first-child)]:blur-sm [&>div>*:not(:first-child)]:select-none [&>div>*:not(:first-child)]:pointer-events-none">
         {children}
       </div>
 
-      {/* Security icon overlay - positioned over content and button area (not title) */}
       {showLockIcon && (
         <div
           className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-lg pointer-events-none z-10"
