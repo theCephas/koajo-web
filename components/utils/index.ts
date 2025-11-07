@@ -1,5 +1,5 @@
 export { default as MyImage } from './my-image';
-export { Button } from './button';
+export { Button, type ButtonProps } from './button';
 export { Label } from './label';
 export { Input } from './input';
 export { Field } from './field';
