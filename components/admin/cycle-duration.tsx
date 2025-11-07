@@ -21,7 +21,7 @@ export default function CycleDuration() {
       >
         <div className="text-2xl font-bold mt-4">
           {/* 36 days remaining */}
-          No cycle duration yet
+          No cycle yet
         </div>
         <p className="text-base text-text-500 font-medium mt-4">
           {/* Expense increased by <span className="text-primary">$1000 </span>
@@ -29,7 +29,7 @@ export default function CycleDuration() {
           No expense yet
         </p>
       </Card>
-      {isLocked && <LockedOverlay />}
+     <LockedOverlay />
     </div>
   );
 }
