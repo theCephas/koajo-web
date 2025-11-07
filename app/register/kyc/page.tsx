@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
@@ -13,7 +13,7 @@ import { User } from "@/lib/types/api";
 const KYC_STORAGE_KEY = 'kyc_step';
 const PENDING_VERIFICATION_TYPE_KEY = 'pendingVerificationType';
 
-export default function KycPage() {
+function KycContent() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<
     "verification" | "processing" | "success" | "done"
@@ -386,5 +386,30 @@ export default function KycPage() {
         </div>
       </div>
     </CardAuth>
+  );
+}
+
+
+export default function KycPage() {
+  return (
+    <Suspense 
+    // fallback={
+    //   <CardAuth
+    //     title="Verify Your Email"
+    //     description="Loading..."
+    //   >
+    //     <div className="text-center">
+    //       <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+    //         <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    //         </svg>
+    //       </div>
+    //       <p className="text-gray-600">Loading...</p>
+    //     </div>
+    //   </CardAuth>
+    // }
+    >
+      <KycContent />
+    </Suspense>
   );
 }

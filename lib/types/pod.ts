@@ -1,4 +1,5 @@
 export type PodOnboardingStep =
+  | "verification_pending"
   | "pod_plan_selection"
   | "pod_goal_setting"
   | "pod_form_filling"

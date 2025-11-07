@@ -94,7 +94,7 @@ export function OnboardingProvider({
   defaultVisible = false,
 }: OnboardingProviderProps) {
   const [visible, setVisible] = useState<boolean>(defaultVisible);
-  const [step, setStep] = useState<PodOnboardingStep>("pod_plan_selection");
+  const [step, setStep] = useState<PodOnboardingStep>("verification_pending");
   const [selectedPlanCode, setSelectedPlanCode] = useState<PodPlanCode>("");
   const [selectedCycleWeeks, setSelectedCycleWeeks] = useState<PodDurationWeeks>(12);
   const [selectedGoalCategoryValue, setSelectedGoalCategoryValue] = useState<string>(

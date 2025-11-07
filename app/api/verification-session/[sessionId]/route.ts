@@ -29,7 +29,7 @@ export async function GET(
     let firstName: string | null = null;
     let lastName: string | null = null;
     let ssnLast4: string | null = null;
-    let address: any = null;
+    let address: string | null = null;
 
     try {
       const reports = await stripe.identity.verificationReports.list({
@@ -79,7 +79,10 @@ export async function GET(
               ssnLast4 = outputs.id_number.ssn_last4;
             }
             if (outputs.id_number.address) {
-              address = outputs.id_number.address;
+              address = outputs?.id_number.address?.line1 || outputs?.id_number.address?.line2 || outputs?.id_number.address?.city || outputs?.id_number.address?.state || outputs?.id_number.address?.postal_code || outputs?.id_number.address?.country || null;
+              if (address) {
+                // address = address.join(', ');
+              }
             }
           }
         }
