@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import cn from "clsx";
+import CollapseIcon from "@/public/media/icons/collapse.svg";
+import CloseIcon from "@/public/media/icons/close.svg";
+import ExpandIcon from "@/public/media/icons/expand.svg";
 
 export type SetupStepStatus = "pending" | "in_progress" | "completed";
 
@@ -73,7 +76,7 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
     return (
       <div
         className={cn(
-          "bg-white rounded-lg shadow-sm border border-gray-200 p-4",
+          "bg-white rounded-lg shadow-sm border border-gray-100 p-4",
           className
         )}
       >
@@ -87,26 +90,14 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
               className="p-1 hover:bg-gray-100 rounded transition-colors"
               aria-label="Expand setup guide"
             >
-              <svg
-                className="w-4 h-4 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                />
-              </svg>
+              <ExpandIcon className="w-4 h-4 text-gray-600" />
             </button>
             <button
               onClick={handleClose}
               className="p-1 hover:bg-gray-100 rounded transition-colors"
               aria-label="Close setup guide"
             >
-              <span className="text-gray-600 text-lg leading-none">×</span>
+              <CloseIcon className="w-4 h-4 text-gray-600" />
             </button>
           </div>
         </div>
@@ -114,7 +105,7 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
         {/* Progress bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
           <div
-            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+            className="bg-primary h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -125,7 +116,7 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
             <span className="text-gray-600">Next: </span>
             <button
               onClick={() => handleStepClick(nextStep.id)}
-              className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer"
+              className="text-primary hover:text-primary/90 font-medium cursor-pointer"
             >
               {nextStep.label}
             </button>
@@ -150,26 +141,14 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
             className="p-1 hover:bg-gray-100 rounded transition-colors"
             aria-label="Collapse setup guide"
           >
-            <svg
-              className="w-4 h-4 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <CollapseIcon className="w-4 h-4 text-gray-600" />
           </button>
           <button
             onClick={handleClose}
             className="p-1 hover:bg-gray-100 rounded transition-colors"
             aria-label="Close setup guide"
           >
-            <span className="text-gray-600 text-lg leading-none">×</span>
+            <CloseIcon className="w-4 h-4 text-gray-600" />
           </button>
         </div>
       </div>
@@ -177,7 +156,7 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
       {/* Progress bar */}
       <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
         <div
-          className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+          className="bg-primary h-2 rounded-full transition-all duration-300"
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
