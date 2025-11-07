@@ -68,6 +68,11 @@ export default function PodSelection() {
 
   const isNextDisabled = !selectedPlanCode;
 
+  console.log("cycle", selectedCycleWeeks)
+
+  const filteredPlans = plans.filter(plan => {
+    return plan.plan.lifecycleWeeks == selectedCycleWeeks})
+
   return (
     <div className="flex flex-col gap-6.5 w-full max-w-[calc(720rem/16)] relative p-6 md:p-8 bg-white rounded-2xl shadow-lg max-h-[700px] overflow-y-scroll">
       <div className="flex items-center justify-between gap-6">
@@ -89,6 +94,24 @@ export default function PodSelection() {
         >
           Skip for now
         </button>
+      </div>
+      <div
+        className="flex w-fit mx-auto items-center justify-center p-0.5 gap-2 border border-gray-100 rounded-full shadow-[6px_6px_32px_0px_#0000000F]
+"
+      >
+        {[12, 24].map((cycle) => (
+          <button
+            key={cycle}
+            onClick={() => setSelectedCycleWeeks(cycle as PodDurationWeeks)}
+            className={`px-3 py-1.5 rounded-full text-sm border ${
+              cycle === selectedCycleWeeks
+                ? "bg-primary text-white"
+                : "bg-white border border-gray-100 text-gray-700 shadow-[inset_0px_0px_8px_0px_#00000014]"
+            }`}
+          >
+            {cycle} Weeks Pod Cycle
+          </button>
+        ))}
       </div>
 
       {podPlansLoading && (
@@ -118,7 +141,7 @@ export default function PodSelection() {
       )}
 
       <ul className="flex flex-col gap-4">
-        {plans.map(({ plan, openPods }) => {
+        {filteredPlans.map(({ plan, openPods }) => {
           const isActive = selectedPlanCode === plan.code;
           const iconConfig = getIconConfig(plan.amount);
           return (
@@ -160,7 +183,7 @@ export default function PodSelection() {
                 />
               </button>
 
-              {isActive && openPods.length > 0 && (
+              {/* {isActive && openPods.length > 0 && (
                 <div className="ml-12 rounded-xl border border-gray-100 bg-gray-50 p-4">
                   <div className="text-xs font-semibold uppercase text-gray-500">
                     Available pods
@@ -190,7 +213,7 @@ export default function PodSelection() {
                     </div>
                   )}
                 </div>
-              )}
+              )} */}
             </li>
           );
         })}
