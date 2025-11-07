@@ -11,6 +11,8 @@ type PodGoalsProps = {
   className?: string;
 };
 
+const MAX_VISIBLE_GOALS = 2;
+
 const PodGoals = ({ className }: PodGoalsProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -18,7 +20,7 @@ const PodGoals = ({ className }: PodGoalsProps) => {
     return Math.min((current / target) * 100, 100);
   };
 
-  const displayedGoals =  goals.slice(0, 1);
+  const displayedGoals =  goals.slice(0, MAX_VISIBLE_GOALS);
 
   const { emailVerified } = useDashboard();
   const isLocked = !emailVerified;
@@ -35,6 +37,7 @@ const PodGoals = ({ className }: PodGoalsProps) => {
             isLocked &&
               "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
           )}
+          showSeeMore={!isLocked && displayedGoals.length > MAX_VISIBLE_GOALS}
       >
         <div className="bg-white rounded-lg mt-6">
           {displayedGoals.map((goal) => {
@@ -46,7 +49,7 @@ const PodGoals = ({ className }: PodGoalsProps) => {
           })}
         </div>
       </Card>
-        {isLocked && <LockedOverlay />}
+         <LockedOverlay />
       </div>
 
       <Modal
