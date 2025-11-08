@@ -4,127 +4,13 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-dependencies:
-  '@cloudinary/url-gen':
-    specifier: ^1.22.0
-    version: 1.22.0
-  '@nivo/bar':
-    specifier: ^0.99.0
-    version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
-  '@nivo/core':
-    specifier: ^0.99.0
-    version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
-  '@nivo/pie':
-    specifier: ^0.99.0
-    version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
-  '@radix-ui/react-accordion':
-    specifier: ^1.2.11
-    version: 1.2.11(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
-  '@radix-ui/react-dialog':
-    specifier: ^1.1.14
-    version: 1.1.14(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
-  '@radix-ui/react-icons':
-    specifier: ^1.3.2
-    version: 1.3.2(react@19.1.0)
-  '@radix-ui/react-label':
-    specifier: ^2.1.7
-    version: 2.1.7(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
-  '@radix-ui/react-toast':
-    specifier: ^1.2.15
-    version: 1.2.15(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
-  '@stripe/stripe-js':
-    specifier: ^7.9.0
-    version: 7.9.0
-  clsx:
-    specifier: ^2.1.1
-    version: 2.1.1
-  crypto-js:
-    specifier: ^4.2.0
-    version: 4.2.0
-  gsap:
-    specifier: ^3.13.0
-    version: 3.13.0
-  millify:
-    specifier: ^6.1.0
-    version: 6.1.0
-  next:
-    specifier: 15.4.1
-    version: 15.4.1(@babel/core@7.28.0)(react-dom@19.1.0)(react@19.1.0)(sass@1.90.0)
-  next-cloudinary:
-    specifier: ^6.16.0
-    version: 6.16.0(next@15.4.1)(react@19.1.0)
-  next-video:
-    specifier: ^2.2.1
-    version: 2.2.1(@types/react-dom@19.1.6)(@types/react@19.1.8)(next@15.4.1)(react-dom@19.1.0)(react@19.1.0)
-  player.style:
-    specifier: ^0.1.9
-    version: 0.1.9(react@19.1.0)
-  react:
-    specifier: 19.1.0
-    version: 19.1.0
-  react-datepicker:
-    specifier: ^8.4.0
-    version: 8.4.0(react-dom@19.1.0)(react@19.1.0)
-  react-dom:
-    specifier: 19.1.0
-    version: 19.1.0(react@19.1.0)
-  react-fast-marquee:
-    specifier: ^1.6.5
-    version: 1.6.5(react-dom@19.1.0)(react@19.1.0)
-  react-hook-form:
-    specifier: ^7.62.0
-    version: 7.62.0(react@19.1.0)
-  react-hotkeys-hook:
-    specifier: ^5.1.0
-    version: 5.1.0(react-dom@19.1.0)(react@19.1.0)
-  react-outside-click-handler:
-    specifier: ^1.3.0
-    version: 1.3.0(react-dom@19.1.0)(react@19.1.0)
-  react-tooltip:
-    specifier: ^5.29.1
-    version: 5.29.1(react-dom@19.1.0)(react@19.1.0)
-  react-transition-group:
-    specifier: ^4.4.5
-    version: 4.4.5(react-dom@19.1.0)(react@19.1.0)
-  recharts:
-    specifier: ^3.1.2
-    version: 3.1.2(@types/react@19.1.8)(react-dom@19.1.0)(react-is@16.13.1)(react@19.1.0)(redux@5.0.1)
-  rehype:
-    specifier: ^13.0.2
-    version: 13.0.2
-  rehype-raw:
-    specifier: ^7.0.0
-    version: 7.0.0
-  rehype-sanitize:
-    specifier: ^6.0.0
-    version: 6.0.0
-  remark:
-    specifier: ^15.0.1
-    version: 15.0.1
-  remark-gfm:
-    specifier: ^4.0.1
-    version: 4.0.1
-  remark-html:
-    specifier: ^16.0.1
-    version: 16.0.1
-  sass:
-    specifier: ^1.90.0
-    version: 1.90.0
-  scroll-lock:
-    specifier: ^2.1.5
-    version: 2.1.5
-  stripe:
-    specifier: ^18.5.0
-    version: 18.5.0(@types/node@20.19.8)
-  swiper:
-    specifier: ^11.2.10
-    version: 11.2.10
-  uuid:
-    specifier: ^11.1.0
-    version: 11.1.0
+importers:
 
   .:
     dependencies:
+      '@cloudinary/url-gen':
+        specifier: ^1.22.0
+        version: 1.22.0
       '@nivo/bar':
         specifier: ^0.99.0
         version: 0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1008,8 +894,11 @@ packages:
   '@cloudinary/url-gen@1.15.0':
     resolution: {integrity: sha512-bjU67eZxLUgoRy/Plli4TQio7q6P31OYqnEgXxeN9TKXrzr6h0DeEdIUhKI9gy3HkEBWXWWJIPh7j7gkOJPnyA==}
 
-  '@emnapi/core@1.6.0':
-    resolution: {integrity: sha512-zq/ay+9fNIJJtJiZxdTnXS20PllcYMX3OE23ESc4HK/bdYu3cOWYVhsOhVnXALfU/uqJIxn5NBPd9z4v+SfoSg==}
+  '@cloudinary/url-gen@1.22.0':
+    resolution: {integrity: sha512-le8RMlgyC0JN3+FlC/YAlPYfvmJdtw8QGcSKDjCsfhS2CIem0mJl6ayti8bMoZ0P5wDvBewvRB0/dUQvhCzy3g==}
+
+  '@emnapi/core@1.7.0':
+    resolution: {integrity: sha512-pJdKGq/1iquWYtv1RRSljZklxHCOCAJFJrImO5ZLKPJVJlVUcs8yFwNQlqS0Lo8xT1VAXXTCZocF9n26FWEKsw==}
 
   '@emnapi/runtime@1.6.0':
     resolution: {integrity: sha512-obtUmAHTMjll499P+D9A3axeJFlhdjOWdKUNs/U6QIGT7V5RjcUW1xToAzjvmgTSQhDbYn/NwfTRoJcQ2rNBxA==}
@@ -4876,6 +4765,275 @@ packages:
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
+dependencies:
+  '@cloudinary/url-gen':
+    specifier: ^1.22.0
+    version: 1.22.0
+  '@nivo/bar':
+    specifier: ^0.99.0
+    version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
+  '@nivo/core':
+    specifier: ^0.99.0
+    version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
+  '@nivo/pie':
+    specifier: ^0.99.0
+    version: 0.99.0(react-dom@19.1.0)(react@19.1.0)
+  '@radix-ui/react-accordion':
+    specifier: ^1.2.11
+    version: 1.2.11(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
+  '@radix-ui/react-dialog':
+    specifier: ^1.1.14
+    version: 1.1.14(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
+  '@radix-ui/react-icons':
+    specifier: ^1.3.2
+    version: 1.3.2(react@19.1.0)
+  '@radix-ui/react-label':
+    specifier: ^2.1.7
+    version: 2.1.7(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
+  '@radix-ui/react-toast':
+    specifier: ^1.2.15
+    version: 1.2.15(@types/react-dom@19.1.6)(@types/react@19.1.8)(react-dom@19.1.0)(react@19.1.0)
+  '@stripe/stripe-js':
+    specifier: ^7.9.0
+    version: 7.9.0
+  clsx:
+    specifier: ^2.1.1
+    version: 2.1.1
+  crypto-js:
+    specifier: ^4.2.0
+    version: 4.2.0
+  gsap:
+    specifier: ^3.13.0
+    version: 3.13.0
+  millify:
+    specifier: ^6.1.0
+    version: 6.1.0
+  next:
+    specifier: 15.4.1
+    version: 15.4.1(@babel/core@7.28.0)(react-dom@19.1.0)(react@19.1.0)(sass@1.90.0)
+  next-cloudinary:
+    specifier: ^6.16.0
+    version: 6.16.0(next@15.4.1)(react@19.1.0)
+  next-video:
+    specifier: ^2.2.1
+    version: 2.2.1(@types/react-dom@19.1.6)(@types/react@19.1.8)(next@15.4.1)(react-dom@19.1.0)(react@19.1.0)
+  player.style:
+    specifier: ^0.1.9
+    version: 0.1.9(react@19.1.0)
+  react:
+    specifier: 19.1.0
+    version: 19.1.0
+  react-datepicker:
+    specifier: ^8.4.0
+    version: 8.4.0(react-dom@19.1.0)(react@19.1.0)
+  react-dom:
+    specifier: 19.1.0
+    version: 19.1.0(react@19.1.0)
+  react-fast-marquee:
+    specifier: ^1.6.5
+    version: 1.6.5(react-dom@19.1.0)(react@19.1.0)
+  react-hook-form:
+    specifier: ^7.62.0
+    version: 7.62.0(react@19.1.0)
+  react-hotkeys-hook:
+    specifier: ^5.1.0
+    version: 5.1.0(react-dom@19.1.0)(react@19.1.0)
+  react-outside-click-handler:
+    specifier: ^1.3.0
+    version: 1.3.0(react-dom@19.1.0)(react@19.1.0)
+  react-tooltip:
+    specifier: ^5.29.1
+    version: 5.29.1(react-dom@19.1.0)(react@19.1.0)
+  react-transition-group:
+    specifier: ^4.4.5
+    version: 4.4.5(react-dom@19.1.0)(react@19.1.0)
+  recharts:
+    specifier: ^3.1.2
+    version: 3.1.2(@types/react@19.1.8)(react-dom@19.1.0)(react-is@16.13.1)(react@19.1.0)(redux@5.0.1)
+  rehype:
+    specifier: ^13.0.2
+    version: 13.0.2
+  rehype-raw:
+    specifier: ^7.0.0
+    version: 7.0.0
+  rehype-sanitize:
+    specifier: ^6.0.0
+    version: 6.0.0
+  remark:
+    specifier: ^15.0.1
+    version: 15.0.1
+  remark-gfm:
+    specifier: ^4.0.1
+    version: 4.0.1
+  remark-html:
+    specifier: ^16.0.1
+    version: 16.0.1
+  sass:
+    specifier: ^1.90.0
+    version: 1.90.0
+  scroll-lock:
+    specifier: ^2.1.5
+    version: 2.1.5
+  stripe:
+    specifier: ^18.5.0
+    version: 18.5.0(@types/node@20.19.8)
+  swiper:
+    specifier: ^11.2.10
+    version: 11.2.10
+  uuid:
+    specifier: ^11.1.0
+    version: 11.1.0
+  .:
+    dependencies:
+      '@nivo/bar':
+        specifier: ^0.99.0
+        version: 0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@nivo/core':
+        specifier: ^0.99.0
+        version: 0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@nivo/pie':
+        specifier: ^0.99.0
+        version: 0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-accordion':
+        specifier: ^1.2.11
+        version: 1.2.12(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-dialog':
+        specifier: ^1.1.14
+        version: 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-icons':
+        specifier: ^1.3.2
+        version: 1.3.2(react@19.1.0)
+      '@radix-ui/react-label':
+        specifier: ^2.1.7
+        version: 2.1.7(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-toast':
+        specifier: ^1.2.15
+        version: 1.2.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@stripe/stripe-js':
+        specifier: ^7.9.0
+        version: 7.9.0
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      crypto-js:
+        specifier: ^4.2.0
+        version: 4.2.0
+      gsap:
+        specifier: ^3.13.0
+        version: 3.13.0
+      millify:
+        specifier: ^6.1.0
+        version: 6.1.0
+      next:
+        specifier: 15.4.1
+        version: 15.4.1(@babel/core@7.28.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2)
+      next-cloudinary:
+        specifier: ^6.16.0
+        version: 6.17.0(next@15.4.1(@babel/core@7.28.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react@19.1.0)
+      next-video:
+        specifier: ^2.2.1
+        version: 2.5.0(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(next@15.4.1(@babel/core@7.28.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      player.style:
+        specifier: ^0.1.9
+        version: 0.1.10(react@19.1.0)
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-datepicker:
+        specifier: ^8.4.0
+        version: 8.8.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
+      react-fast-marquee:
+        specifier: ^1.6.5
+        version: 1.6.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-hook-form:
+        specifier: ^7.62.0
+        version: 7.65.0(react@19.1.0)
+      react-hotkeys-hook:
+        specifier: ^5.1.0
+        version: 5.2.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-outside-click-handler:
+        specifier: ^1.3.0
+        version: 1.3.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-tooltip:
+        specifier: ^5.29.1
+        version: 5.30.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-transition-group:
+        specifier: ^4.4.5
+        version: 4.4.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      recharts:
+        specifier: ^3.1.2
+        version: 3.3.0(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react-is@16.13.1)(react@19.1.0)(redux@5.0.1)
+      rehype:
+        specifier: ^13.0.2
+        version: 13.0.2
+      rehype-raw:
+        specifier: ^7.0.0
+        version: 7.0.0
+      rehype-sanitize:
+        specifier: ^6.0.0
+        version: 6.0.0
+      remark:
+        specifier: ^15.0.1
+        version: 15.0.1
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
+      remark-html:
+        specifier: ^16.0.1
+        version: 16.0.1
+      sass:
+        specifier: ^1.90.0
+        version: 1.93.2
+      scroll-lock:
+        specifier: ^2.1.5
+        version: 2.1.5
+      stripe:
+        specifier: ^18.5.0
+        version: 18.5.0(@types/node@20.19.24)
+      swiper:
+        specifier: ^11.2.10
+        version: 11.2.10
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
+    devDependencies:
+      '@eslint/eslintrc':
+        specifier: ^3
+        version: 3.3.1
+      '@svgr/webpack':
+        specifier: ^8.1.0
+        version: 8.1.0(typescript@5.9.3)
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.1.16
+      '@types/crypto-js':
+        specifier: ^4.2.2
+        version: 4.2.2
+      '@types/node':
+        specifier: ^20
+        version: 20.19.24
+      '@types/react':
+        specifier: ^19
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.2(@types/react@19.2.2)
+      eslint:
+        specifier: ^9
+        version: 9.38.0(jiti@2.6.1)
+      eslint-config-next:
+        specifier: 15.4.1
+        version: 15.4.1(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^4
+        version: 4.1.16
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -6095,21 +6253,16 @@ snapshots:
   '@cloudinary/transformation-builder-sdk@1.21.2':
     dependencies:
       '@cloudinary/url-gen': 1.22.0
-    dev: false
 
   '@cloudinary/url-gen@1.15.0':
     dependencies:
       '@cloudinary/transformation-builder-sdk': 1.21.2
 
-  /@cloudinary/url-gen@1.22.0:
-    resolution: {integrity: sha512-le8RMlgyC0JN3+FlC/YAlPYfvmJdtw8QGcSKDjCsfhS2CIem0mJl6ayti8bMoZ0P5wDvBewvRB0/dUQvhCzy3g==}
+  '@cloudinary/url-gen@1.22.0':
     dependencies:
-      '@cloudinary/transformation-builder-sdk': 1.18.0
-    dev: false
+      '@cloudinary/transformation-builder-sdk': 1.21.2
 
-  /@emnapi/core@1.4.4:
-    resolution: {integrity: sha512-A9CnAbC6ARNMKcIcrQwq6HeHCjpcBZ5wSx4U01WXCqEKlrzB9F9315WDNHkrs2xbx7YjjSxbUYxuN6EQzpcY2g==}
-    requiresBuild: true
+  '@emnapi/core@1.7.0':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
       tslib: 2.8.1
@@ -6462,7 +6615,7 @@ snapshots:
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
-      '@emnapi/core': 1.6.0
+      '@emnapi/core': 1.7.0
       '@emnapi/runtime': 1.6.0
       '@tybys/wasm-util': 0.10.1
     optional: true
