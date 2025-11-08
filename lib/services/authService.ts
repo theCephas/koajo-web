@@ -392,47 +392,35 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
   return {
     id: profile.id,
     email: profile.email,
-    phoneNumber: profile.phone ?? "",
+    phone: profile.phone ?? "",
     firstName:
-      typeof profile.first_name === "string" ? profile.first_name : undefined,
+      typeof profile.firstName === "string" ? profile.firstName : undefined,
     lastName:
-      typeof profile.last_name === "string" ? profile.last_name : undefined,
-    emailVerified: profile.email_verified,
-    agreedToTerms: profile.agreed_to_terms,
-    dateOfBirth: profile.date_of_birth ?? undefined,
-    avatarId: profile.avatar_id ?? undefined,
-    isActive: profile.is_active,
-    lastLoginAt: profile.last_login_at ?? undefined,
-    createdAt: profile.created_at,
-    updatedAt: profile.updated_at,
+      typeof profile.lastName === "string" ? profile.lastName : undefined,
+    emailVerified: profile.emailVerified,
+    agreedToTerms: profile.agreedToTerms,
+    dateOfBirth: profile.dateOfBirth ?? undefined,
+    avatarId: profile.avatarId ?? undefined,
+    isActive: profile.isActive,
+    lastLoginAt: profile.lastLoginAt ?? undefined,
+    createdAt: profile.createdAt,
+    updatedAt: profile.updatedAt,
     emailNotificationsEnabled: profile.emailNotificationsEnabled,
     transactionNotificationsEnabled: profile.transactionNotificationsEnabled,
-    identity_verification: profile.identity_verification_status ?? null,
-    identityVerification: profile.identity_verification
-      ? {
-          id: profile.identity_verification.id,
-          identityId: profile.identity_verification.identity_id ?? undefined,
-          sessionId: profile.identity_verification.session_id ?? undefined,
-          resultId: profile.identity_verification.result_id ?? undefined,
-          status: profile.identity_verification.status ?? undefined,
-          type: profile.identity_verification.type ?? undefined,
-          completedAt: profile.identity_verification.completed_at ?? undefined,
-          recordedAt: profile.identity_verification.recorded_at ?? undefined,
-        }
-      : undefined,
+    identityVerification: profile.identityVerificationStatus ?? null,
     customer: profile.customer
       ? {
           id: profile.customer.id,
-          ssnLast4: profile.customer.ssn_last4 ?? undefined,
+          ssnLast4: profile.customer.ssnLast4 ?? undefined,
           address: profile.customer.address,
         }
       : undefined,
-    bankAccount: profile.bank_account
+    bankAccount: profile.bankAccount
       ? {
-          id: profile.bank_account.id,
-          customerId: profile.bank_account.customer_id ?? undefined,
-          createdAt: profile.bank_account.created_at,
-          updatedAt: profile.bank_account.updated_at,
+          id: profile.bankAccount.id,
+          customerId: profile.bankAccount.customerId ?? undefined,
+          createdAt: profile.bankAccount.createdAt,
+          updatedAt: profile.bankAccount.updatedAt,
         }
       : undefined,
   };

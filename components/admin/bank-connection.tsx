@@ -67,7 +67,7 @@ export default function BankConnection() {
             body: JSON.stringify({
               userId: userData?.id || "12397987",
               email: userData?.email || "user@example.com",
-              phone: userData?.phoneNumber  || "1234567890",
+              phone: userData?.phone  || "1234567890",
               name: (userData?.firstName && userData?.lastName) 
                 ? `${userData.firstName} ${userData.lastName}` 
                 :  "John Doe",
