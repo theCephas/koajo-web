@@ -129,7 +129,7 @@ export interface UpdateNotificationPreferencesResponse {
 export interface UpdateUserRequest {
   firstName?: string;
   lastName?: string;
-  identity_verification?: 'document_verified' | 'id_number_verified' | 'all_verified' | null;
+  identityVerification?: 'document_verified' | 'id_number_verified' | 'all_verified' | null;
 }
 
 export interface UpdateUserResponse {
@@ -395,7 +395,7 @@ export interface AcceptCustomInviteRequest {
 export interface User {
   id: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
   firstName?: string;
   lastName?: string;
   emailVerified: boolean;
@@ -406,10 +406,41 @@ export interface User {
   lastLoginAt?: string;
   createdAt?: string;
   updatedAt?: string;
-  identity_verification: "document_verified" | "id_number_verified" | "all_verified" | null;
+  identityVerification: "document_verified" | "id_number_verified" | "all_verified" | null;
 
   emailNotificationsEnabled?: boolean;
   transactionNotificationsEnabled?: boolean;
+ 
+  customer?: {
+    id?: string;
+    ssnLast4?: string | null;
+    address?: unknown;
+  };
+  bankAccount?: {
+    id?: string;
+    customerId?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+export interface RawUserProfileResponse {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  emailVerified: boolean;
+  agreedToTerms: boolean;
+  dateOfBirth?: string | null;
+  avatarId?: string | null;
+  isActive: boolean;
+  emailNotificationsEnabled?: boolean;
+  transactionNotificationsEnabled?: boolean;
+  lastLoginAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  identityVerificationStatus?: "document_verified" | "id_number_verified" | "all_verified" | null;
   identityVerification?: {
     id?: string;
     identityId?: string | null;
@@ -430,45 +461,5 @@ export interface User {
     customerId?: string | null;
     createdAt?: string;
     updatedAt?: string;
-  };
-}
-
-export interface RawUserProfileResponse {
-  id: string;
-  email: string;
-  first_name?: string | null;
-  last_name?: string | null;
-  phone?: string | null;
-  email_verified: boolean;
-  agreed_to_terms: boolean;
-  date_of_birth?: string | null;
-  avatar_id?: string | null;
-  is_active: boolean;
-  emailNotificationsEnabled?: boolean;
-  transactionNotificationsEnabled?: boolean;
-  last_login_at?: string | null;
-  created_at?: string;
-  updated_at?: string;
-  identity_verification_status?: "document_verified" | "id_number_verified" | "all_verified" | null;
-  identity_verification?: {
-    id?: string;
-    identity_id?: string | null;
-    session_id?: string | null;
-    result_id?: string | null;
-    status?: string | null;
-    type?: string | null;
-    completed_at?: string | null;
-    recorded_at?: string | null;
-  };
-  customer?: {
-    id?: string;
-    ssn_last4?: string | null;
-    address?: unknown;
-  };
-  bank_account?: {
-    id?: string;
-    customer_id?: string | null;
-    created_at?: string;
-    updated_at?: string;
   };
 }

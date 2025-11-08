@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
           method: 'PATCH',
           headers: getDefaultHeaders(),
           body: JSON.stringify({
-            identity_verification: userVerificationStatus,
+            identityVerification: userVerificationStatus,
           }),
         });
 

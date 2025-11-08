@@ -132,7 +132,7 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
   }, []);
 
   const emailVerified = user?.emailVerified ?? false;
-  const kycStatus = user?.identity_verification ?? null;
+  const kycStatus = user?.identityVerification ?? null;
   const kycCompleted = kycStatus === "all_verified";
   const bankConnected = !!user?.bankAccount?.id;
   const setupCompleted = emailVerified && kycCompleted && bankConnected;

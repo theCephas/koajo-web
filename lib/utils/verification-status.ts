@@ -148,7 +148,7 @@ export async function updateUserVerificationStatus(
       method: 'PATCH',
       headers: getDefaultHeaders(),
       body: JSON.stringify({
-        identity_verification: userVerificationStatus,
+          identityVerification: userVerificationStatus,
       }),
     });
 

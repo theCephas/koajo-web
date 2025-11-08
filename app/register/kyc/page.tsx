@@ -70,7 +70,7 @@ function KycContent() {
         }
 
         const user = response as User;
-        const verificationStatus = user.identity_verification;
+        const verificationStatus = user.identityVerification;
 
         if (verificationStatus === "document_verified") {
           setCurrentStep("processing");
@@ -254,7 +254,7 @@ function KycContent() {
         const verificationSession = await fetchVerificationSession({
           email: TokenManager.getUserData()?.email || "user@example.com",
           userId: TokenManager.getUserData()?.id || "user_123",
-          phone: TokenManager.getUserData()?.phoneNumber || "+12222222222",
+          phone: TokenManager.getUserData()?.phone || "+12222222222",
           type,
         });
 
