@@ -7,40 +7,52 @@ import CardAuth from "@/components/auth/card-auth";
 import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
 import type { VerifyEmailRequest, VerifyEmailResponse } from "@/lib/types/api";
 import TokenManager from "@/lib/utils/memory-manager";
+import { AuthService } from "@/lib/services/authService";
 
-export default function VerifyEmailContent() {
+export default function CardVerifyEmail() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(
+    TokenManager.getUserData()?.emailVerified || false
+  );
+  const [action, setAction] = useState<"verify-email" | "resend-email">(
+    "verify-email"
+  );
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  const origin =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://koajo-frontend.vercel.app";
 
   useEffect(() => {
+    console.log(
+      "isVerified in useEffect",
+      TokenManager.getUserData()?.emailVerified
+    );
+
     const token = searchParams.get("token");
     const emailParam = searchParams.get("email");
-    
+
     const userEmail = emailParam || TokenManager.getUserData()?.email || "";
     setEmail(userEmail);
 
-
     if (token && userEmail) {
       verifyEmailToken(userEmail, token);
+    } else if (!token && userEmail && !isVerified) {
+      resendEmail();
     }
-  }, [searchParams]);
+  }, [searchParams, isVerified]);
 
   const verifyEmailToken = async (userEmail: string, token: string) => {
     setIsLoading(true);
     setError(null);
-    const origin = process.env.NEXT_PUBLIC_BASE_URL || "https://koajo-frontend.vercel.app";
+    setAction("verify-email");
 
     try {
       const requestBody: VerifyEmailRequest = {
         email: userEmail,
-        token: token,
-        origin
+        token,
       };
 
       const response = await fetch(getApiUrl("/auth/verify-email"), {
@@ -55,56 +67,48 @@ export default function VerifyEmailContent() {
       }
 
       const result: VerifyEmailResponse = await response.json();
-      
+
       if (result.verified) {
         setIsVerified(true);
-
       } else {
         setError("Email verification failed. Please try again.");
       }
     } catch (err) {
       console.error("Email verification error:", err);
-      setError(err instanceof Error ? err.message : "An error occurred during verification.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred during verification."
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResendEmail = async () => {
+  const resendEmail = async () => {
+    if (isVerified || !email) return;
     setIsLoading(true);
     setError(null);
-    const origin = process.env.NEXT_PUBLIC_BASE_URL || "https://koajo-frontend.vercel.app";
-    
+    setAction("resend-email");
+
     try {
-      const response = await fetch(getApiUrl("/auth/resend-email"), {
-        method: "POST",
-        headers: getDefaultHeaders(),
-        body: JSON.stringify({ email, origin }),
+      console.log("resend email", email, "origin", origin);
+      const response = await AuthService.resendVerificationEmail({
+        email,
+        origin,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to resend verification email");
+      if ("error" in response && "message" in response) {
+        setError(response.message as string);
       }
-
-      alert("Verification email sent! Please check your inbox.");
     } catch (err) {
       console.error("Resend email error:", err);
-      setError("Failed to resend email. Please try again.");
+      setError(
+        `Failed to send email. Click "Resend email" below to try again.`
+      );
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleContinue = () => {
-    setShowSuccessModal(true);
-  };
-
-  const handleGoToLogin = () => {
-    router.push("/auth/login");
-  };
-
-  const handleGoToRegistration = () => {
-    router.push("/register/");
   };
 
   if (isVerified) {
@@ -112,13 +116,23 @@ export default function VerifyEmailContent() {
       <>
         <CardAuth
           title="Email Verified!"
-          description="Your email has been successfully verified. You can now continue with your registration."
+          description="Your email has been successfully verified."
         >
           <div className="space-y-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-8 h-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
               <p className="text-gray-600">
@@ -127,16 +141,16 @@ export default function VerifyEmailContent() {
             </div>
 
             <Button
-              onClick={handleContinue}
               text="Continue"
               variant="primary"
               className="w-full"
               showArrow={true}
+              href="/dashboard"
             />
           </div>
         </CardAuth>
 
-        <Modal
+        {/* <Modal
           visible={showSuccessModal}
           onClose={() => setShowSuccessModal(false)}
         >
@@ -160,64 +174,85 @@ export default function VerifyEmailContent() {
                 variant="primary"
                 className="w-full"
                 showArrow={true}
-              />
-              {/* <Button
+              /> */}
+        {/* <Button
                 onClick={handleGoToRegistration}
                 text="Continue Registration"
                 variant="secondary"
                 className="w-full"
                 showArrow={false}
               /> */}
-            </div>
+        {/* </div>
           </div>
-        </Modal>
+        </Modal> */}
       </>
     );
   }
 
   return (
     <CardAuth
-      title="Verify Your Email"
-      description={error || `Please verify your email address. Check your inbox at ${email} for the verification link.`}
+      title={
+        !email
+          ? "Login First to Your Account"
+          : error
+          ? "Resend Email"
+          : "Check your inbox"
+      }
+      description={
+        !email
+          ? `We need to identify your email in order to send you the verification link. Please login to your account and then click on "Verify Email" in the Sttup Guide to come back to this page to verify your email.`
+          : error ||
+            `Secure your account by verifying your email. Open the verification link sent to your inbox at ${email}.`
+      }
     >
       <div className="space-y-6">
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-
         {isLoading ? (
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg
+                className="w-8 h-8 text-blue-600 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
             </div>
-            <p className="text-gray-600">Verifying your email...</p>
+            <p className="text-gray-600">
+              {action === "verify-email"
+                ? "Verifying your email..."
+                : "Sending email..."}
+            </p>
           </div>
         ) : (
           <>
-            <div className="text-left">
-              <span className="text-text-400 text-sm">
-                Didn&apos;t receive the email?{" "}
-              </span>
-              <button
-                type="button"
-                onClick={handleResendEmail}
-                disabled={isLoading}
-                className="text-tertiary-100 hover:text-tertiary-100/80 underline text-sm disabled:opacity-50"
-              >
-                {isLoading ? "Sending..." : "Resend email"}
-              </button>
-            </div>
+            {!isVerified && (
+              <div className="text-center">
+                <span className="text-text-400 text-sm">
+                  Didn&apos;t receive the email?{" "}
+                </span>
+                <button
+                  type="button"
+                  onClick={resendEmail}
+                  disabled={isLoading}
+                  className="text-tertiary-100 hover:text-tertiary-100/80 underline text-sm disabled:opacity-50"
+                >
+                  Resend email
+                </button>
+              </div>
+            )}
 
             <Button
-              text="Continue"
+              text={email ? "Continue" : "Login"}
               variant="secondary"
               className="w-full"
               showArrow={false}
-              href="/auth/login"
+              href={email ? "/dashboard" : "/auth/login"}
             />
           </>
         )}
