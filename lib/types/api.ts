@@ -427,39 +427,20 @@ export interface User {
 export interface RawUserProfileResponse {
   id: string;
   email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  phone?: string | null;
-  emailVerified: boolean;
-  agreedToTerms: boolean;
-  dateOfBirth?: string | null;
-  avatarId?: string | null;
-  isActive: boolean;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  email_verified: boolean;
+  agreed_to_terms: boolean;
+  date_of_birth?: string;
+  avatar_id?: string;
+  is_active: boolean;
   emailNotificationsEnabled?: boolean;
   transactionNotificationsEnabled?: boolean;
-  lastLoginAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  identityVerificationStatus?: "document_verified" | "id_number_verified" | "all_verified" | null;
-  identityVerification?: {
-    id?: string;
-    identityId?: string | null;
-    sessionId?: string | null;
-    resultId?: string | null;
-    status?: string | null;
-    type?: string | null;
-    completedAt?: string | null;
-    recordedAt?: string | null;
-  };
-  customer?: {
-    id?: string;
-    ssnLast4?: string | null;
-    address?: unknown;
-  };
-  bankAccount?: {
-    id?: string;
-    customerId?: string | null;
-    createdAt?: string;
-    updatedAt?: string;
-  };
+  last_login_at: string;
+  created_at: string;
+  updated_at: string;
+  identity_verification: User['identityVerification'];
+  customer?: User['customer'];
+  bank_account?: User['bankAccount'];
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { geistSans } from "./fonts";
+import "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Koajo",

@@ -26,6 +26,7 @@ import type {
   ApiError,
   ResendForgotPasswordRequest,
   ResendForgotPasswordResponse,
+  ResendVerificationEmailRequest,
   ResendVerificationEmailResponse,
   PodActivitiesResponse,
   AchievementsSummary,
@@ -209,13 +210,12 @@ async function changePassword(
 }
 
 async function resendVerificationEmail(
-  data: ResendVerificationEmailResponse
+  data: ResendVerificationEmailRequest
 ): Promise<ResendVerificationEmailResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.RESEND_EMAIL);
 
   return apiRequest<ResendVerificationEmailResponse>(url, {
     method: "POST",
-    headers: getDefaultHeaders(),
     body: JSON.stringify(data),
   });
 }
@@ -394,35 +394,22 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
     email: profile.email,
     phone: profile.phone ?? "",
     firstName:
-      typeof profile.firstName === "string" ? profile.firstName : undefined,
+      typeof profile.first_name === "string" ? profile.first_name : undefined,
     lastName:
-      typeof profile.lastName === "string" ? profile.lastName : undefined,
-    emailVerified: profile.emailVerified,
-    agreedToTerms: profile.agreedToTerms,
-    dateOfBirth: profile.dateOfBirth ?? undefined,
-    avatarId: profile.avatarId ?? undefined,
-    isActive: profile.isActive,
-    lastLoginAt: profile.lastLoginAt ?? undefined,
-    createdAt: profile.createdAt,
-    updatedAt: profile.updatedAt,
+      typeof profile.last_name === "string" ? profile.last_name : undefined,
+    emailVerified: profile.email_verified,
+    agreedToTerms: profile.agreed_to_terms,
+    dateOfBirth: profile.date_of_birth ,
+    avatarId: profile.avatar_id,
+    isActive: profile.is_active,
+    lastLoginAt: profile.last_login_at,
+    createdAt: profile.created_at,
+    updatedAt: profile.updated_at,
     emailNotificationsEnabled: profile.emailNotificationsEnabled,
     transactionNotificationsEnabled: profile.transactionNotificationsEnabled,
-    identityVerification: profile.identityVerificationStatus ?? null,
-    customer: profile.customer
-      ? {
-          id: profile.customer.id,
-          ssnLast4: profile.customer.ssnLast4 ?? undefined,
-          address: profile.customer.address,
-        }
-      : undefined,
-    bankAccount: profile.bankAccount
-      ? {
-          id: profile.bankAccount.id,
-          customerId: profile.bankAccount.customerId ?? undefined,
-          createdAt: profile.bankAccount.createdAt,
-          updatedAt: profile.bankAccount.updatedAt,
-        }
-      : undefined,
+    identityVerification: profile.identity_verification ?? null,
+    customer: profile.customer,
+    bankAccount: profile.bank_account
   };
 };
 
