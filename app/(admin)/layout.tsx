@@ -45,7 +45,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <DashboardProvider>
-      <OnboardingProvider defaultVisible={true}>
+      <OnboardingProvider>
         <Onboarding>
           {children}
           <OnboardingProgressButton />

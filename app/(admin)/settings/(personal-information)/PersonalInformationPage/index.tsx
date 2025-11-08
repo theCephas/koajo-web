@@ -10,9 +10,8 @@ import Select from "@/components2/usefull/Select";
 import PhotoProfile from "./PhotoProfile";
 import { DASHBOARD_BREADCRUMBS } from "@/lib/constants/dashboard";
 import { useDashboard } from "@/lib/provider-dashboard";
-import Badge from "@/components2/usefull/Badge";
 import DatePickerField from "@/components2/usefull/DatePickerField";
-import {Button } from "@/components/utils"
+import {Button, Badge } from "@/components/utils"
 
 
 const countries = [

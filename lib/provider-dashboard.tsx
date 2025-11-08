@@ -51,8 +51,7 @@ export function DashboardProvider({ children, autoFetch = true }: DashboardProvi
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [registrationStage, _setRegistrationStage] = useState<RegistrationStage | null>(TokenManager.getRegistrationStage());
   
-  // User status state
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(TokenManager.getUserData() || null);
   const [userLoading, setUserLoading] = useState<boolean>(true);
 
   const setRegistrationStage = (stage: RegistrationStage) => {

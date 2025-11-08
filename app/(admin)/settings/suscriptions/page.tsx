@@ -45,10 +45,8 @@ export default function SubscriptionsPage() {
   }, []);
 
   useEffect(() => {
-    // Check if user returned from bank connection
     const bankConnection = searchParams.get("bank_connection");
     if (bankConnection === "complete") {
-      // Refresh user data to get updated bank account
       const token = TokenManager.getToken();
       if (token) {
         AuthService.getMe(token).then((response) => {
