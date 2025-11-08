@@ -77,11 +77,11 @@ export default function RegisterPage() {
         TokenManager.setUser({
           id: response?.accountId || response?.id,
           email: data.email,
-          phoneNumber: getPhoneNumber(data.phoneNumber),
+          phone: getPhoneNumber(data.phoneNumber),
           emailVerified: false,
           agreedToTerms: false,
           isActive: false,
-          identity_verification: null,
+          identityVerification: null,
         });
         TokenManager.setRegistrationStage(REGISTRATION_STAGE.REGISTERED);
       }
