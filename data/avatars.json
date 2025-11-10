@@ -1,0 +1,138 @@
+[
+  {
+    "id": "Man_Avatar-01_gdkkyc",
+    "alt_text": "Professional man with short dark hair, wearing a navy blue business shirt, confident and authoritative expression",
+    "is_default": true,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-03_jry0jo",
+    "alt_text": "Young man with styled dark hair, wearing a light blue casual t-shirt and rectangular glasses, warm and approachable smile",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-05_ldqocd",
+    "alt_text": "Distinguished mature man with salt-and-pepper hair and well-trimmed beard, wearing a charcoal gray blazer, thoughtful and experienced demeanor",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-10_ern3e2",
+    "alt_text": "Athletic man with short cropped hair, wearing a fitted athletic t-shirt, dynamic and energetic expression",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-11_nj8lfe",
+    "alt_text": "Fashionable man with contemporary haircut, wearing a stylish button-down shirt, confident and trendy appearance",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-12_o44rxh",
+    "alt_text": "Relaxed man with medium-length tousled hair, wearing a comfortable gray hoodie, laid-back and friendly expression",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-14_src6qd",
+    "alt_text": "Clean-cut young professional man with neatly styled hair, wearing a crisp white dress shirt, polished and competent look",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Man_Avatar-16_vkfmec",
+    "alt_text": "Sophisticated man with impeccably groomed hair, wearing a classic white dress shirt, distinguished and refined appearance",
+    "is_default": false,
+    "gender": "male",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-02_egpv4h",
+    "alt_text": "Professional woman with shoulder-length styled hair, wearing a navy blue business blouse, confident and competent expression",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-04_s2uxkv",
+    "alt_text": "Young woman with long wavy hair, wearing a soft pink casual top, bright and cheerful smile",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-06_cfbfei",
+    "alt_text": "Fashionable woman with sleek bob haircut, wearing a chic patterned blouse, stylish and contemporary look",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-07_yrt8xt",
+    "alt_text": "Elegant woman with shoulder-length wavy hair, wearing a sophisticated cream-colored top, graceful and refined expression",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-08_ygngqv",
+    "alt_text": "Athletic woman with high ponytail, wearing a fitted athletic top, energetic and dynamic expression",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-09_rnh8gu",
+    "alt_text": "Creative woman with artistic asymmetrical hairstyle, wearing a vibrant colorful top, expressive and artistic appearance",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-13_ug3crq",
+    "alt_text": "Experienced woman with short professional haircut, wearing a structured business blouse, knowledgeable and authoritative look",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-15_boimth",
+    "alt_text": "Relaxed woman with medium-length layered hair, wearing a cozy knit sweater, warm and approachable smile",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  },
+  {
+    "id": "Woman_Avatar-17_wfwhh2",
+    "alt_text": "Modern woman with contemporary layered hairstyle, wearing a stylish blouse, confident and independent expression",
+    "is_default": false,
+    "gender": "female",
+    "created_at": "2025-10-25T20:48:32Z",
+    "updated_at": "2025-10-25T20:48:32Z"
+  }
+]

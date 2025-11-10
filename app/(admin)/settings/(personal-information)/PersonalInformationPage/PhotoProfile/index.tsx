@@ -8,9 +8,9 @@ import Icon from "@/components2/usefull/Icon";
 // type PhotoProfileProps = {};
 
 const PhotoProfile = () => {
-    const [objectURL, setObjectURL] = useState<any>("/media/images/avatar.jpg"); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const [objectURL, setObjectURL] = useState<any>("/media/images/avatar.jpg");
 
-    const handleUpload = (e: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    const handleUpload = (e: any) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
 

@@ -13,12 +13,8 @@ const navigation = [
     url: "/dashboard",
   },
   {
-    title: "Transaction",
-    url: "/dashboard/transactions",
-  },
-  {
-    title: "Pod Information",
-    url: "/dashboard/pod-information",
+    title: "Pod Information & Transactions",
+    url: "/dashboard/pod-info-and-transactions",
   },
 ];
 
@@ -44,14 +40,14 @@ const Navigation = ({}: NavigationProps) => {
           </Link>
         ))}
       </nav>
-      <div className={styles.date}>
+      {/* <div className={styles.date}>
         <DatePicker
           dateFormat="MMM dd,yyyy"
           selected={startDate}
           onChange={(date) => date && setStartDate(date)}
         />
         <Icon name="calendar" />
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -31,6 +31,7 @@
 
 .wrap
     position: relative
+    border-radius: 15px
     
 .input,
 .textarea
@@ -54,6 +55,35 @@
 .input
     height: 62px
     padding: 0 23px
+
+.inputWithPrefix
+    padding-left: 120px
+
+.inputWithSuffix
+    padding-right: 120px
+
+.prefix
+    position: absolute
+    left: 12px
+    top: 0
+    bottom: 0
+    display: flex
+    align-items: center
+    z-index: 1
+    pointer-events: none
+
+.prefixWithIcon
+    left: 59px
+
+.suffix
+    position: absolute
+    right: 12px
+    top: 0
+    bottom: 0
+    display: flex
+    align-items: center
+    z-index: 1
+    pointer-events: none
 
 .textarea
     height: 100px

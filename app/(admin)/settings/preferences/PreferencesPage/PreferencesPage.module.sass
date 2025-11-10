@@ -1,4 +1,4 @@
-@import @/styles/helpers
+@use "@/styles/helpers" as *
 
 .select,
 .notification
@@ -54,3 +54,14 @@
         &:nth-child(2)
             +m
                 margin-left: 8px
+
+.status
+    margin-top: 16px
+    font-size: 14px
+    font-weight: 600
+
+.statusSuccess
+    color: $su5
+
+.statusError
+    color: $e6

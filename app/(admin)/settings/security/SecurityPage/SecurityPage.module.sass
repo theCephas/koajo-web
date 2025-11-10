@@ -1,4 +1,4 @@
-@import @/styles/helpers
+@use "@/styles/helpers" as *
 
 .field
     &:not(:last-child)
@@ -26,3 +26,17 @@
         &:nth-child(2)
             +m
                 margin-left: 8px
+
+.status
+    margin-top: 16px
+    font-size: 14px
+    font-weight: 600
+
+.statusSuccess
+    color: $su5
+
+.statusError
+    color: $e6
+
+.statusInfo
+    color: $i5

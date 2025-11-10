@@ -9,7 +9,7 @@ import styles from "./modal.module.sass";
 // import CloseIcon from "@/public/media/icons/close.svg";
 // import { Button } from "@/components/utils";
 
-type ModalProps = {
+export type ModalProps = {
   className?: string;
   // closeClassName?: string;
   containerClassName?: string;
@@ -24,7 +24,7 @@ type ModalProps = {
   };
 };
 
-const Modal = ({
+export function Modal ({
   className,
   containerClassName,
   // closeClassName,
@@ -37,7 +37,7 @@ const Modal = ({
     vertical: "center",
     horizontal: "center",
   },
-}: ModalProps) => {
+}: ModalProps) {
   const [loaded, setLoaded] = useState<boolean>(false);
 
   useHotkeys("esc", () => onClose?.());

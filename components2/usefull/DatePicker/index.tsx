@@ -18,15 +18,18 @@ const DateChoice = ({
     dateFormat,
     medium,
     icon,
+    disabled,
 }: DateChoiceProps & {
     label?: string;
     medium?: boolean;
     icon?: boolean;
+    disabled?: boolean;
 }) => (
     <div
         className={cn(
             styles.date,
             { [styles.dateIcon]: icon, [styles.dateMedium]: medium },
+            disabled && "pointer-events-none opacity-50",
             className
         )}
     >
@@ -41,6 +44,7 @@ const DateChoice = ({
                 onChange={onChange}
                 placeholderText={placeholderText}
                 selectsMultiple={undefined}
+                disabled={disabled}
             /> */}
             {icon && <Icon name="calendar" />}
         </div>

@@ -3,89 +3,111 @@ import { useState } from "react";
 import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import Modal from "@/components/utils/modal";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
-const members = [
-  {
-    id: 1,
-    name: "John Doe",
-    userId: "#959505850",
-    avatar: "👨‍💼",
-    avatarBg: "bg-amber-800"
-  },
-  {
-    id: 2,
-    name: "Sarah Smith",
-    userId: "#959505850",
-    avatar: "👩‍💻",
-    avatarBg: "bg-yellow-500"
-  },
-  {
-    id: 3,
-    name: "Ahmed Hassan",
-    userId: "#959505850",
-    avatar: "👳‍♂️",
-    avatarBg: "bg-purple-400"
-  },
-  {
-    id: 4,
-    name: "Maria Garcia",
-    userId: "#959505850",
-    avatar: "👩‍🎨",
-    avatarBg: "bg-sky-300"
-  },
-  {
-    id: 5,
-    name: "David Chen",
-    userId: "#959505850",
-    avatar: "👨‍🔬",
-    avatarBg: "bg-green-500"
-  },
-  {
-    id: 6,
-    name: "Emma Wilson",
-    userId: "#959505850",
-    avatar: "👩‍🏫",
-    avatarBg: "bg-pink-400"
-  },
-  {
-    id: 7,
-    name: "Michael Brown",
-    userId: "#959505850",
-    avatar: "👨‍💻",
-    avatarBg: "bg-blue-500"
-  },
-  {
-    id: 8,
-    name: "Lisa Johnson",
-    userId: "#959505850",
-    avatar: "👩‍⚕️",
-    avatarBg: "bg-red-400"
-  }
+const members: MemberCardProps['member'][] = [
+  // {
+  //   id: 1,
+  //   name: "John Doe",
+  //   userId: "#959505850",
+  //   avatar: "👨‍💼",
+  //   avatarBg: "bg-amber-800"
+  // },
+  // {
+  //   id: 1,
+  //   name: "John Doe",
+  //   userId: "#959505850",
+  //   avatar: "👨‍💼",
+  //   avatarBg: "bg-amber-800"
+  // },
+  // {
+  //   id: 2,
+  //   name: "Sarah Smith",
+  //   userId: "#959505850",
+  //   avatar: "👩‍💻",
+  //   avatarBg: "bg-yellow-500"
+  // },
+  // {
+  //   id: 3,
+  //   name: "Ahmed Hassan",
+  //   userId: "#959505850",
+  //   avatar: "👳‍♂️",
+  //   avatarBg: "bg-purple-400"
+  // },
+  // {
+  //   id: 4,
+  //   name: "Maria Garcia",
+  //   userId: "#959505850",
+  //   avatar: "👩‍🎨",
+  //   avatarBg: "bg-sky-300"
+  // },
+  // {
+  //   id: 5,
+  //   name: "David Chen",
+  //   userId: "#959505850",
+  //   avatar: "👨‍🔬",
+  //   avatarBg: "bg-green-500"
+  // },
+  // {
+  //   id: 6,
+  //   name: "Emma Wilson",
+  //   userId: "#959505850",
+  //   avatar: "👩‍🏫",
+  //   avatarBg: "bg-pink-400"
+  // },
+  // {
+  //   id: 7,
+  //   name: "Michael Brown",
+  //   userId: "#959505850",
+  //   avatar: "👨‍💻",
+  //   avatarBg: "bg-blue-500"
+  // },
+  // {
+  //   id: 8,
+  //   name: "Lisa Johnson",
+  //   userId: "#959505850",
+  //   avatar: "👩‍⚕️",
+  //   avatarBg: "bg-red-400"
+  // }
 ];
 
 type PodMembersProps = {
   className?: string;
 };
 
+const MAX_VISIBLE_MEMBERS = 4;
+
 const PodMembers = ({ className }: PodMembersProps) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const { emailVerified } = useDashboard();
+  const isLocked = !emailVerified;
 
-  const displayedMembers = members.slice(0, 4); // Show only first 4 members initially
+  const displayedMembers = members.slice(0, MAX_VISIBLE_MEMBERS); 
 
   return (
     <>
+      <div className="relative">
       <Card
         title="Group Members"
         tooltip="View all members in your pod"
         onSeeMore={() => setModalVisible(true)}
-        className={className}
+          className={cn(
+            className,
+            isLocked &&
+              "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+          )}
+        showSeeMore={!isLocked && displayedMembers.length > MAX_VISIBLE_MEMBERS}
       >
         <div className="grid grid-cols-2 gap-4 mt-6">
-          {displayedMembers.map((member) => (
+          {/* {displayedMembers.map((member) => (
             <MemberCard key={member.id} member={member} />
-          ))}
+          ))} */}
+          No group members yet
         </div>
       </Card>
+        <LockedOverlay />
+      </div>
 
       <Modal
         visible={modalVisible}

@@ -4,10 +4,14 @@ import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import { Button } from "@/components/utils";
 import Modal from "@/components/utils/modal";
+import { useDashboard } from "@/lib/provider-dashboard";
+import LockedOverlay from "@/components/admin/locked-overlay";
 
 type PodGoalsProps = {
   className?: string;
 };
+
+const MAX_VISIBLE_GOALS = 2;
 
 const PodGoals = ({ className }: PodGoalsProps) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -16,25 +20,37 @@ const PodGoals = ({ className }: PodGoalsProps) => {
     return Math.min((current / target) * 100, 100);
   };
 
-  const displayedGoals = goals.slice(0, 1); // Show only first goal initially
+  const displayedGoals =  goals.slice(0, MAX_VISIBLE_GOALS);
+
+  const { emailVerified } = useDashboard();
+  const isLocked = !emailVerified;
 
   return (
     <>
+      <div className="relative">
       <Card
         title="My Pod Goal"
         tooltip="Track your pod's progress towards financial goals"
         onSeeMore={() => setModalVisible(true)}
-        className={className}
+          className={cn(
+            className,
+            isLocked &&
+              "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
+          )}
+          showSeeMore={!isLocked && displayedGoals.length > MAX_VISIBLE_GOALS}
       >
         <div className="bg-white rounded-lg mt-6">
           {displayedGoals.map((goal) => {
             const percentage = getProgressPercentage(goal.current, goal.target);
-            return (
-              <GoalItem key={goal.id} goal={goal} percentage={percentage} />
-            );
+            // return (
+              // <GoalItem key={goal.id} goal={goal} percentage={percentage} />
+            // );
+            return null;
           })}
         </div>
       </Card>
+         <LockedOverlay />
+      </div>
 
       <Modal
         visible={modalVisible}
@@ -128,42 +144,42 @@ const GoalItem = ({
 };
 
 const goals: GoalItemProps[] = [
-  {
-    id: 1,
-    title: "Dream Car",
-    subtitle: "Due date - August 15",
-    icon: "🚗",
-    target: 20000,
-    current: 5000,
-    unit: "$",
-  },
-  {
-    id: 2,
-    title: "Vacation Fund",
-    subtitle: "Due date - December 20",
-    icon: "✈️",
-    target: 8000,
-    current: 3200,
-    unit: "$",
-  },
-  {
-    id: 3,
-    title: "Home Renovation",
-    subtitle: "Due date - March 10",
-    icon: "🏠",
-    target: 25000,
-    current: 15000,
-    unit: "$",
-  },
-  {
-    id: 4,
-    title: "Emergency Fund",
-    subtitle: "Due date - Ongoing",
-    icon: "🛡️",
-    target: 15000,
-    current: 12000,
-    unit: "$",
-  },
+  // {
+  //   id: 1,
+  //   title: "Dream Car",
+  //   subtitle: "Due date - August 15",
+  //   icon: "🚗",
+  //   target: 20000,
+  //   current: 5000,
+  //   unit: "$",
+  // },
+  // {
+  //   id: 2,
+  //   title: "Vacation Fund",
+  //   subtitle: "Due date - December 20",
+  //   icon: "✈️",
+  //   target: 8000,
+  //   current: 3200,
+  //   unit: "$",
+  // },
+  // {
+  //   id: 3,
+  //   title: "Home Renovation",
+  //   subtitle: "Due date - March 10",
+  //   icon: "🏠",
+  //   target: 25000,
+  //   current: 15000,
+  //   unit: "$",
+  // },
+  // {
+  //   id: 4,
+  //   title: "Emergency Fund",
+  //   subtitle: "Due date - Ongoing",
+  //   icon: "🛡️",
+  //   target: 15000,
+  //   current: 12000,
+  //   unit: "$",
+  // },
 ];
 
 export default PodGoals;

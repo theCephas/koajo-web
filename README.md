@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Koajo Frontend
 
-## Getting Started
+Next.js application powered by pnpm. Uses the App Router (`app/`), TypeScript, and Sass modules.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 15 (App Router)
+- React 19
+- TypeScript 5
+- Tailwind CSS, Sass modules
+- pnpm for dependency management
+
+## Prerequisites
+
+- Node.js 18+ (LTS recommended)
+- pnpm installed globally: `npm i -g pnpm`
+
+## Environment Variables
+
+Create a `.env.local` in the project root. Common variables:
+
+```
+NEXT_PUBLIC_API_URL=https://api.koajo.com
+NEXT_PUBLIC_APP_ENV=development
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+See `lib/config/env.ts` for defaults and usage.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm install
+```
 
-## Learn More
+## Development
 
-To learn more about Next.js, take a look at the following resources:
+Run the dev server (includes `next-video` watcher for media syncing):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open http://localhost:3000
 
-## Deploy on Vercel
+Entry is under `app/` (App Router). Edit files in `app/` and `components/` — the server reloads automatically.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Build and Run
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm build
+pnpm start
+```
+
+## Linting
+
+```bash
+pnpm lint
+```
+
+## Project Structure
+
+- `app/` – routes, layouts, and pages (App Router)
+- `components/` and `components2/` (temporary - will be remove after some time) – UI components and modules
+- `lib/` – configuration, hooks, services, and utilities
+- `data/` – static data and seeds
+- `public/` – static assets (images, icons, videos)
+- `styles/` – global styles and Sass utilities
+
+### Assets Policy
+
+- All assets must live under `public/media/`. Do not place assets anywhere else in the repo.
+- Use the following structure:
+  - `public/media/icons/` – SVGs and icon assets
+  - `public/media/images/` – images and illustrations
+  - `public/media/videos/` – video files (managed by `next-video`)
+- Keep names in kebab-case and follow the naming rules below.
+
+## Media Handling
+
+This project uses `next-video` to manage videos under `public/media/videos`. The watcher runs during `pnpm dev`.
+
+## Contributing
+
+Please read `CONTRIBUTING.md` for commit conventions, branching, PRs, and review process.
+
+### Collaboration Rules
+
+- `dev` is the integration branch. All new features (api integration for example) and bug fixes must target `dev` via pull requests.
+- Never push directly to `main`. 
+- Open a PR to `dev` only when your feature/fix is complete and ready for review. Use Draft PRs for early feedback; avoid merging WIP.
+- Do not push directly to `dev`; always create a PR so reviews and checks can run.
+
+### File Naming Conventions
+
+- Default: kebab-case for files and directories (e.g., `user-profile-card.tsx`, `payment-history.sass`).
+- Hooks: PascalCase files starting with `use` (e.g., `useIsServerSide.tsx`, `useValidateForm.ts`).
+- Utilities that export only a single function may use camelCase matching the function (e.g., `formatDate.ts`).
+- Component names should match their file names (PascalCase in code; kebab-case on disk unless it’s a hook).
+
+## Deployment
+
+The app is compatible with platforms that support Next.js (e.g., Vercel). Build with `pnpm build` and serve with `pnpm start`, or use your platform’s Next.js adapter.
+
+## License
+
+Proprietary — internal use only unless otherwise specified.

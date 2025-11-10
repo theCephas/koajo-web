@@ -1,4 +1,4 @@
-@import @/styles/helpers
+@use "@/styles/helpers" as *
 
 .field
     &:not(:last-child)
@@ -23,6 +23,7 @@
 
 .btns
     display: flex
+    justify-content: center
     margin-top: 32px
     padding-top: 32px
     border-top: 1px solid $s1
@@ -32,12 +33,4 @@
     .button
         min-width: 175px
         +m
-            flex: 0 0 calc(50% - 8px)
-            min-width: calc(50% - 8px)
-        &:first-child
-            margin-right: 24px
-            +m
-                margin-right: 8px
-        &:nth-child(2)
-            +m
-                margin-left: 8px
+            width: 100%

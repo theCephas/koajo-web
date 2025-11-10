@@ -7,7 +7,7 @@ import ArrowRightIcon from "@/public/media/icons/arrow-right.svg";
 import cn from "clsx";
 import Image from "next/image";
 
-interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   className?: string;
   linkClassName?: string;
   showArrow?: boolean;
