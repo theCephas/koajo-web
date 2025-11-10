@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@cloudinary/url-gen':
+        specifier: ^1.22.0
+        version: 1.22.0
       '@nivo/bar':
         specifier: ^0.99.0
         version: 0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
