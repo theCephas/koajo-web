@@ -40,14 +40,14 @@ const Navigation = ({}: NavigationProps) => {
           </Link>
         ))}
       </nav>
-      <div className={styles.date}>
+      {/* <div className={styles.date}>
         <DatePicker
           dateFormat="MMM dd,yyyy"
           selected={startDate}
           onChange={(date) => date && setStartDate(date)}
         />
         <Icon name="calendar" />
-      </div>
+      </div> */}
     </div>
   );
 };

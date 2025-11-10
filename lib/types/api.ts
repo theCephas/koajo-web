@@ -1,15 +1,31 @@
-
 // ===== AUTH TYPES =====
 
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface LoginSuccessResponse {
+  tokenType: "Bearer";
   accessToken: string;
   expiresAt: string;
+  refreshToken?: string;
+  refreshExpiresAt?: string;
   user: User & { accountId: string };
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+  tokenType: "Bearer";
+  accessToken: string;
+  expiresAt: string;
+  refreshToken: string;
+  refreshExpiresAt: string;
+  user: User;
 }
 
 export interface LoginVerificationRequiredResponse {
@@ -21,7 +37,9 @@ export interface LoginVerificationRequiredResponse {
   };
 }
 
-export type LoginResponse = LoginSuccessResponse | LoginVerificationRequiredResponse;
+export type LoginResponse =
+  | LoginSuccessResponse
+  | LoginVerificationRequiredResponse;
 
 export interface SignupRequest {
   email: string;
@@ -127,9 +145,19 @@ export interface UpdateNotificationPreferencesResponse {
 }
 
 export interface UpdateUserRequest {
-  firstName?: string;
-  lastName?: string;
-  identityVerification?: 'document_verified' | 'id_number_verified' | 'all_verified' | null;
+  first_name?: string;
+  last_name?: string;
+  date_of_birth?: string;
+}
+
+export interface IdentityVerificationRecord {
+  id: string;
+  resultId?: string | null;
+  sessionId: string;
+  status: StripeVerificationStatus;
+  type: StripeVerificationType;
+  completedAt?: string | null;
+  recordedAt?: string | null;
 }
 
 export interface UpdateUserResponse {
@@ -137,22 +165,44 @@ export interface UpdateUserResponse {
   email: string;
   firstName?: string;
   lastName?: string;
-  identity_verification?: 'document_verified' | 'id_number_verified' | 'all_verified' | null;
+  identity_verification?: IdentityVerificationRecord | null;
 }
 
+export type StripeVerificationType =
+  | "document"
+  | "id_number"
+  | "verification_flow";
+export type StripeVerificationStatus =
+  | "canceled"
+  | "processing"
+  | "requires_input"
+  | "verified";
+
 export interface StripeVerificationRequest {
+  identityId: string;
   sessionId: string;
   resultId: string;
-  verificationType: 'document' | 'id_number' | 'verification_flow';
-  verificationStatus: 'canceled' | 'processing' | 'requires_input' | 'verified';
+  status: StripeVerificationStatus;
+  type: StripeVerificationType;
+  identity_id?: string;
+  session_id?: string;
+  result_id?: string;
 }
 
 export interface StripeVerificationResponse {
   id: string;
-  userId: string;
+  identityId: string;
+  sessionId: string;
   resultId: string;
-  status: 'canceled' | 'processing' | 'requires_input' | 'verified';
-  type: 'document' | 'id_number' | 'verification_flow';
+  status: StripeVerificationStatus;
+  type: StripeVerificationType;
+  completedAt?: string | null;
+  recordedAt: string;
+}
+
+export interface LinkStripeBankAccountRequest {
+  id: string;
+  customer_id: string;
 }
 
 // ===== POD TYPES =====
@@ -172,9 +222,9 @@ export interface PodPlanOpenPod {
   amount: number;
   lifecycleWeeks: number;
   maxMembers: number;
-  status: 'pending' | 'open' | 'grace' | 'active' | 'completed';
-  podType: 'system' | 'custom';
-  cadence?: 'bi-weekly' | 'monthly';
+  status: "pending" | "open" | "grace" | "active" | "completed";
+  podType: "system" | "custom";
+  cadence?: "bi-weekly" | "monthly";
   randomizePositions?: boolean | null;
   expectedMemberCount?: number | null;
   scheduledStartDate?: string | null;
@@ -208,9 +258,9 @@ export interface PodMembership {
   amount: number;
   lifecycleWeeks: number;
   maxMembers: number;
-  status: 'pending' | 'open' | 'grace' | 'active' | 'completed';
-  podType: 'system' | 'custom';
-  cadence?: 'bi-weekly' | 'monthly';
+  status: "pending" | "open" | "grace" | "active" | "completed";
+  podType: "system" | "custom";
+  cadence?: "bi-weekly" | "monthly";
   randomizePositions?: boolean;
   expectedMemberCount?: number;
   scheduledStartDate?: string;
@@ -222,7 +272,14 @@ export interface PodMembership {
   aheadOfYou?: PodMemberSlot[];
   behindYou?: PodMemberSlot[];
   orderedMembers?: PodMemberSlot[];
-  goalType?: 'mortgage' | 'college_tuition' | 'debt_payoff' | 'emergency_fund' | 'business_capital' | 'savings' | 'other';
+  goalType?:
+    | "mortgage"
+    | "college_tuition"
+    | "debt_payoff"
+    | "emergency_fund"
+    | "business_capital"
+    | "savings"
+    | "other";
   goalNote?: string;
   totalContributed?: string;
   totalContributionTarget: string;
@@ -233,18 +290,29 @@ export interface PodMembership {
 
 export interface CreateCustomPodRequest {
   amount: number;
-  cadence: 'bi-weekly' | 'monthly';
+  cadence: "bi-weekly" | "monthly";
   randomizePositions: boolean;
   invitees: string[];
 }
 
 export interface JoinPodRequest {
-  goal: 'mortgage' | 'college_tuition' | 'debt_payoff' | 'emergency_fund' | 'business_capital' | 'savings' | 'other';
+  goal:
+    | "mortgage"
+    | "college_tuition"
+    | "debt_payoff"
+    | "emergency_fund"
+    | "business_capital"
+    | "savings"
+    | "other";
   goalNote?: string;
 }
 
 export interface AcceptCustomPodInviteRequest {
   token: string;
+}
+
+export interface MyPodsResponse {
+  pods: PodMembership[];
 }
 
 // ===== PAYMENT TYPES =====
@@ -319,7 +387,7 @@ export interface AchievementsSummary {
 
 // ===== ERROR TYPES =====
 
-export interface ApiError { 
+export interface ApiError {
   error: string;
   message: string | string[];
   statusCode: number;
@@ -370,7 +438,7 @@ export interface PodActivitiesResponse {
 export interface CreateCustomPodRequest {
   name: string;
   amount: number;
-  cadence: 'bi-weekly' | 'monthly';
+  cadence: "bi-weekly" | "monthly";
   randomizePositions: boolean;
   invitees: string[];
 }
@@ -406,11 +474,11 @@ export interface User {
   lastLoginAt?: string;
   createdAt?: string;
   updatedAt?: string;
-  identityVerification: "document_verified" | "id_number_verified" | "all_verified" | null;
+  identityVerification: IdentityVerificationRecord | null;
 
   emailNotificationsEnabled?: boolean;
   transactionNotificationsEnabled?: boolean;
- 
+
   customer?: {
     id?: string;
     ssnLast4?: string | null;
@@ -422,6 +490,16 @@ export interface User {
     createdAt?: string;
     updatedAt?: string;
   };
+}
+
+export interface RawIdentityVerificationRecord {
+  id: string;
+  result_id?: string | null;
+  session_id: string;
+  status: StripeVerificationStatus;
+  type: StripeVerificationType;
+  completed_at?: string | null;
+  recorded_at?: string | null;
 }
 
 export interface RawUserProfileResponse {
@@ -440,7 +518,7 @@ export interface RawUserProfileResponse {
   last_login_at: string;
   created_at: string;
   updated_at: string;
-  identity_verification: User['identityVerification'];
-  customer?: User['customer'];
-  bank_account?: User['bankAccount'];
+  identity_verification?: RawIdentityVerificationRecord | null;
+  customer?: User["customer"];
+  bank_account?: User["bankAccount"];
 }

@@ -43,7 +43,7 @@ const Dashboard = () => {
     null
   );
 
-  const { user } = useDashboard();
+  const { user, currentPod, hasPods } = useDashboard();
 
   useEffect(() => {
     let isMounted = true;
@@ -67,14 +67,21 @@ const Dashboard = () => {
       setAchievementsError(null);
 
       try {
-        const [activitiesResult, achievementsResult] = await Promise.allSettled(
-          [
-            AuthService.getPodActivities(
-              { limit: 50, offset: 2 },
+        // Fetch pod-specific activities if pod is selected, otherwise fetch global activities
+        const activitiesPromise = currentPod
+          ? AuthService.getPodActivitiesById(
+              currentPod.podId,
+              { limit: 50, offset: 0 },
               token
-            ),
-            AuthService.getAchievementsSummary(token),
-          ]
+            )
+          : AuthService.getPodActivitiesById(
+              "", // Empty string for global activities fallback
+              { limit: 50, offset: 0 },
+              token
+            );
+
+        const [activitiesResult, achievementsResult] = await Promise.allSettled(
+          [activitiesPromise, AuthService.getAchievementsSummary(token)]
         );
 
         if (!isMounted) {
@@ -157,7 +164,7 @@ const Dashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [currentPod]); // Refetch when current pod changes
 
   const activityCards: RecentActivityItem[] = useMemo(
     () =>
@@ -195,7 +202,9 @@ const Dashboard = () => {
   return (
     <>
       <Layout
-        title={`Welcome ${user?.lastLoginAt && "back"} ${user?.firstName ? ", " + user.firstName : ""} 👏🏻`}
+        title={`Welcome ${user?.lastLoginAt && "back"} ${
+          user?.firstName ? ", " + user.firstName : ""
+        } 👏🏻`}
         breadcrumbs={DASHBOARD_BREADCRUMBS.OVERVIEW}
         head={<Navigation />}
       >
@@ -284,7 +293,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
 
 const capitalize = (value: string): string =>
   value.replace(/\b\w/g, (char) => char.toUpperCase());

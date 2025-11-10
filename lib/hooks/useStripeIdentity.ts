@@ -12,7 +12,7 @@ export function useStripeIdentity() {
 
   // lib/hooks/useStripeIdentity.ts
 const verifyIdentity = useCallback(
-  async (clientSecret: string) => {
+  async (clientSecret: string): Promise<VerificationSessionResult | { error: unknown }> => {
     if (!stripe) throw new Error("Stripe not initialized");
 
     try {

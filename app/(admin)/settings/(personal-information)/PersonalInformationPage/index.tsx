@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import cn from "clsx";
 import styles from "./PersonalInformationPage.module.sass";
 import Layout from "@/components2/usefull/Layout";
@@ -11,72 +11,191 @@ import PhotoProfile from "./PhotoProfile";
 import { DASHBOARD_BREADCRUMBS } from "@/lib/constants/dashboard";
 import { useDashboard } from "@/lib/provider-dashboard";
 import DatePickerField from "@/components2/usefull/DatePickerField";
-import {Button, Badge } from "@/components/utils"
+import { Button, Badge } from "@/components/utils";
+import { AuthService } from "@/lib/services/authService";
+import { TokenManager } from "@/lib/utils/memory-manager";
+import type { UpdateUserRequest } from "@/lib/types/api";
 
+// Commented out for future use
+// const countries = [
+//   {
+//     title: "Indonesia",
+//     value: "indonesia",
+//   },
+//   {
+//     title: "Ukraine",
+//     value: "ukraine",
+//   },
+//   {
+//     title: "USA",
+//     value: "usa",
+//   },
+// ];
 
-const countries = [
-  {
-    title: "Indonesia",
-    value: "indonesia",
-  },
-  {
-    title: "Ukraine",
-    value: "ukraine",
-  },
-  {
-    title: "USA",
-    value: "usa",
-  },
-];
+// const provincies = [
+//   {
+//     title: "Central Java",
+//     value: "central-java",
+//   },
+//   {
+//     title: "VIC",
+//     value: "vic",
+//   },
+// ];
 
-const provincies = [
-  {
-    title: "Central Java",
-    value: "central-java",
-  },
-  {
-    title: "VIC",
-    value: "vic",
-  },
-];
-
-const cities = [
-  {
-    title: "Semarang",
-    value: "semarang",
-  },
-  {
-    title: "New-York",
-    value: "new-york",
-  },
-  {
-    title: "Oslo",
-    value: "oslo",
-  },
-];
+// const cities = [
+//   {
+//     title: "Semarang",
+//     value: "semarang",
+//   },
+//   {
+//     title: "New-York",
+//     value: "new-york",
+//   },
+//   {
+//     title: "Oslo",
+//     value: "oslo",
+//   },
+// ];
 
 const PersonalInformationPage = () => {
-  const { emailVerified, kycCompleted, user } = useDashboard();
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [country, setCountry] = useState<string>(countries[0].value);
-  const [province, setProvince] = useState<string>(provincies[0].value);
-  const [city, setCity] = useState<string>(cities[0].value);
+  const { emailVerified, kycCompleted, user, refreshUser } = useDashboard();
 
-  const handleChangeCountry = (value: string) => setCountry(value);
-  const handleChangeProvince = (value: string) => setProvince(value);
-  const handleChangeCity = (value: string) => setCity(value);
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+
+  // Commented out for future use
+  // const [country, setCountry] = useState<string>(countries[0].value);
+  // const [province, setProvince] = useState<string>(provincies[0].value);
+  // const [city, setCity] = useState<string>(cities[0].value);
+
+  // const handleChangeCountry = (value: string) => setCountry(value);
+  // const handleChangeProvince = (value: string) => setProvince(value);
+  // const handleChangeCity = (value: string) => setCity(value);
+
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      if (user.dateOfBirth) {
+        setDateOfBirth(new Date(user.dateOfBirth));
+      }
+    }
+  }, [user]);
+
+  const handleSave = useCallback(async () => {
+    if (!user) return;
+
+    const token = TokenManager.getToken();
+    if (!token) {
+      setSaveError("You must be logged in to update your profile");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      const updateData: UpdateUserRequest = {
+        first_name: firstName.trim() || undefined,
+        last_name: lastName.trim() || undefined,
+        date_of_birth: dateOfBirth
+          ? dateOfBirth.toISOString().split("T")[0]
+          : undefined,
+      };
+
+      const response = await AuthService.updateUser(updateData, token);
+
+      if (response && "error" in response) {
+        const message = Array.isArray(response.message)
+          ? response.message[0]
+          : response.message;
+        throw new Error(message || "Failed to update profile");
+      }
+
+      // Refresh user data
+      await refreshUser();
+
+      setSaveSuccess(true);
+      setIsEditing(false);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      setSaveError(
+        error instanceof Error ? error.message : "Failed to update profile"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }, [user, firstName, lastName, dateOfBirth, refreshUser]);
+
+  const handleCancel = useCallback(() => {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      if (user.dateOfBirth) {
+        setDateOfBirth(new Date(user.dateOfBirth));
+      } else {
+        setDateOfBirth(null);
+      }
+    }
+    setIsEditing(false);
+    setSaveError(null);
+    setSaveSuccess(false);
+  }, [user]);
 
   return (
-    <Layout title="Settings" breadcrumbs={DASHBOARD_BREADCRUMBS.PERSONAL_INFORMATION}>
-      <Settings title="Personal Information" tooltip="Small description">
+    <Layout
+      title="Settings"
+      breadcrumbs={DASHBOARD_BREADCRUMBS.PERSONAL_INFORMATION}
+    >
+      <Settings
+        title="Personal Information"
+        tooltip="Update your personal information"
+      >
         <PhotoProfile />
+
+        {saveSuccess && (
+          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <p className="text-sm text-green-400">
+              Profile updated successfully!
+            </p>
+          </div>
+        )}
+
+        {saveError && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <p className="text-sm text-red-400">{saveError}</p>
+          </div>
+        )}
+
         <Field
           className={styles.field}
-          label="Full Name"
-          value={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()}
-          onChange={(e) => {}}
-          disabled
+          label="First Name"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          disabled={!isEditing}
+          placeholder="Enter your first name"
         />
+
+        <Field
+          className={styles.field}
+          label="Last Name"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          disabled={!isEditing}
+          placeholder="Enter your last name"
+        />
+
         <Field
           className={styles.field}
           label="Email"
@@ -93,16 +212,26 @@ const PersonalInformationPage = () => {
             </Badge>
           }
         />
-        <DatePickerField
+
+        <Field
+          type="date"
           className={styles.field}
           label="Date of Birth"
-          selected={startDate}
-          onChange={(date) => date && setStartDate(date)}
-          dateFormat="MM - dd - yyyy"
-          icon
-          disabled
+          value={dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value) {
+              setDateOfBirth(new Date(value));
+            } else {
+              setDateOfBirth(null);
+            }
+          }}
+          disabled={!isEditing}
+          placeholder="YYYY-MM-DD"
         />
-        <div className={styles.row}>
+
+        {/* Commented out for future use */}
+        {/* <div className={styles.row}>
           <Select
             className={styles.select}
             label="Country"
@@ -130,9 +259,34 @@ const PersonalInformationPage = () => {
             dropdownUp
             disabled
           />
-        </div>
+        </div> */}
+
         <div className={styles.btns}>
-          <Button variant="secondary" showArrow={false} text={"Request Change"}/>
+          {!isEditing ? (
+            <Button
+              variant="primary"
+              showArrow={false}
+              text="Edit Profile"
+              onClick={() => setIsEditing(true)}
+            />
+          ) : (
+            <div className="flex gap-4">
+              <Button
+                variant="secondary"
+                showArrow={false}
+                text="Cancel"
+                onClick={handleCancel}
+                disabled={isSaving}
+              />
+              <Button
+                variant="primary"
+                showArrow={false}
+                text={isSaving ? "Saving..." : "Save Changes"}
+                onClick={handleSave}
+                disabled={isSaving}
+              />
+            </div>
+          )}
         </div>
       </Settings>
     </Layout>

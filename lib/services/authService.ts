@@ -38,12 +38,73 @@ import type {
   CreateCustomPodResponse,
   JoinPodRequestPayload,
   AcceptCustomInviteRequest,
+  IdentityVerificationRecord,
+  RawIdentityVerificationRecord,
+  LinkStripeBankAccountRequest,
+  PodMembership,
+  RefreshTokenRequest,
+  RefreshTokenResponse,
 } from "@/lib/types/api";
+import { TokenManager } from "@/lib/utils/memory-manager";
 import { ApiErrorClass } from "@/lib/utils/auth";
+
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function subscribeTokenRefresh(callback: (token: string) => void) {
+  refreshSubscribers.push(callback);
+}
+
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = TokenManager.getRefreshToken();
+  if (!refreshToken) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(getApiUrl(API_ENDPOINTS.AUTH.REFRESH), {
+      method: "POST",
+      headers: getDefaultHeaders(),
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      TokenManager.clearAuthData();
+      return null;
+    }
+
+    const data: RefreshTokenResponse = await response.json();
+
+    // Update tokens in storage
+    TokenManager.updateAccessToken(
+      data.accessToken,
+      data.expiresAt,
+      data.refreshToken,
+      data.refreshExpiresAt
+    );
+
+    // Update user data if provided
+    if (data.user) {
+      TokenManager.setUser(data.user);
+    }
+
+    return data.accessToken;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    TokenManager.clearAuthData();
+    return null;
+  }
+}
 
 async function apiRequest<T>(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  isRetry = false
 ): Promise<T | ApiError> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -62,6 +123,53 @@ async function apiRequest<T>(
         message: "An unexpected error occurred",
         statusCode: response.status,
       }));
+
+      // Handle 401 with refresh token
+      if (response.status === 401 && !isRetry) {
+        const refreshToken = TokenManager.getRefreshToken();
+
+        if (refreshToken) {
+          if (isRefreshing) {
+            // Wait for the ongoing refresh
+            return new Promise((resolve) => {
+              subscribeTokenRefresh((newToken) => {
+                // Retry the request with new token
+                const updatedOptions = {
+                  ...options,
+                  headers: {
+                    ...options.headers,
+                    Authorization: `Bearer ${newToken}`,
+                  },
+                };
+                resolve(apiRequest<T>(url, updatedOptions, true));
+              });
+            });
+          }
+
+          isRefreshing = true;
+          const newToken = await refreshAccessToken();
+          isRefreshing = false;
+
+          if (newToken) {
+            onTokenRefreshed(newToken);
+
+            // Retry the original request with new token
+            const updatedOptions = {
+              ...options,
+              headers: {
+                ...options.headers,
+                Authorization: `Bearer ${newToken}`,
+              },
+            };
+            return apiRequest<T>(url, updatedOptions, true);
+          }
+        }
+
+        // No refresh token or refresh failed - redirect to login
+        if (typeof window !== "undefined") {
+          window.location.href = "/auth/login";
+        }
+      }
 
       throw new ApiErrorClass(
         response.status,
@@ -93,10 +201,18 @@ async function apiRequest<T>(
       if (error.name === "AbortError") {
         throw new ApiErrorClass(408, "Request timeout", "Request timeout");
       }
-      throw new ApiErrorClass(0, error.message || "Unknown error", error.message || "Unknown error");
+      throw new ApiErrorClass(
+        0,
+        error.message || "Unknown error",
+        error.message || "Unknown error"
+      );
     }
 
-    throw new ApiErrorClass(0, "An unexpected error occurred", "An unexpected error occurred");
+    throw new ApiErrorClass(
+      0,
+      "An unexpected error occurred",
+      "An unexpected error occurred"
+    );
   }
 }
 
@@ -214,8 +330,15 @@ async function resendVerificationEmail(
 ): Promise<ResendVerificationEmailResponse | ApiError> {
   const url = getApiUrl(API_ENDPOINTS.AUTH.RESEND_EMAIL);
 
+  console.log("Resend verification email request:", {
+    url,
+    data,
+    stringified: JSON.stringify(data),
+  });
+
   return apiRequest<ResendVerificationEmailResponse>(url, {
     method: "POST",
+    headers: getDefaultHeaders(),
     body: JSON.stringify(data),
   });
 }
@@ -278,7 +401,7 @@ async function completeStripeVerification(
     }
   | ApiError
 > {
-  const url = getApiUrl(API_ENDPOINTS.AUTH.STRIPE_VERIFICATION);
+  const url = getApiUrl(API_ENDPOINTS.AUTH.IDENTITY_VERIFICATION);
 
   return apiRequest(url, {
     method: "POST",
@@ -388,6 +511,35 @@ async function acceptCustomInvite(
   });
 }
 
+async function linkStripeBankAccount(
+  data: LinkStripeBankAccountRequest,
+  token: string
+): Promise<Record<string, unknown> | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.STRIPE_BANK_ACCOUNT);
+
+  return apiRequest<Record<string, unknown>>(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
+const transformIdentityVerification = (
+  record?: RawIdentityVerificationRecord | null
+): IdentityVerificationRecord | null => {
+  if (!record) return null;
+
+  return {
+    id: record.id,
+    resultId: record.result_id ?? null,
+    sessionId: record.session_id,
+    status: record.status,
+    type: record.type,
+    completedAt: record.completed_at ?? null,
+    recordedAt: record.recorded_at ?? null,
+  };
+};
+
 const transformUserProfile = (profile: RawUserProfileResponse): User => {
   return {
     id: profile.id,
@@ -399,7 +551,7 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
       typeof profile.last_name === "string" ? profile.last_name : undefined,
     emailVerified: profile.email_verified,
     agreedToTerms: profile.agreed_to_terms,
-    dateOfBirth: profile.date_of_birth ,
+    dateOfBirth: profile.date_of_birth,
     avatarId: profile.avatar_id,
     isActive: profile.is_active,
     lastLoginAt: profile.last_login_at,
@@ -407,9 +559,11 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
     updatedAt: profile.updated_at,
     emailNotificationsEnabled: profile.emailNotificationsEnabled,
     transactionNotificationsEnabled: profile.transactionNotificationsEnabled,
-    identityVerification: profile.identity_verification ?? null,
+    identityVerification: transformIdentityVerification(
+      profile.identity_verification
+    ),
     customer: profile.customer,
-    bankAccount: profile.bank_account
+    bankAccount: profile.bank_account,
   };
 };
 
@@ -441,6 +595,36 @@ async function getMe(token: string): Promise<User | ApiError> {
   });
 }
 
+async function getMyPods(token: string): Promise<PodMembership[] | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PODS.MINE);
+
+  return apiRequest<PodMembership[]>(url, {
+    method: "GET",
+    headers: getAuthHeaders(token),
+  });
+}
+
+async function getPodActivitiesById(
+  podId?: string,
+  params: { limit?: number; offset?: number } = {},
+  token?: string
+): Promise<PodActivitiesResponse | ApiError> {
+  const url = new URL(getApiUrl(`/pods${podId ? `/${podId}` : ""}/activities`));
+
+  if (typeof params.limit === "number") {
+    url.searchParams.set("limit", String(params.limit));
+  }
+
+  if (typeof params.offset === "number") {
+    url.searchParams.set("offset", String(params.offset));
+  }
+
+  return apiRequest<PodActivitiesResponse>(url.toString(), {
+    method: "GET",
+    headers: getAuthOrDefaultHeaders(token),
+  });
+}
+
 export const AuthService = {
   login,
   signup,
@@ -455,11 +639,14 @@ export const AuthService = {
   updateUser,
   completeStripeVerification,
   getPodActivities,
+  getPodActivitiesById,
   getAchievementsSummary,
   getPodPlans,
   getPlanOpenPods,
   createCustomPod,
   joinPod,
   acceptCustomInvite,
+  linkStripeBankAccount,
   getMe,
+  getMyPods,
 };

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Modal } from "@/components/utils";
 import PodSelection from "./pod-plan-selection";
@@ -13,6 +13,7 @@ export default function Onboarding({ children }: { children: React.ReactNode }) 
   const { visible, close, step, openInviteAcceptance } = useOnboarding();
   const searchParams = useSearchParams();
   const handledInviteRef = useRef(false);
+  const [renderStep, setRenderStep] = useState(step);
 
   useEffect(() => {
     if (handledInviteRef.current) return;
@@ -23,17 +24,29 @@ export default function Onboarding({ children }: { children: React.ReactNode }) 
     }
   }, [openInviteAcceptance, searchParams]);
 
+  useEffect(() => {
+    if (visible) {
+      setRenderStep(step);
+      return;
+    }
+
+    if (step === "verification_pending") {
+      setRenderStep(step);
+    }
+  }, [step, visible]);
+
   return (
     <>
       {children}
-     {step !== "verification_pending" && <Modal visible={visible} onClose={close}>
-        {step === "pod_plan_selection" && <PodSelection />}
-        {step === "pod_goal_setting" && <PodGoalSetting />}
-        {step === "pod_form_filling" && <PodFormFilling />}
-        {step === "pod_invite_acceptance" && <PodInviteAcceptance />} 
-        {step === "bank_connection" && <BankConnection />}
-      </Modal>
-      }
+      {renderStep !== "verification_pending" && (
+        <Modal visible={visible} onClose={close}>
+          {renderStep === "pod_plan_selection" && <PodSelection />}
+          {renderStep === "pod_goal_setting" && <PodGoalSetting />}
+          {renderStep === "pod_form_filling" && <PodFormFilling />}
+          {renderStep === "pod_invite_acceptance" && <PodInviteAcceptance />}
+          {renderStep === "bank_connection" && <BankConnection />}
+        </Modal>
+      )}
     </>
   );
 }

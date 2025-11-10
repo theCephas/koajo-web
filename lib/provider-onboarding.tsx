@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { PodOnboardingStep, PodDurationWeeks, PodPlanCode, PodSchedule, MaximumMembers } from "./types/pod";
 import { POD_GOAL_CATEGORIES_MAP } from "./constants/pod";
 import { TokenManager } from "@/lib/utils/memory-manager";
@@ -116,6 +116,12 @@ export function OnboardingProvider({
 
   const [inviteToken, setInviteToken] = useState<string>("");
 
+  const selectedPlanCodeRef = useRef<PodPlanCode>(selectedPlanCode);
+
+  useEffect(() => {
+    selectedPlanCodeRef.current = selectedPlanCode;
+  }, [selectedPlanCode]);
+
   const setStepGuarded = useCallback((newStep: PodOnboardingStep) => {
     if (newStep === "bank_connection" || newStep === "pod_plan_selection") {
       if (checkOnboardingPrerequisites) {
@@ -195,7 +201,8 @@ export function OnboardingProvider({
 
       setPodPlans(combined);
 
-      if (!combined.find(({ plan }) => plan.code === selectedPlanCode)) {
+      const currentSelectedPlanCode = selectedPlanCodeRef.current;
+      if (!combined.find(({ plan }) => plan.code === currentSelectedPlanCode)) {
         const first = combined[0];
         if (first) {
           setSelectedPlanCode(first.plan.code);
@@ -218,7 +225,7 @@ export function OnboardingProvider({
     } finally {
       setPodPlansLoading(false);
     }
-  }, [selectedPlanCode]);
+  }, []);
 
   useEffect(() => {
     void refreshPodPlans();

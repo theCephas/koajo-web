@@ -5,6 +5,8 @@ import { RegistrationStage } from "@/lib/constants/dashboard";
 
 const TOKEN_KEY = "auth_token";
 const TOKEN_EXPIRY_KEY = "token_expiry";
+const REFRESH_TOKEN_KEY = "refresh_token";
+const REFRESH_EXPIRY_KEY = "refresh_expiry";
 const USER_KEY = "user";
 const USER_ID_KEY = "user_id";
 const REGISTRATION_STATUS_KEY = "registration_status";
@@ -60,6 +62,17 @@ export class TokenManager {
 
       const encryptedExpiry = encrypt(loginResponse.expiresAt);
       localStorage.setItem(TOKEN_EXPIRY_KEY, encryptedExpiry);
+
+      // Store refresh token if provided (when rememberMe is true)
+      if (loginResponse.refreshToken) {
+        const encryptedRefreshToken = encrypt(loginResponse.refreshToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, encryptedRefreshToken);
+
+        if (loginResponse.refreshExpiresAt) {
+          const encryptedRefreshExpiry = encrypt(loginResponse.refreshExpiresAt);
+          localStorage.setItem(REFRESH_EXPIRY_KEY, encryptedRefreshExpiry);
+        }
+      }
 
       const encryptedUserData = encrypt(JSON.stringify(loginResponse.user));
       localStorage.setItem(USER_KEY, encryptedUserData);
@@ -240,14 +253,16 @@ export class TokenManager {
     try {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(TOKEN_EXPIRY_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_EXPIRY_KEY);
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(USER_ID_KEY);
       localStorage.removeItem(REGISTRATION_STATUS_KEY);
-      
+
       if (typeof document !== "undefined") {
         document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       }
-      
+
       console.log("Auth data cleared successfully");
     } catch (error) {
       console.error("Failed to clear auth data:", error);
@@ -255,12 +270,63 @@ export class TokenManager {
   }
 
   /**
-   * Refresh token (placeholder for future implementation)
+   * Get stored refresh token
    */
-  static async refreshToken(): Promise<string | null> {
-    // TODO: Implement token refresh logic
-    console.warn("Token refresh not implemented yet");
-    return null;
+  static getRefreshToken(): string | null {
+    if (typeof window === "undefined") return null;
+
+    try {
+      const encryptedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (!encryptedRefreshToken) return null;
+
+      const encryptedRefreshExpiry = localStorage.getItem(REFRESH_EXPIRY_KEY);
+      if (encryptedRefreshExpiry) {
+        const refreshExpiry = decrypt(encryptedRefreshExpiry);
+        if (AuthUtils.isTokenExpired(refreshExpiry)) {
+          this.clearAuthData();
+          return null;
+        }
+      }
+
+      return decrypt(encryptedRefreshToken);
+    } catch (error) {
+      console.error("Failed to get refresh token:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Update access token after refresh
+   */
+  static updateAccessToken(
+    accessToken: string,
+    expiresAt: string,
+    refreshToken?: string,
+    refreshExpiresAt?: string
+  ): void {
+    if (typeof window === "undefined") return;
+
+    try {
+      const encryptedToken = encrypt(accessToken);
+      localStorage.setItem(TOKEN_KEY, encryptedToken);
+
+      const encryptedExpiry = encrypt(expiresAt);
+      localStorage.setItem(TOKEN_EXPIRY_KEY, encryptedExpiry);
+
+      if (refreshToken) {
+        const encryptedRefreshToken = encrypt(refreshToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, encryptedRefreshToken);
+      }
+
+      if (refreshExpiresAt) {
+        const encryptedRefreshExpiry = encrypt(refreshExpiresAt);
+        localStorage.setItem(REFRESH_EXPIRY_KEY, encryptedRefreshExpiry);
+      }
+
+      console.log("Access token updated successfully");
+    } catch (error) {
+      console.error("Failed to update access token:", error);
+    }
   }
 
   /**

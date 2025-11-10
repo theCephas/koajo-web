@@ -9,13 +9,17 @@ import {
   PasswordField,
 } from "@/components/utils";
 import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import GoogleIcon from "@/public/media/icons/google-g-letter.svg";
 import CardAuth from "@/components/auth/card-auth";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/lib/services/authService";
 import { LoginSuccessResponse } from "@/lib/types/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
+import {
+  REGISTRATION_STAGE,
+  type RegistrationStage,
+} from "@/lib/constants/dashboard";
 
 const resolveApiMessage = (
   message: string | string[] | undefined,
@@ -41,6 +45,70 @@ interface LoginFormData {
   rememberMe: boolean;
 }
 
+type LoginUser = LoginSuccessResponse["user"] | null;
+
+interface PostLoginDecision {
+  destination: string;
+  shouldResendEmail: boolean;
+  registrationStage: RegistrationStage;
+}
+
+const getClientOrigin = () => {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) return "https://app.koajo.com";
+
+  return baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
+};
+
+const isIdentityVerified = (
+  record:
+    | LoginSuccessResponse["user"]["identityVerification"]
+    | null
+    | undefined
+) =>
+  Boolean(
+    record && record.status === "verified" && record.type === "id_number"
+  );
+
+const determinePostLoginDecision = (user: LoginUser): PostLoginDecision => {
+  if (!user) {
+    return {
+      destination: "/dashboard",
+      shouldResendEmail: false,
+      registrationStage: REGISTRATION_STAGE.NONE,
+    };
+  }
+
+  if (!isIdentityVerified(user.identityVerification)) {
+    return {
+      destination: "/register/kyc",
+      shouldResendEmail: false,
+      registrationStage: REGISTRATION_STAGE.REGISTERED,
+    };
+  }
+
+  if (!user.emailVerified) {
+    return {
+      destination: "/register/verify-email",
+      shouldResendEmail: true,
+      registrationStage: REGISTRATION_STAGE.KYC_ID_NUMBER_COMPLETE,
+    };
+  }
+
+  const hasBankConnection = Boolean(user.bankAccount?.id);
+  return {
+    destination: "/dashboard",
+    shouldResendEmail: false,
+    registrationStage: hasBankConnection
+      ? REGISTRATION_STAGE.BANK_CONNECTED
+      : REGISTRATION_STAGE.EMAIL_VERIFIED,
+  };
+};
+
 export default function LoginPage() {
   const {
     register,
@@ -51,13 +119,45 @@ export default function LoginPage() {
   const router = useRouter();
   const [faillureMessage, setFaillureMessage] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const navigateAfterAuth = useCallback(
+    async (
+      user: LoginSuccessResponse["user"] | null,
+      options: { replace?: boolean } = {}
+    ) => {
+      const decision = determinePostLoginDecision(user);
+      TokenManager.setRegistrationStage(decision.registrationStage);
+
+      if (decision.shouldResendEmail && user?.email) {
+        try {
+          await AuthService.resendVerificationEmail({
+            email: user.email,
+            origin: getClientOrigin(),
+          });
+        } catch (error) {
+          console.error(
+            "Failed to auto-resend verification email before redirect:",
+            error
+          );
+        }
+      }
+
+      if (options.replace) {
+        router.replace(decision.destination);
+      } else {
+        router.push(decision.destination);
+      }
+    },
+    [router]
+  );
 
   useEffect(() => {
-    const isAuthenticated = TokenManager.isAuthenticated();
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    }
-  }, [router]);
+    if (!TokenManager.isAuthenticated()) return;
+
+    const storedUser = TokenManager.getUserData() as
+      | LoginSuccessResponse["user"]
+      | null;
+    void navigateAfterAuth(storedUser, { replace: true });
+  }, [navigateAfterAuth]);
 
   const onClose = () => {
     setModalVisible(false);
@@ -71,6 +171,7 @@ export default function LoginPage() {
       const response = await AuthService.login({
         email: data.email,
         password: data.password,
+        rememberMe: data.rememberMe || false,
       });
 
       if (
@@ -87,15 +188,13 @@ export default function LoginPage() {
         setModalVisible(true);
       } else if (
         response &&
-        (
-          "accessToken" in response &&
-          "user" in response &&
-          "expiresAt" in response
-        )
+        "accessToken" in response &&
+        "user" in response &&
+        "expiresAt" in response
       ) {
         const loginResponse = response as LoginSuccessResponse;
         TokenManager.setAuthData(loginResponse);
-        router.push("/dashboard");
+        await navigateAfterAuth(loginResponse.user);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -164,16 +263,16 @@ export default function LoginPage() {
 
           {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2.5 cursor-pointer group">
               <input
                 type="checkbox"
                 {...register("rememberMe")}
-                className="w-4 h-4 text-primary border-secondary-100 rounded focus:ring-primary"
+                className="w-4 h-4 text-primary bg-white/10 border-white/20 rounded focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer checked:bg-primary checked:border-primary"
               />
-              <label className="flex items-center gap-2 cursor-pointer">
-                <span className="text-base text-text-500">Remember me</span>
-              </label>
-            </div>
+              <span className="text-base text-text-500  transition-colors select-none">
+                Remember me for 30 days
+              </span>
+            </label>
 
             <Link
               href="/auth/forgot-password"

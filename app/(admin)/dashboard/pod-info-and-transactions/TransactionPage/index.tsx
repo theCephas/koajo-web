@@ -21,7 +21,7 @@ import cn from "clsx";
 const TransactionPage = () => {
   const { emailVerified, kycCompleted } = useDashboard();
   const isLocked = !emailVerified || !kycCompleted;
-  
+
   const [search, setSearch] = useState<string>("");
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
   const [choose, setChoose] = useState<CheckboxValue>("unchecked");
@@ -51,79 +51,81 @@ const TransactionPage = () => {
 
   return (
     <Layout
-      title="Welcome back, Rainer Yaeger 👏🏻"
+      title="Welcome back 👏🏻"
       breadcrumbs={DASHBOARD_BREADCRUMBS.POD_INFO_AND_TRANSACTIONS}
       head={<Navigation />}
     >
       <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-1">
-          <BalanceInfo inforType="contribution" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="col-span-1">
+            <BalanceInfo inforType="contribution" />
+          </div>
+          <div className="col-span-2">
+            <PodMembers />
+          </div>
+          <div className="col-span-1">
+            <CycleDuration />
+          </div>
         </div>
-        <div className="col-span-2">
-          <PodMembers />
-        </div>
-        <div className="col-span-1">
-          <CycleDuration />
-        </div>
-      </div>
 
-      <div className={styles.transaction}>
-        <Head
-          search={search}
-          setSearch={(e) => setSearch(e.target.value)}
-          onSubmit={() => console.log("Submit")}
-          onFilter={() => setVisibleFilters(!visibleFilters)}
-          visible={visibleFilters}
-        />
-        {visibleFilters && <Filters />}
-        <div className={cn(
-          styles.inner,
-          isLocked && "[&>div]:blur-sm [&>div]:select-none [&>div]:pointer-events-none"
-        )}>
-          <div className={styles.table}>
-            <div className={styles.head}>
-              <div className={styles.cell}>
-                <div className="flex justify-center w-12">
-                  <Checkbox
-                    className={styles.checkbox}
-                    value={choose}
-                    onChange={(e) => handleChangeCheckbox(e.target.checked)}
-                  />
+        <div className={styles.transaction}>
+          <Head
+            search={search}
+            setSearch={(e) => setSearch(e.target.value)}
+            onSubmit={() => console.log("Submit")}
+            onFilter={() => setVisibleFilters(!visibleFilters)}
+            visible={visibleFilters}
+          />
+          {visibleFilters && <Filters />}
+          <div
+            className={cn(
+              styles.inner,
+              isLocked &&
+                "[&>div]:blur-sm [&>div]:select-none [&>div]:pointer-events-none"
+            )}
+          >
+            <div className={styles.table}>
+              <div className={styles.head}>
+                <div className={styles.cell}>
+                  <div className="flex justify-center w-12">
+                    <Checkbox
+                      className={styles.checkbox}
+                      value={choose}
+                      onChange={(e) => handleChangeCheckbox(e.target.checked)}
+                    />
+                  </div>
+                </div>
+                <div className="flex grow justify-between items-center gap-4">
+                  {captions.map((caption) => (
+                    <div className={styles.cell} key={caption.id}>
+                      {caption.title}
+                      {caption.sorting && (
+                        <button className={styles.sorting}>
+                          <Icon name="arrow-swap" size="18" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="flex grow justify-between items-center gap-4">
-                {captions.map((caption) => (
-                  <div className={styles.cell} key={caption.id}>
-                    {caption.title}
-                    {caption.sorting && (
-                      <button className={styles.sorting}>
-                        <Icon name="arrow-swap" size="18" />
-                      </button>
-                    )}
-                  </div>
+              <div className={styles.body}>
+                {transactions.map((transaction) => (
+                  <Transaction
+                    checkboxValue={
+                      selectedTransactionIds.includes(transaction.id)
+                        ? "checked"
+                        : "unchecked"
+                    }
+                    onChange={() => handleChange(transaction)}
+                    item={transaction}
+                    key={transaction.id}
+                  />
                 ))}
               </div>
             </div>
-            <div className={styles.body}>
-              {transactions.map((transaction) => (
-                <Transaction
-                  checkboxValue={
-                    selectedTransactionIds.includes(transaction.id)
-                      ? "checked"
-                      : "unchecked"
-                  }
-                  onChange={() => handleChange(transaction)}
-                  item={transaction}
-                  key={transaction.id}
-                />
-              ))}
-
-            </div>
           </div>
+          <Foot />
         </div>
-        <Foot />
-      </div>
       </div>
     </Layout>
   );

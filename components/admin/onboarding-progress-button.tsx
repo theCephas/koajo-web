@@ -29,6 +29,7 @@ export default function OnboardingProgressButton() {
     kycStatus,
     bankConnected,
     setupCompleted,
+    hasPods,
   } = useDashboard();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,15 +37,10 @@ export default function OnboardingProgressButton() {
   const [expandedStepId, setExpandedStepId] = useState<string | null>(null);
 
   const canAccessBankConnection = emailVerified && kycCompleted;
-  const canAccessJoinPod = emailVerified && kycCompleted;
+  const canAccessJoinPod = emailVerified && kycCompleted && bankConnected;
 
   const setupSteps: SetupStep[] = useMemo(() => {
     return [
-      {
-        id: "email_verification",
-        label: "Verify Email",
-        status: emailVerified ? "completed" : "pending",
-      },
       {
         id: "identity_verification",
         label: "Complete Identity Verification",
@@ -53,6 +49,11 @@ export default function OnboardingProgressButton() {
           : kycStatus
           ? "in_progress"
           : "pending",
+      },
+      {
+        id: "email_verification",
+        label: "Verify Email",
+        status: emailVerified ? "completed" : "pending",
       },
       {
         id: "bank_connection",
@@ -84,12 +85,9 @@ export default function OnboardingProgressButton() {
   useEffect(() => {
     const closed = localStorage.getItem(SETUP_GUIDE_CLOSED_KEY);
     if (closed === "true") {
-      const allCompleted = setupSteps.every(
-        (step) => step.status === "completed"
-      );
-      setIsClosed(allCompleted);
+      setIsClosed(true);
     }
-  }, [setupSteps]);
+  }, []);
 
   const allCompleted = setupSteps.every((step) => step.status === "completed");
   const completedCount = setupSteps.filter(
@@ -149,7 +147,8 @@ export default function OnboardingProgressButton() {
     setIsExpanded(false);
   };
 
-  if (isClosed || allCompleted || setupCompleted) {
+  // Hide if user manually closed it OR if user has already joined pods
+  if (isClosed || hasPods) {
     return null;
   }
 
@@ -283,7 +282,9 @@ export default function OnboardingProgressButton() {
                     {step.label}
                     {!isEnabled && !isCompleted && (
                       <span className="ml-2 text-xs text-gray-500">
-                        (Complete email & KYC first)
+                        {step.id === "join_pod"
+                          ? "(Connect bank first)"
+                          : "(Complete email & KYC first)"}
                       </span>
                     )}
                   </span>
@@ -352,6 +353,5 @@ export default function OnboardingProgressButton() {
     </div>
   );
 }
-
 
 

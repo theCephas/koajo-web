@@ -1,48 +1,182 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Modal } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { getApiUrl, getDefaultHeaders } from "@/lib/constants/api";
-import type { VerifyEmailRequest, VerifyEmailResponse } from "@/lib/types/api";
+import type {
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+  User,
+} from "@/lib/types/api";
 import TokenManager from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
+
+const isKycComplete = (status: User["identityVerification"]) =>
+  Boolean(
+    status && status.status === "verified" && status.type === "id_number"
+  );
 
 export default function CardVerifyEmail() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(
-    TokenManager.getUserData()?.emailVerified || false
+    () => TokenManager.getUserData()?.emailVerified || false
   );
   const [action, setAction] = useState<"verify-email" | "resend-email">(
     "verify-email"
   );
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail] = useState<string>(
+    () => TokenManager.getUserData()?.email || ""
+  );
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const origin =
-    process.env.NEXT_PUBLIC_BASE_URL || "https://koajo-frontend.vercel.app";
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [requiresKycRedirect, setRequiresKycRedirect] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const autoActionTriggeredRef = useRef(false);
+  const getOrigin = () => {
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin;
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) return "https://koajo-frontend.vercel.app";
+    return baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
+  };
+
+  const origin = getOrigin();
 
   useEffect(() => {
-    console.log(
-      "isVerified in useEffect",
-      TokenManager.getUserData()?.emailVerified
-    );
+    autoActionTriggeredRef.current = false;
+  }, [searchParams]);
+
+  useEffect(() => {
+    const emailParam = searchParams.get("email");
+    if (emailParam && emailParam !== email) {
+      setEmail(emailParam);
+    }
+  }, [searchParams, email]);
+
+  useEffect(() => {
+    const token = TokenManager.getToken();
+    if (!token) {
+      setIsProfileLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const hydrateProfile = async () => {
+      try {
+        const response: any = await AuthService.getMe(token);
+        if (cancelled || !response) return;
+
+        if ("error" in response) {
+          setProfileError(
+            response.message || "Unable to load your profile. Please try again."
+          );
+          return;
+        }
+
+        const profile = response as User;
+        TokenManager.setUser(profile);
+        setEmail(profile.email);
+        setIsVerified(profile.emailVerified);
+
+        if (!isKycComplete(profile.identityVerification)) {
+          setRequiresKycRedirect(true);
+          router.replace("/register/kyc");
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to fetch profile:", err);
+          setProfileError(
+            "Unable to load your profile. Please log in and try again."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsProfileLoading(false);
+        }
+      }
+    };
+
+    void hydrateProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  const resendEmail = useCallback(
+    async (targetEmail?: string) => {
+      const emailToUse = targetEmail ?? email;
+      if (isVerified || !emailToUse) return;
+
+      if (targetEmail && targetEmail !== email) {
+        setEmail(targetEmail);
+      }
+
+      setIsLoading(true);
+      setError(null);
+      setAction("resend-email");
+
+      try {
+        const response = await AuthService.resendVerificationEmail({
+          email: emailToUse,
+          origin,
+        });
+
+        if ("error" in response && "message" in response) {
+          setError(response.message as string);
+        }
+      } catch (err) {
+        console.error("Resend email error:", err);
+        setError(
+          `Failed to send email. Click "Resend email" below to try again.`
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [email, isVerified, origin]
+  );
+
+  useEffect(() => {
+    if (
+      isProfileLoading ||
+      requiresKycRedirect ||
+      autoActionTriggeredRef.current
+    ) {
+      return;
+    }
 
     const token = searchParams.get("token");
     const emailParam = searchParams.get("email");
+    const targetEmail = emailParam || email;
 
-    const userEmail = emailParam || TokenManager.getUserData()?.email || "";
-    setEmail(userEmail);
+    if (!targetEmail) return;
 
-    if (token && userEmail) {
-      verifyEmailToken(userEmail, token);
-    } else if (!token && userEmail && !isVerified) {
-      resendEmail();
+    if (token) {
+      autoActionTriggeredRef.current = true;
+      void verifyEmailToken(targetEmail, token);
+      return;
     }
-  }, [searchParams, isVerified]);
+
+    if (!isVerified) {
+      autoActionTriggeredRef.current = true;
+      void resendEmail(targetEmail);
+    }
+  }, [
+    email,
+    isProfileLoading,
+    isVerified,
+    requiresKycRedirect,
+    resendEmail,
+    searchParams,
+  ]);
 
   const verifyEmailToken = async (userEmail: string, token: string) => {
     setIsLoading(true);
@@ -70,6 +204,7 @@ export default function CardVerifyEmail() {
 
       if (result.verified) {
         setIsVerified(true);
+        TokenManager.updateUserData({ emailVerified: true });
       } else {
         setError("Email verification failed. Please try again.");
       }
@@ -85,31 +220,56 @@ export default function CardVerifyEmail() {
     }
   };
 
-  const resendEmail = async () => {
-    if (isVerified || !email) return;
-    setIsLoading(true);
-    setError(null);
-    setAction("resend-email");
+  if (requiresKycRedirect) {
+    return (
+      <CardAuth
+        title="Complete identity verification first"
+        description="Finish verifying your ID so we can unlock email verification."
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-400">
+            We detected that your identity verification is still pending. Head
+            back to the verification step to wrap it up.
+          </p>
+          <Button
+            text="Back to identity verification"
+            variant="primary"
+            className="w-full"
+            showArrow
+            href="/register/kyc"
+          />
+        </div>
+      </CardAuth>
+    );
+  }
 
-    try {
-      console.log("resend email", email, "origin", origin);
-      const response = await AuthService.resendVerificationEmail({
-        email,
-        origin,
-      });
+  if (isProfileLoading) {
+    return (
+      <CardAuth
+        title="Checking your status"
+        description="Please wait while we confirm which step you need to complete next."
+      >
+        <div className="flex flex-col items-center gap-3 text-text-400">
+          <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-white" />
+          <p>Loading your profile...</p>
+        </div>
+      </CardAuth>
+    );
+  }
 
-      if ("error" in response && "message" in response) {
-        setError(response.message as string);
-      }
-    } catch (err) {
-      console.error("Resend email error:", err);
-      setError(
-        `Failed to send email. Click "Resend email" below to try again.`
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (profileError) {
+    return (
+      <CardAuth title="Unable to load your profile" description={profileError}>
+        <Button
+          text="Go to Login"
+          variant="primary"
+          className="w-full"
+          showArrow
+          href="/auth/login"
+        />
+      </CardAuth>
+    );
+  }
 
   if (isVerified) {
     return (
@@ -238,7 +398,7 @@ export default function CardVerifyEmail() {
                 </span>
                 <button
                   type="button"
-                  onClick={resendEmail}
+                  onClick={() => resendEmail()}
                   disabled={isLoading}
                   className="text-tertiary-100 hover:text-tertiary-100/80 underline text-sm disabled:opacity-50"
                 >

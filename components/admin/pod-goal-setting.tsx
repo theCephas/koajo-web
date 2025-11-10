@@ -10,6 +10,7 @@ import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
 import { ApiErrorClass } from "@/lib/utils/auth";
+import { useDashboard } from "@/lib/provider-dashboard";
 
 export default function PodGoalSetting() {
   const {
@@ -22,6 +23,7 @@ export default function PodGoalSetting() {
     setGoalNote,
     refreshPodPlans,
   } = useOnboarding();
+  const { bankConnected } = useDashboard();
 
   const [status, setStatus] = useState<{
     type: "success" | "error";
@@ -38,9 +40,18 @@ export default function PodGoalSetting() {
       goalNote.trim().length > 0
     );
   }, [goalNote, selectedGoalCategoryValue, selectedPlanCode]);
+  const canJoinPod = canProceed && bankConnected;
 
   const handleSubmit = async () => {
     if (!selectedPlanCode || selectedPlanCode === CUSTOM_POD_PLAN_CODE) {
+      return;
+    }
+
+    if (!bankConnected) {
+      setStatus({
+        type: "error",
+        message: "Connect your bank account to join a pod.",
+      });
       return;
     }
 
@@ -201,11 +212,17 @@ export default function PodGoalSetting() {
           {status.message}
         </div>
       )}
+      {!bankConnected && (
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+          Please connect your bank account to continue. This ensures payouts and
+          contributions can be automated safely.
+        </div>
+      )}
 
       <div className="flex items-center justify-end gap-3">
         {/* <Button text="Close" variant="secondary" onClick={close} /> */}
         <Button
-          disabled={!canProceed || loading}
+          disabled={!canJoinPod || loading}
           text={loading ? "Submitting…" : "Join pod"}
           variant="primary"
           onClick={handleSubmit}
