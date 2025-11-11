@@ -8,14 +8,14 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="relative min-h-[100dvh] w-full bg-gray overflow-hidden">
+    <div className="relative min-h-dvh w-full bg-gray overflow-hidden">
       <div
-        className="pointer-events-none absolute inset-x-0 top-[-25%] h-[60%] bg-[radial-gradient(circle_at_top,_rgba(70,157,163,0.35),_transparent_65%)] blur-3xl"
+        className="pointer-events-none absolute inset-x-0 top-[-25%] h-[60%] bg-[radial-gradient(circle_at_top,rgba(70,157,163,0.35),transparent_65%)] blur-3xl"
         aria-hidden
       />
 
-      <div className="page_auth_container relative z-10 flex min-h-[100dvh] flex-col gap-8 py-8 lg:flex-row lg:items-stretch">
-        <div className="relative isolate flex w-full flex-col justify-between overflow-hidden rounded-3xl bg-[image:linear-gradient(180deg,#469DA3_0%,#1C2634_100%)] px-6 py-8 text-white shadow-2xl lg:w-[45%]">
+      <div className="page_auth_container relative z-10 flex min-h-dvh flex-col gap-8 py-8 lg:flex-row lg:items-stretch">
+        <div className="relative isolate flex w-full flex-col justify-between overflow-hidden rounded-3xl bg-[linear-gradient(180deg,#469DA3_0%,#1C2634_100%)] px-6 py-8 text-white shadow-2xl lg:w-[45%]">
           <div className="absolute inset-0 opacity-30">
             <Image
               src="/media/images/background-grid-light.svg"

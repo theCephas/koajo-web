@@ -5,6 +5,10 @@ import Card from "@/components2/usefull/Card";
 import Modal from "@/components/utils/modal";
 import { useDashboard } from "@/lib/provider-dashboard";
 import LockedOverlay from "@/components/admin/locked-overlay";
+import {
+  SkeletonCircle,
+  SkeletonLine,
+} from "@/components/admin/dashboard-skeletons";
 
 const members: MemberCardProps['member'][] = [
   // {
@@ -80,8 +84,9 @@ const MAX_VISIBLE_MEMBERS = 4;
 
 const PodMembers = ({ className }: PodMembersProps) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { emailVerified } = useDashboard();
+  const { emailVerified, podsLoading } = useDashboard();
   const isLocked = !emailVerified;
+  const isLoading = podsLoading;
 
   const displayedMembers = members.slice(0, MAX_VISIBLE_MEMBERS); 
 
@@ -97,13 +102,31 @@ const PodMembers = ({ className }: PodMembersProps) => {
             isLocked &&
               "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
           )}
-        showSeeMore={!isLocked && displayedMembers.length > MAX_VISIBLE_MEMBERS}
+        showSeeMore={
+          !isLocked && !isLoading && members.length > MAX_VISIBLE_MEMBERS
+        }
       >
         <div className="grid grid-cols-2 gap-4 mt-6">
-          {/* {displayedMembers.map((member) => (
-            <MemberCard key={member.id} member={member} />
-          ))} */}
-          No group members yet
+          {isLoading ? (
+            Array.from({ length: MAX_VISIBLE_MEMBERS }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-xl border border-gray-100 p-4 space-y-3"
+              >
+                <SkeletonCircle className="h-10 w-10 mx-auto" />
+                <SkeletonLine className="w-20 h-3 mx-auto" />
+                <SkeletonLine className="w-16 h-3 mx-auto" />
+              </div>
+            ))
+          ) : displayedMembers.length ? (
+            displayedMembers.map((member) => (
+              <MemberCard key={member.id} member={member} />
+            ))
+          ) : (
+            <div className="col-span-2 text-sm text-gray-500">
+              No group members yet
+            </div>
+          )}
         </div>
       </Card>
         <LockedOverlay />

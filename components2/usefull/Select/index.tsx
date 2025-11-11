@@ -65,19 +65,20 @@ const Select = ({
         >
             {label && <div className={styles.label}>{label}</div>}
             <OutsideClickHandler  onOutsideClick={() => !disabled && setVisible(false)}>
-                <div className={cn(styles.inner, disabled && "pointer-events-none  bg-gray-200/7 cursor-not-allowed") }>
+                <div className={cn(styles.inner, disabled && "pointer-events-none bg-gray-200/70 cursor-not-allowed") }>
                     <button
                         className={cn(
                             styles.toggle,
                             {
                                 [styles.active]: visible && !disabled,
                             },
-                            classToggle,
-                            "opacity-35"
+                            classToggle
                         )}
                         onClick={() => !disabled && setVisible(!visible)}
                         type="button"
                         disabled={disabled}
+                        aria-haspopup="listbox"
+                        aria-expanded={visible}
                     >
                         {titlePrefix && (
                             <div className={styles.titlePrefix}>
@@ -122,7 +123,7 @@ const Select = ({
                         <div
                             className={cn(styles.dropdown, {
                                 [styles.dropdownUp]: dropdownUp
-                            }, "opacity-35")}
+                            })}
                         >
                             {[
                                 options.map((option, index) => (

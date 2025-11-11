@@ -3,6 +3,7 @@ import cn from "clsx";
 import { useMemo, useState } from "react";
 import { Button } from "../utils/button";
 import { useOnboarding, CUSTOM_POD_PLAN_CODE } from "@/lib/provider-onboarding";
+import { useDashboard } from "@/lib/provider-dashboard";
 import { Field } from "../utils/field";
 import { MaximumMembers, PodSchedule } from "@/lib/types/pod";
 import { Label } from "../utils/label";
@@ -34,6 +35,7 @@ export default function PodForm() {
     refreshPodPlans,
     setSelectedPlanCode,
   } = useOnboarding();
+  const { refreshPods, refreshUser } = useDashboard();
 
   const [inviteInput, setInviteInput] = useState<string>("");
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -107,7 +109,13 @@ export default function PodForm() {
         message: "Your custom pod has been created. Invites have been sent to your participants.",
       });
 
-      await refreshPodPlans();
+      // Refresh all pod-related data in real-time
+      await Promise.all([
+        refreshPodPlans(),
+        refreshPods(),
+        refreshUser(),
+      ]);
+
       setSelectedPlanCode(CUSTOM_POD_PLAN_CODE);
       setTimeout(() => {
         close();
@@ -163,13 +171,28 @@ export default function PodForm() {
           label="Amount"
           placeholder="$500"
           value={
-            contributionAmountCents
-              ? `$${(contributionAmountCents / 100).toLocaleString()}`
+            contributionAmountCents > 0
+              ? `$${(contributionAmountCents / 100).toLocaleString("en-US", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })}`
               : ""
           }
           onChange={(e) => {
-            const raw = e.target.value.replace(/[^0-9]/g, "");
-            setContributionAmountCents(Number(raw || 0));
+            // Remove all non-numeric characters except decimal point
+            const raw = e.target.value.replace(/[^0-9.]/g, "");
+
+            // Handle empty input
+            if (raw === "" || raw === ".") {
+              setContributionAmountCents(0);
+              return;
+            }
+
+            // Convert to cents (multiply by 100)
+            const dollars = parseFloat(raw);
+            if (!isNaN(dollars)) {
+              setContributionAmountCents(Math.round(dollars * 100));
+            }
           }}
           required
         />

@@ -127,11 +127,12 @@ export interface ChangePasswordResponse {
 }
 
 export interface UpdateAvatarRequest {
-  avatarUrl?: string;
+  avatarUrl: string;
 }
 
 export interface UpdateAvatarResponse {
-  avatarUrl?: string;
+  success: boolean;
+  avatarUrl: string;
 }
 
 export interface UpdateNotificationPreferencesRequest {
@@ -511,7 +512,7 @@ export interface RawUserProfileResponse {
   email_verified: boolean;
   agreed_to_terms: boolean;
   date_of_birth?: string;
-  avatar_id?: string;
+  avatar_url?: string;
   is_active: boolean;
   emailNotificationsEnabled?: boolean;
   transactionNotificationsEnabled?: boolean;
@@ -521,4 +522,33 @@ export interface RawUserProfileResponse {
   identity_verification?: RawIdentityVerificationRecord | null;
   customer?: User["customer"];
   bank_account?: User["bankAccount"];
+}
+
+// ===== AVATAR TYPES =====
+
+export interface Avatar {
+  id: string;
+  altText: string;
+  isDefault: boolean;
+  gender: "male" | "female";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RawAvatar {
+  id: string;
+  alt_text: string;
+  is_default: boolean;
+  gender: "male" | "female";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateAvatarRequest {
+  avatarUrl: string;
+}
+
+export interface UpdateAvatarResponse {
+  success: boolean;
+  avatarUrl: string;
 }

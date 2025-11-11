@@ -221,16 +221,8 @@ export function DashboardProvider({
     void refreshPods();
   }, [autoFetch, refresh, refreshUser, refreshPods]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const token = TokenManager.getToken();
-      if (token) {
-        void refreshUser();
-      }
-    }, 30000); // Every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [refreshUser]);
+  // Removed polling interval that was causing continuous /auth/me calls
+  // The user data will be refreshed on mount and when explicitly needed via refreshUser()
 
   const value = useMemo<DashboardContextValue>(
     () => ({

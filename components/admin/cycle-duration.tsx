@@ -4,10 +4,12 @@ import cn from "clsx";
 import Card from "@/components2/usefull/Card";
 import { useDashboard } from "@/lib/provider-dashboard";
 import LockedOverlay from "@/components/admin/locked-overlay";
+import { SkeletonLine } from "@/components/admin/dashboard-skeletons";
 
 export default function CycleDuration() {
-  const { emailVerified } = useDashboard();
+  const { emailVerified, podsLoading } = useDashboard();
   const isLocked = !emailVerified;
+  const isLoading = podsLoading;
 
   return (
     <div className="relative">
@@ -19,15 +21,17 @@ export default function CycleDuration() {
             "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
         )}
       >
-        <div className="text-2xl font-bold mt-4">
-          {/* 36 days remaining */}
-          No cycle yet
-        </div>
-        <p className="text-base text-text-500 font-medium mt-4">
-          {/* Expense increased by <span className="text-primary">$1000 </span>
-          this month. */}
-          No expense yet
-        </p>
+        {isLoading ? (
+          <div className="mt-4 space-y-3">
+            <SkeletonLine className="h-6 w-32" />
+            <SkeletonLine className="w-24" />
+          </div>
+        ) : (
+          <div className="text-2xl font-bold mt-4">
+            {/* 36 days remaining */}
+            No cycle yet
+          </div>
+        )}
       </Card>
      <LockedOverlay />
     </div>

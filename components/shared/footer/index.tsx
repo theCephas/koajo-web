@@ -28,7 +28,7 @@ export default function Footer() {
               independence, and possibility. No matter how small, your savings
               today will shape a brighter tomorrow.
             </p>
-            <Button text="Join the Community" />
+            <Button text="Join the Community" href="/register" />
           </div>
 
           <div className="lg:max-w-[calc(1140rem/16)] w-full  lg:mx-inner-offset-horizontal lg:flex relative lg:border-t lg:border-[rgba(217,217,217,0.25)]">

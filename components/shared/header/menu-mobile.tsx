@@ -84,7 +84,7 @@ export default function MenuMobile() {
               ))}
             </ul>
             <Button
-              href="/auth/login"
+              href="/register"
               className="w-full"
               text="Get Started"
               onClick={() => setOpen(false)}

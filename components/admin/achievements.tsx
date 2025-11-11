@@ -14,6 +14,10 @@ import KeyIcon from "@/public/media/icons/key.svg";
 import PieIcon from "@/public/media/icons/pie.svg";
 import ExagonIcon from "@/public/media/icons/exagon";
 import type { AchievementsSummary } from "@/lib/types/api";
+import {
+  SkeletonBlock,
+  SkeletonLine,
+} from "@/components/admin/dashboard-skeletons";
 
 type AchievementItem = {
   id: string | number;
@@ -115,81 +119,111 @@ const Achievements = ({
   return (
     <>
       <div className="relative">
-      <Card
-        title="Achievement"
-        tooltip="Track your financial achievements and progress"
-        right={
-          <div className="flex items-center gap-3 text-sm text-gray-500">
-            <span>
-              Collected {totalCollected}/{totalAchievements}
-            </span>
-            {bodyHasContent && (
-              <button
-                type="button"
-                className="text-tertiary-100 hover:text-tertiary-100/80 transition-colors"
-                onClick={() => setModalVisible(true)}
-              >
-                View all
-              </button>
-            )}
-          </div>
-        }
+        <Card
+          title="Achievement"
+          tooltip="Track your financial achievements and progress"
+          right={
+            loading ? (
+              <SkeletonLine className="h-4 w-40" />
+            ) : (
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                <span>
+                  Collected {totalCollected}/{totalAchievements}
+                </span>
+                {bodyHasContent && (
+                  <button
+                    type="button"
+                    className="text-tertiary-100 hover:text-tertiary-100/80 transition-colors"
+                    onClick={() => setModalVisible(true)}
+                  >
+                    View all
+                  </button>
+                )}
+              </div>
+            )
+          }
           className={cn(
             className,
             !achievementsUnlocked &&
               "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
           )}
-      >
-        <div className="space-y-8 mt-8">
-          {loading && (
-            <div className="text-sm text-gray-500">Loading achievements…</div>
-          )}
+        >
+          <div className="space-y-8 mt-8">
+            {loading ? (
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  {Array.from({ length: 2 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex-1 rounded-2xl border border-gray-100 p-4 space-y-3"
+                    >
+                      <SkeletonLine className="w-24 h-4" />
+                      <SkeletonBlock className="h-14 rounded-2xl" />
+                      <SkeletonLine className="w-28 h-3" />
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="rounded-2xl border border-gray-100 p-4 space-y-3"
+                    >
+                      <SkeletonLine className="w-32 h-4" />
+                      <SkeletonLine className="w-20 h-3" />
+                      <SkeletonBlock className="h-2 rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                {error && <div className="text-sm text-red-500">{error}</div>}
 
-          {error && !loading && (
-            <div className="text-sm text-red-500">{error}</div>
-          )}
+                {!error &&
+                  recentAchievements.length === 0 &&
+                  upcomingAchievements.length === 0 && (
+                    <div className="text-sm text-gray-500">
+                      No achievements yet.
+                    </div>
+                  )}
 
-          {!loading &&
-            !error &&
-            recentAchievements.length === 0 &&
-            upcomingAchievements.length === 0 && (
-              <div className="text-sm text-gray-500">No achievements yet.</div>
+                {!error && recentAchievements.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-400 mb-4">
+                      Recently earned
+                    </h4>
+                    <div className="flex gap-4 justify-between w-full">
+                      {recentAchievements.map((achievement) => (
+                        <RecentAchievement
+                          key={achievement.id}
+                          achievement={achievement}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!error && upcomingAchievements.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-400 mb-4">
+                      Up next
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 justify-between w-full">
+                      {upcomingAchievements.slice(0, 4).map((achievement) => (
+                        <UpcomingAchievement
+                          key={achievement.id}
+                          achievement={achievement}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-
-          {!loading && !error && recentAchievements.length > 0 && (
-            <div>
-              <h4 className="text-xs font-medium text-gray-400 mb-4">
-                Recently earned
-              </h4>
-              <div className="flex gap-4 justify-between w-full">
-                {recentAchievements.map((achievement) => (
-                  <RecentAchievement
-                    key={achievement.id}
-                    achievement={achievement}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!loading && !error && upcomingAchievements.length > 0 && (
-            <div>
-              <h4 className="text-xs font-medium text-gray-400 mb-4">
-                Up next
-              </h4>
-              <div className="grid grid-cols-2 gap-4 justify-between w-full">
-                {upcomingAchievements.slice(0, 4).map((achievement) => (
-                  <UpcomingAchievement
-                    key={achievement.id}
-                    achievement={achievement}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-      {!achievementsUnlocked && <LockedOverlay />}
+          </div>
+        </Card>
+        {!achievementsUnlocked && <LockedOverlay />}
       </div>
 
       <Modal
@@ -328,7 +362,8 @@ const UpcomingAchievement = ({ achievement }: AchievementProps) => {
         {/* Progress text */}
         <div className="text-xs font-medium text-secondary-300">
           <span className="text-tertiary-100">
-            {achievement.progress.current}/{achievement.progress.target}{" "}
+            {achievement.progress.current.toFixed(0)}/
+            {achievement.progress.target.toFixed(0)}{" "}
           </span>
           completed
         </div>

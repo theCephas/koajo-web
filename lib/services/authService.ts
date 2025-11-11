@@ -44,6 +44,8 @@ import type {
   PodMembership,
   RefreshTokenRequest,
   RefreshTokenResponse,
+  Avatar,
+  RawAvatar,
 } from "@/lib/types/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { ApiErrorClass } from "@/lib/utils/auth";
@@ -552,7 +554,7 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
     emailVerified: profile.email_verified,
     agreedToTerms: profile.agreed_to_terms,
     dateOfBirth: profile.date_of_birth,
-    avatarId: profile.avatar_id,
+    avatarId: profile.avatar_url,
     isActive: profile.is_active,
     lastLoginAt: profile.last_login_at,
     createdAt: profile.created_at,
@@ -625,6 +627,29 @@ async function getPodActivitiesById(
   });
 }
 
+async function getAvatars(): Promise<Avatar[] | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.AVATARS);
+
+  const response = await apiRequest<RawAvatar[]>(url, {
+    method: "GET",
+    headers: getDefaultHeaders(),
+  });
+
+  if (response && "error" in response) {
+    return response;
+  }
+
+  // Transform snake_case to camelCase
+  return response.map((avatar: RawAvatar) => ({
+    id: avatar.id,
+    altText: avatar.alt_text,
+    isDefault: avatar.is_default,
+    gender: avatar.gender,
+    createdAt: avatar.created_at,
+    updatedAt: avatar.updated_at,
+  }));
+}
+
 export const AuthService = {
   login,
   signup,
@@ -649,4 +674,5 @@ export const AuthService = {
   linkStripeBankAccount,
   getMe,
   getMyPods,
+  getAvatars,
 };

@@ -68,7 +68,7 @@ export default function Header({ className = "" }: HeaderProps) {
               Login
             </Link>
           )}
-          <Button href="/get-started" text="Get Started" />
+          <Button href="/register" text="Get Started" />
         </div>
 
         <MenuMobile />

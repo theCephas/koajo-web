@@ -48,6 +48,7 @@ export default function Hero() {
 
             <Button
               text="Join the Community"
+              href="/register"
               className="mb-9 font-semibold relative z-10"
             />
           </div>

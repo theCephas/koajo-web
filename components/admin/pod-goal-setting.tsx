@@ -23,7 +23,7 @@ export default function PodGoalSetting() {
     setGoalNote,
     refreshPodPlans,
   } = useOnboarding();
-  const { bankConnected } = useDashboard();
+  const { bankConnected, refreshPods, refreshUser } = useDashboard();
 
   const [status, setStatus] = useState<{
     type: "success" | "error";
@@ -102,7 +102,12 @@ export default function PodGoalSetting() {
         message: "Pod join request submitted successfully.",
       });
 
-      await refreshPodPlans();
+      // Refresh all pod-related data in real-time
+      await Promise.all([
+        refreshPodPlans(),
+        refreshPods(),
+        refreshUser(),
+      ]);
 
       setTimeout(() => {
         close();

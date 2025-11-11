@@ -10,6 +10,7 @@ import Search from "@/components2/usefull/Search";
 import Icon from "@/components2/usefull/Icon";
 import Notifications from "./Notifications";
 import { useDashboard } from "@/lib/provider-dashboard";
+import { getAvatarUrl, getDefaultAvatarUrl } from "@/lib/utils/avatar";
 
 import { notifications } from "@/mocks/notifications";
 
@@ -38,9 +39,13 @@ const Header = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [visibleSearch, setVisibleSearch] = useState<boolean>(false);
-  const { kycCompleted, logout } = useDashboard();
+  const { kycCompleted, logout, user } = useDashboard();
 
   const pathname = usePathname();
+
+  const avatarUrl = user?.avatarId
+    ? getAvatarUrl(user.avatarId)
+    : getDefaultAvatarUrl();
 
   const handleLogout = () => {
     logout();
@@ -138,7 +143,7 @@ const Header = () => {
           <Notifications items={notifications} />
           <Link className={cn(styles.avatar, "relative")} href="/settings">
             <Image
-              src="/media/images/avatar.jpg"
+              src={avatarUrl}
               fill
               style={{ objectFit: "cover" }}
               alt="Avatar"

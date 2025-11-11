@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "../utils/button";
 import { Field } from "../utils/field";
 import { useOnboarding } from "@/lib/provider-onboarding";
+import { useDashboard } from "@/lib/provider-dashboard";
 import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
@@ -11,6 +12,7 @@ import { ApiErrorClass } from "@/lib/utils/auth";
 
 export default function PodInviteAcceptance() {
   const { close, inviteToken, refreshPodPlans } = useOnboarding();
+  const { refreshPods, refreshUser } = useDashboard();
   const [tokenValue, setTokenValue] = useState<string>(inviteToken ?? "");
   const [status, setStatus] = useState<{
     type: "success" | "error";
@@ -69,7 +71,12 @@ export default function PodInviteAcceptance() {
         message: "Invitation accepted. Welcome to the pod!",
       });
 
-      await refreshPodPlans();
+      // Refresh all pod-related data in real-time
+      await Promise.all([
+        refreshPodPlans(),
+        refreshPods(),
+        refreshUser(),
+      ]);
 
       setTimeout(() => {
         close();

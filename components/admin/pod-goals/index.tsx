@@ -2,10 +2,13 @@
 import { useState } from "react";
 import cn from "clsx";
 import Card from "@/components2/usefull/Card";
-import { Button } from "@/components/utils";
 import Modal from "@/components/utils/modal";
 import { useDashboard } from "@/lib/provider-dashboard";
 import LockedOverlay from "@/components/admin/locked-overlay";
+import {
+  SkeletonBlock,
+  SkeletonLine,
+} from "@/components/admin/dashboard-skeletons";
 
 type PodGoalsProps = {
   className?: string;
@@ -20,15 +23,15 @@ const PodGoals = ({ className }: PodGoalsProps) => {
     return Math.min((current / target) * 100, 100);
   };
 
-  const displayedGoals =  goals.slice(0, MAX_VISIBLE_GOALS);
-
-  const { emailVerified } = useDashboard();
+  const displayedGoals = goals.slice(0, MAX_VISIBLE_GOALS);
+  const { emailVerified, podsLoading } = useDashboard();
   const isLocked = !emailVerified;
+  const isLoading = podsLoading;
 
   return (
     <>
       <div className="relative">
-      <Card
+        {/* <Card
         title="My Pod Goal"
         tooltip="Track your pod's progress towards financial goals"
         onSeeMore={() => setModalVisible(true)}
@@ -37,19 +40,35 @@ const PodGoals = ({ className }: PodGoalsProps) => {
             isLocked &&
               "[&>div:not(:first-child)]:blur-sm [&>div:not(:first-child)]:select-none [&>div:not(:first-child)]:pointer-events-none"
           )}
-          showSeeMore={!isLocked && displayedGoals.length > MAX_VISIBLE_GOALS}
+          showSeeMore={
+            !isLocked && !isLoading && goals.length > MAX_VISIBLE_GOALS
+          }
       >
         <div className="bg-white rounded-lg mt-6">
-          {displayedGoals.map((goal) => {
-            const percentage = getProgressPercentage(goal.current, goal.target);
-            // return (
-              // <GoalItem key={goal.id} goal={goal} percentage={percentage} />
-            // );
-            return null;
-          })}
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: MAX_VISIBLE_GOALS }).map((_, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-gray-100 p-4 space-y-3"
+                >
+                  <SkeletonLine className="w-32 h-4" />
+                  <SkeletonLine className="w-44" />
+                  <SkeletonBlock className="h-2 w-full rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            displayedGoals.map((goal) => {
+              const percentage = getProgressPercentage(goal.current, goal.target);
+              return (
+                <GoalItem key={goal.id} goal={goal} percentage={percentage} />
+              );
+            })
+          )}
         </div>
-      </Card>
-         <LockedOverlay />
+      </Card> */}
+        <LockedOverlay />
       </div>
 
       <Modal

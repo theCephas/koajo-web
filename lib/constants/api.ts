@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   ACHIEVEMENTS: {
     SUMMARY: "/achievements/summary",
   },
+  AVATARS: "/avatars",
   ADMIN: {
     LOGIN: "/admin/auth/login",
     USERS: "/admin/users",

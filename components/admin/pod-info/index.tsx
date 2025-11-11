@@ -9,6 +9,7 @@ import { Button, ButtonProps } from "@/components/utils";
 import { useDashboard } from "@/lib/provider-dashboard";
 import { useOnboarding } from "@/lib/provider-onboarding";
 import LockedOverlay from "@/components/admin/locked-overlay";
+import { SkeletonBlock, SkeletonLine } from "@/components/admin/dashboard-skeletons";
 
 type PodInfoProps = {
   percent?: number;
@@ -25,7 +26,10 @@ const PodInfo = ({}: PodInfoProps) => {
     currentPod,
     setCurrentPod,
     hasPods,
+    podsLoading,
+    userLoading,
   } = useDashboard();
+  const isLoading = podsLoading || userLoading;
   const { open, setStep } = useOnboarding();
   const isLocked = !emailVerified;
 
@@ -106,10 +110,14 @@ const PodInfo = ({}: PodInfoProps) => {
 
   return (
     <Card
-      title="Current Pod"
-      tooltip="The pod you are currently viewing"
+      title={hasPods ? `Your Pods (${pods.length})` : "Current Pod"}
+      tooltip={
+        hasPods ? "Manage your pods and join new ones" : "Join your first pod"
+      }
       right={
-        hasPods && currentPod ? (
+        isLoading ? (
+          <SkeletonLine className="h-5 w-28 rounded-full" />
+        ) : hasPods && pods.length > 1 && currentPod ? (
           <Select
             className={styles.select}
             titlePrefix="ID:"
@@ -122,12 +130,23 @@ const PodInfo = ({}: PodInfoProps) => {
       }
       className="relative"
     >
-      {hasPods && currentPod ? (
+      {isLoading ? (
+        <div className="space-y-4 mt-2">
+          <SkeletonBlock className="h-10 w-2/3 rounded-2xl" />
+          <div className="space-y-3">
+            <SkeletonLine className="w-3/4" />
+            <SkeletonLine className="w-1/2" />
+            <SkeletonLine className="w-2/3" />
+            <SkeletonLine className="w-1/3" />
+          </div>
+          <SkeletonBlock className="h-11 w-full rounded-2xl" />
+        </div>
+      ) : hasPods && currentPod ? (
         <>
           <div
             className={cn(
               styles.price,
-              "text-transparent bg-clip-text bg-[image:linear-gradient(107deg,#FD8B51_-2.13%,_#469DA3_49.87%,_#FD8B51_94.01%)]",
+              "text-transparent bg-clip-text bg-[linear-gradient(107deg,#FD8B51_-2.13%,#469DA3_49.87%,#FD8B51_94.01%)]",
               isLocked && "blur-sm select-none pointer-events-none"
             )}
           >
@@ -138,7 +157,8 @@ const PodInfo = ({}: PodInfoProps) => {
               <strong>Status:</strong> {currentPod.status}
             </p>
             <p>
-              <strong>Members:</strong> {currentPod.orderedMembers?.length || 0}/{currentPod.maxMembers}
+              <strong>Members:</strong> {currentPod.orderedMembers?.length || 0}
+              /{currentPod.maxMembers}
             </p>
             {currentPod.payoutOrder && (
               <p>
@@ -152,13 +172,25 @@ const PodInfo = ({}: PodInfoProps) => {
               </p>
             )}
           </div>
+
+          {/* Join More Pods Button */}
+          {pods.length >= 1 && (
+            <Button
+              text="Join More Pods"
+              className="w-full mt-4"
+              onClick={() => {
+                setStep("pod_plan_selection");
+                open();
+              }}
+            />
+          )}
         </>
       ) : (
         <>
           <div
             className={cn(
               styles.price,
-              "text-transparent bg-clip-text bg-[image:linear-gradient(107deg,#FD8B51_-2.13%,_#469DA3_49.87%,_#FD8B51_94.01%)]",
+              "text-transparent bg-clip-text bg-[linear-gradient(107deg,#FD8B51_-2.13%,#469DA3_49.87%,#FD8B51_94.01%)]",
               isLocked && "blur-sm select-none pointer-events-none"
             )}
           >
