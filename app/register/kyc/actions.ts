@@ -452,3 +452,66 @@ export async function createFinancialConnectionsSessionAction(
     clientSecret: session.client_secret,
   };
 }
+
+// ============================
+// RETRIEVE OWNERSHIP DETAILS
+// ============================
+
+interface GetAccountOwnershipInput {
+  accountId: string;
+}
+
+interface AccountOwner {
+  name: string;
+  email?: string;
+}
+
+interface GetAccountOwnershipResult {
+  owners: AccountOwner[];
+}
+
+/**
+ * Retrieves ownership information for a Financial Connections account.
+ * This is used to get the actual account holder name(s) for validation.
+ */
+export async function getAccountOwnershipAction(
+  input: GetAccountOwnershipInput
+): Promise<GetAccountOwnershipResult> {
+  const stripe = getStripe();
+
+  try {
+    // First, get the account to retrieve its ownership ID
+    const account = await stripe.financialConnections.accounts.retrieve(
+      input.accountId
+    );
+
+    if (!account.ownership) {
+      // No ownership data available
+      return { owners: [] };
+    }
+
+    // Extract ownership ID (it can be a string or object)
+    const ownershipId = typeof account.ownership === 'string'
+      ? account.ownership
+      : account.ownership.id;
+
+    // List all owners for this account using the ownership ID
+    const ownersResponse = await stripe.financialConnections.accounts.listOwners(
+      input.accountId,
+      {
+        ownership: ownershipId,
+      }
+    );
+
+    // Extract owner names and emails
+    const owners: AccountOwner[] = ownersResponse.data.map((owner) => ({
+      name: owner.name,
+      email: owner.email ?? undefined,
+    }));
+
+    return { owners };
+  } catch (error) {
+    console.error("Failed to retrieve account ownership:", error);
+    return { owners: [] };
+  }
+}

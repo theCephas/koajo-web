@@ -12,7 +12,40 @@ import { AuthService } from "@/lib/services/authService";
 import {
   createFinancialConnectionsSessionAction,
   ensureStripeCustomerAction,
+  getAccountOwnershipAction,
 } from "@/app/register/kyc/actions";
+
+/**
+ * Helper function to compare names for KYC validation.
+ * Normalizes names by removing extra spaces, converting to lowercase,
+ * and allows for minor variations (middle names, suffixes, etc.)
+ */
+function namesMatch(name1: string, name2: string): boolean {
+  const normalize = (name: string) =>
+    name
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, "") // Remove special characters
+      .replace(/\s+/g, " ") // Normalize spaces
+      .trim();
+
+  const normalized1 = normalize(name1);
+  const normalized2 = normalize(name2);
+
+  // Exact match
+  if (normalized1 === normalized2) return true;
+
+  // Check if one name contains all parts of the other (handles middle names)
+  const parts1 = normalized1.split(" ");
+  const parts2 = normalized2.split(" ");
+
+  // Check if all parts of the shorter name exist in the longer name
+  const [shorter, longer] =
+    parts1.length <= parts2.length
+      ? [parts1, parts2]
+      : [parts2, parts1];
+
+  return shorter.every((part) => longer.includes(part));
+}
 
 export default function BankConnection() {
   const { close } = useOnboarding();
@@ -106,22 +139,54 @@ export default function BankConnection() {
         );
       }
 
-      const connectedAccountId =
-        result.financialConnectionsSession?.accounts?.[0]?.id;
+      const connectedAccount =
+        result.financialConnectionsSession?.accounts?.[0];
 
-      if (!connectedAccountId) {
+      if (!connectedAccount?.id) {
         throw new Error(
           "Stripe did not return a connected bank account identifier."
         );
       }
 
-      await AuthService.linkStripeBankAccount(
-        {
-          id: connectedAccountId,
-          customer_id: customer.customerId,
-        },
-        token
-      );
+      // Retrieve account ownership information to get the actual account holder name
+      let accountHolderName: string | undefined = undefined;
+      try {
+        const ownership = await getAccountOwnershipAction({
+          accountId: connectedAccount.id,
+        });
+
+        // Get the first owner's name (most accounts have a single owner)
+        if (ownership.owners.length > 0) {
+          accountHolderName = ownership.owners[0].name;
+        }
+      } catch (ownershipError) {
+        console.warn("Failed to retrieve ownership data:", ownershipError);
+        // Continue without ownership data - backend will handle validation
+      }
+
+      // Extract full bank account details from Stripe response
+      const bankAccountData = {
+        id: connectedAccount.id,
+        customer_id: customer.customerId,
+        account_name: connectedAccount.display_name ?? undefined,
+        account_holder_name: accountHolderName,
+        institution_name: connectedAccount.institution_name ?? undefined,
+        account_type: connectedAccount.subcategory ?? undefined,
+        last4: connectedAccount.last4 ?? undefined,
+      };
+
+      // Validate that bank account holder name matches KYC verified name
+      if (
+        bankAccountData.account_holder_name &&
+        fullName &&
+        !namesMatch(bankAccountData.account_holder_name, fullName)
+      ) {
+        throw new Error(
+          `Bank account holder name "${bankAccountData.account_holder_name}" does not match your verified name "${fullName}". Please ensure you're connecting an account in your name.`
+        );
+      }
+
+      await AuthService.linkStripeBankAccount(bankAccountData, token);
 
       await refreshUser();
       close();
