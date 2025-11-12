@@ -12,6 +12,7 @@ import type {
 } from "@/lib/types/api";
 import TokenManager from "@/lib/utils/memory-manager";
 import { AuthService } from "@/lib/services/authService";
+import { resolveApiErrorMessage } from "@/lib/utils/api-helpers";
 
 const isKycComplete = (status: User["identityVerification"]) =>
   Boolean(
@@ -93,7 +94,7 @@ export default function CardVerifyEmail() {
         if (!cancelled) {
           console.error("Failed to fetch profile:", err);
           setProfileError(
-            "Unable to load your profile. Please log in and try again."
+            resolveApiErrorMessage(err, "Unable to load your profile. Please log in and try again.")
           );
         }
       } finally {
@@ -130,12 +131,12 @@ export default function CardVerifyEmail() {
         });
 
         if ("error" in response && "message" in response) {
-          setError(response.message as string);
+          setError(resolveApiErrorMessage(response, `Failed to send email. Click "Resend email" below to try again.`));
         }
       } catch (err) {
         console.error("Resend email error:", err);
         setError(
-          `Failed to send email. Click "Resend email" below to try again.`
+          resolveApiErrorMessage(err, `Failed to send email. Click "Resend email" below to try again.`)
         );
       } finally {
         setIsLoading(false);
@@ -206,14 +207,12 @@ export default function CardVerifyEmail() {
         setIsVerified(true);
         TokenManager.updateUserData({ emailVerified: true });
       } else {
-        setError("Email verification failed. Please try again.");
+        setError(resolveApiErrorMessage(result, "Email verification failed. Please try again."));
       }
     } catch (err) {
       console.error("Email verification error:", err);
       setError(
-        err instanceof Error
-          ? err.message
-          : "An error occurred during verification."
+        resolveApiErrorMessage(err, "Email verification failed. Please try again.")
       );
     } finally {
       setIsLoading(false);
@@ -273,79 +272,21 @@ export default function CardVerifyEmail() {
 
   if (isVerified) {
     return (
-      <>
-        <CardAuth
-          title="Email Verified!"
-          description="Your email has been successfully verified."
-        >
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <p className="text-gray-600">
-                Your email address has been verified successfully.
-              </p>
-            </div>
-
-            <Button
-              text="Continue"
-              variant="primary"
-              className="w-full"
-              showArrow={true}
-              href="/dashboard"
-            />
-          </div>
-        </CardAuth>
-
-        {/* <Modal
-          visible={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
-        >
-          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Complete!</h2>
-              <p className="text-gray-600">
-                Your email has been successfully verified. You can now proceed to login.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                onClick={handleGoToLogin}
-                text="Go to Login"
-                variant="primary"
-                className="w-full"
-                showArrow={true}
-              /> */}
-        {/* <Button
-                onClick={handleGoToRegistration}
-                text="Continue Registration"
-                variant="secondary"
-                className="w-full"
-                showArrow={false}
-              /> */}
-        {/* </div>
-          </div>
-        </Modal> */}
-      </>
+      <CardAuth
+        title="Email Verified!"
+        description="Your email has been successfully verified."
+        showSuccessIcon={true}
+      >
+        <div className="space-y-6">
+          <Button
+            text="Continue"
+            variant="primary"
+            className="w-full"
+            showArrow={true}
+            href="/dashboard"
+          />
+        </div>
+      </CardAuth>
     );
   }
 

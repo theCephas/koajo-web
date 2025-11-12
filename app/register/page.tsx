@@ -18,8 +18,13 @@ import { getPhoneNumber } from "@/lib/utils/form";
 import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { useRouter } from "next/navigation";
-import { REGISTRATION_STAGE, REGISTRATION_STAGE_MAP, RegistrationStage } from "@/lib/constants/dashboard";
+import {
+  REGISTRATION_STAGE,
+  REGISTRATION_STAGE_MAP,
+  RegistrationStage,
+} from "@/lib/constants/dashboard";
 import { SignupResponse, User } from "@/lib/types/api";
+import { resolveApiErrorMessage } from "@/lib/utils/api-helpers";
 
 interface RegisterFormData {
   email: string;
@@ -45,10 +50,14 @@ export default function RegisterPage() {
     registrationStage === REGISTRATION_STAGE.NONE ? "success" : "continue"
   );
   const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    if (TokenManager.isRegistered() && registrationStage !== REGISTRATION_STAGE.NONE) {
+    if (
+      TokenManager.isRegistered() &&
+      registrationStage !== REGISTRATION_STAGE.NONE
+    ) {
       setModalType("continue");
       setModalVisible(true);
     }
@@ -60,18 +69,29 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
+    setErrorMessage("");
     try {
       const response = await AuthService.signup({
         email: data.email,
         phoneNumber: getPhoneNumber(data.phoneNumber),
         password: data.password,
       });
-      if (
+
+      // Check for error response
+      if (response && "error" in response && "message" in response) {
+        const message = resolveApiErrorMessage(
+          response,
+          "Account creation failed. Please try again."
+        );
+        setErrorMessage(message);
+        setModalType("error");
+        setModalVisible(true);
+      } else if (
         response &&
         ("id" in response || "accountId" in response) &&
         !("error" in response)
       ) {
-        const signupResponse = response as SignupResponse &  User ;
+        const signupResponse = response as SignupResponse & User;
         setModalType("success");
         setModalVisible(true);
         TokenManager.setUser({
@@ -85,16 +105,25 @@ export default function RegisterPage() {
         });
         TokenManager.setRegistrationStage(REGISTRATION_STAGE.REGISTERED);
       }
-    } catch (error) {
+    } catch (error: any) {
+      const message = resolveApiErrorMessage(
+        error,
+        "Account creation failed. Please try again."
+      );
+      setErrorMessage(message);
       setModalType("error");
       setModalVisible(true);
     } finally {
       setIsLoading(false);
       // setTimeout(() => {
       //   setModalVisible(false);
-        if (modalType === "success") {
-          router.push(REGISTRATION_STAGE_MAP[registrationStage.toUpperCase() as keyof typeof REGISTRATION_STAGE_MAP]);
-        }
+      if (modalType === "success") {
+        router.push(
+          REGISTRATION_STAGE_MAP[
+            registrationStage.toUpperCase() as keyof typeof REGISTRATION_STAGE_MAP
+          ]
+        );
+      }
       // }, 4000);
     }
   };
@@ -217,10 +246,18 @@ export default function RegisterPage() {
         <SuccessModal visible={modalVisible} onClose={onClose} />
       )}
       {modalType === "error" && modalVisible && (
-        <ErrorModal visible={modalVisible} onClose={onClose} />
+        <ErrorModal
+          visible={modalVisible}
+          onClose={onClose}
+          errorMessage={errorMessage}
+        />
       )}
       {modalType === "continue" && (
-        <ContinueModal visible={modalVisible} onClose={onClose} registrationStage={registrationStage} />
+        <ContinueModal
+          visible={modalVisible}
+          onClose={onClose}
+          registrationStage={registrationStage}
+        />
       )}
     </>
   );
@@ -234,7 +271,7 @@ const SuccessModal = ({
     <Modal visible={visible} onClose={onClose}>
       <CardAuth
         title="Account Successfully Created"
-        description="Let's constinue with your kyc verification"
+        description="Let's continue with your kyc verification"
         showSuccessIcon={true}
       >
         <Link href="/register/kyc">
@@ -253,12 +290,13 @@ const SuccessModal = ({
 const ErrorModal = ({
   visible,
   onClose,
-}: Pick<ModalProps, "visible" | "onClose">) => {
+  errorMessage,
+}: Pick<ModalProps, "visible" | "onClose"> & { errorMessage: string }) => {
   return (
     <Modal visible={visible} onClose={onClose}>
       <CardAuth
         title="Account Creation Failed"
-        description="Please try again"
+        description={errorMessage || "Please try again"}
         showErrorIcon={true}
       >
         <Button

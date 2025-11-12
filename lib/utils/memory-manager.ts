@@ -251,19 +251,77 @@ export class TokenManager {
     if (typeof window === "undefined") return;
 
     try {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(TOKEN_EXPIRY_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_EXPIRY_KEY);
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(USER_ID_KEY);
-      localStorage.removeItem(REGISTRATION_STATUS_KEY);
+      const keysToRemove = [
+        TOKEN_KEY,
+        TOKEN_EXPIRY_KEY,
+        REFRESH_TOKEN_KEY,
+        REFRESH_EXPIRY_KEY,
+        USER_KEY,
+        USER_ID_KEY,
+        REGISTRATION_STATUS_KEY,
+      ];
 
-      if (typeof document !== "undefined") {
-        document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      try {
+        localStorage.clear();
+      } catch (storageError) {
+        console.warn(
+          "Unable to clear entire localStorage, falling back to selective removal:",
+          storageError
+        );
+        keysToRemove.forEach((key) => {
+          try {
+            localStorage.removeItem(key);
+          } catch (removeError) {
+            console.error(`Failed to remove ${key} from localStorage:`, removeError);
+          }
+        });
       }
 
-      console.log("Auth data cleared successfully");
+      // Clear all cookies
+      if (typeof document !== "undefined") {
+        const cookies = document.cookie.split(";");
+        const hostname = window.location?.hostname;
+        const cookieDomains = hostname
+          ? [hostname, `.${hostname}`].filter(
+              (value, index, array) => value && array.indexOf(value) === index
+            )
+          : [];
+
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          cookieDomains.forEach((domain) => {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
+          });
+        }
+      }
+
+      // Clear browser cache (Cache API)
+      if ("caches" in window) {
+        caches
+          .keys()
+          .then((names) => {
+            names.forEach((name) => {
+              caches.delete(name).catch((cacheError) => {
+                console.error(`Failed to delete cache ${name}:`, cacheError);
+              });
+            });
+          })
+          .catch((error) => {
+            console.error("Failed to clear cache:", error);
+          });
+      }
+
+      // Clear sessionStorage as well
+      try {
+        sessionStorage.clear();
+      } catch (sessionError) {
+        console.error("Failed to clear sessionStorage:", sessionError);
+      }
+
+      console.log("Auth data, cache, and cookies cleared successfully");
     } catch (error) {
       console.error("Failed to clear auth data:", error);
     }

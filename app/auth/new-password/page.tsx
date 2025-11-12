@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { Button, PasswordField } from "@/components/utils";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,8 @@ import { getPasswordStrength } from "@/lib/utils/form";
 import { FORM_FIELDS_MESSAGES, FORM_FIELDS_PATTERNS } from "@/lib/constants/form";
 import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
 import { AuthService } from "@/lib/services/authService";
+import { useSearchParams } from "next/navigation";
+import { resolveApiErrorMessage } from "@/lib/utils/api-helpers";
 
 
 interface NewPasswordFormData {
@@ -16,8 +18,11 @@ interface NewPasswordFormData {
   repeatPassword: string;
 }
 
+function NewPasswordContent() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+  const token = searchParams.get("token") || "";
 
-export default function NewPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [failureMessage, setFailureMessage] = useState<string>("");
   const [success, setSuccess] = useState(false);
@@ -37,22 +42,35 @@ export default function NewPasswordPage() {
       return;
     }
 
+    if (!email || !token) {
+      setFailureMessage("Invalid reset link. Please request a new password reset.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await AuthService.resetPassword({ email: "test@test.com", token: "1234567890", newPassword: data.newPassword });
+      const response = await AuthService.resetPassword({
+        email,
+        token,
+        newPassword: data.newPassword
+      });
       if (response && "reset" in response && response.reset === true) {
         setSuccess(true);
       } else {
-        setFailureMessage("An error occurred. Please try again.");
+        setFailureMessage(
+          resolveApiErrorMessage(response, "Failed to reset password. Please try again.")
+        );
       }
     } catch (error) {
-      setFailureMessage("An error occurred. Please try again.");
-    } 
+      setFailureMessage(
+        resolveApiErrorMessage(error, "Failed to reset password. Please try again.")
+      );
+    }
     setIsLoading(false);
   };
 
-  if (isSubmitted)
+  if (isSubmitted && success)
     return <SuccessMessage />
 
   return (
@@ -149,3 +167,18 @@ const SuccessMessage = () => {
     </CardAuth>
   );
 };
+
+export default function NewPasswordPage() {
+  return (
+    <Suspense fallback={
+      <CardAuth
+        title="Loading..."
+        description="Please wait"
+      >
+        <div className="text-center">Loading...</div>
+      </CardAuth>
+    }>
+      <NewPasswordContent />
+    </Suspense>
+  );
+}

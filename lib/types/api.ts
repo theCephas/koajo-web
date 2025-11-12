@@ -204,9 +204,10 @@ export interface StripeVerificationResponse {
 export interface LinkStripeBankAccountRequest {
   id: string;
   customer_id: string;
-  account_name?: string; // Display name from Stripe
-  account_holder_name?: string; // Legal name from account_holder
-  institution_name?: string; // Bank name (e.g., "Chase", "Bank of America")
+  account_name?: string; // Display name from Stripe (optional, can be used if first/last not available)
+  account_first_name?: string; // First name of account holder
+  account_last_name?: string; // Last name of account holder
+  bank_name?: string; // Bank name (e.g., "Chase", "Bank of America")
   account_type?: string; // "checking" or "savings"
   last4?: string; // Last 4 digits of account number
 }

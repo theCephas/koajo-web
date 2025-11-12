@@ -480,13 +480,44 @@ export async function getAccountOwnershipAction(
   const stripe = getStripe();
 
   try {
-    // First, get the account to retrieve its ownership ID
-    const account = await stripe.financialConnections.accounts.retrieve(
+    // First, get the account to check ownership status
+    let account = await stripe.financialConnections.accounts.retrieve(
       input.accountId
     );
 
+    console.log("Initial account ownership status:", account.ownership);
+
+    // If ownership is null, we need to refresh it
     if (!account.ownership) {
-      // No ownership data available
+      console.log("Ownership is null, attempting to refresh...");
+
+      try {
+        // Refresh the ownership data
+        const refreshResult = await stripe.financialConnections.accounts.refresh(
+          input.accountId,
+          {
+            features: ['ownership'],
+          }
+        );
+
+        console.log("Ownership refresh result:", refreshResult);
+
+        // Retrieve the account again to get the updated ownership
+        account = await stripe.financialConnections.accounts.retrieve(
+          input.accountId
+        );
+
+        console.log("Account after refresh:", account.ownership);
+      } catch (refreshError) {
+        console.error("Failed to refresh ownership:", refreshError);
+        // If refresh fails, ownership might not be available for this account
+        return { owners: [] };
+      }
+    }
+
+    // If ownership is still null after refresh, return empty
+    if (!account.ownership) {
+      console.warn("Ownership data not available even after refresh");
       return { owners: [] };
     }
 
@@ -495,6 +526,8 @@ export async function getAccountOwnershipAction(
       ? account.ownership
       : account.ownership.id;
 
+    console.log("Fetching owners with ownership ID:", ownershipId);
+
     // List all owners for this account using the ownership ID
     const ownersResponse = await stripe.financialConnections.accounts.listOwners(
       input.accountId,
@@ -502,6 +535,8 @@ export async function getAccountOwnershipAction(
         ownership: ownershipId,
       }
     );
+
+    console.log("Owners response:", ownersResponse);
 
     // Extract owner names and emails
     const owners: AccountOwner[] = ownersResponse.data.map((owner) => ({

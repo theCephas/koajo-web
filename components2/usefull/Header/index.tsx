@@ -13,6 +13,7 @@ import { useDashboard } from "@/lib/provider-dashboard";
 import { getAvatarUrl, getDefaultAvatarUrl } from "@/lib/utils/avatar";
 
 import { notifications } from "@/mocks/notifications";
+import { UserIcon } from "lucide-react";
 
 const navigation = [
   {
@@ -43,9 +44,7 @@ const Header = () => {
 
   const pathname = usePathname();
 
-  const avatarUrl = user?.avatarId
-    ? getAvatarUrl(user.avatarId)
-    : getDefaultAvatarUrl();
+  const avatarUrl = user?.avatarId && getAvatarUrl(user?.avatarId ?? "");
 
   const handleLogout = () => {
     logout();
@@ -142,12 +141,18 @@ const Header = () => {
           </div>
           <Notifications items={notifications} />
           <Link className={cn(styles.avatar, "relative")} href="/settings">
-            <Image
-              src={avatarUrl}
-              fill
-              style={{ objectFit: "cover" }}
-              alt="Avatar"
-            />
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                fill
+                style={{ objectFit: "cover" }}
+                alt="Avatar"
+              />
+            ) : (
+              <div className="flex items-center justify-center pt-1">
+                <UserIcon color="white" />
+              </div>
+            )}
             {kycCompleted && (
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
                 <svg

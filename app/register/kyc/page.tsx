@@ -19,14 +19,11 @@ import {
   ensureStripeCustomerAction,
   retrieveVerificationSessionAction,
 } from "./actions";
-import {
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Camera,
-  Shield,
-  FileText,
-} from "lucide-react";
+import { CheckCircle2, AlertCircle, Camera, Shield } from "lucide-react";
+import ProfileAddIcon from "@/public/media/icons/profile-add.svg";
+import WalletMinusIcon from "@/public/media/icons/wallet-minus.svg";
+import VerifiedIcon from "@/public/media/icons/verified.svg";
+import { resolveApiErrorMessage } from "@/lib/utils/api-helpers";
 
 const KYC_STORAGE_KEY = "kyc_step_state";
 
@@ -57,53 +54,6 @@ interface SessionSyncPayload {
   ssnLast4?: string | null;
   address?: unknown;
 }
-
-const STATUS_COPY: Record<
-  StepStatus,
-  {
-    label: string;
-    badgeClass: string;
-    textClass: string;
-    icon: React.ReactNode;
-  }
-> = {
-  idle: {
-    label: "Not started",
-    badgeClass: "bg-white/10 text-black/70 border border-white/20",
-    textClass: "text-text-400",
-    icon: null,
-  },
-  in_progress: {
-    label: "Verifying",
-    badgeClass: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
-    textClass: "text-blue-400",
-    icon: <Loader2 className="w-3 h-3 animate-spin" />,
-  },
-  processing: {
-    label: "Processing",
-    badgeClass: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-    textClass: "text-yellow-600",
-    icon: <Loader2 className="w-3 h-3 animate-spin" />,
-  },
-  verified: {
-    label: "Verified",
-    badgeClass: "bg-green-500/20 text-green-400 border border-green-500/30",
-    textClass: "text-green-600",
-    icon: <CheckCircle2 className="w-3 h-3" />,
-  },
-  requires_input: {
-    label: "Action needed",
-    badgeClass: "bg-red-500/20 text-red-400 border border-red-500/30",
-    textClass: "text-red-500",
-    icon: <AlertCircle className="w-3 h-3" />,
-  },
-  error: {
-    label: "Error",
-    badgeClass: "bg-red-500/20 text-red-400 border border-red-500/30",
-    textClass: "text-red-500",
-    icon: <AlertCircle className="w-3 h-3" />,
-  },
-};
 
 const defaultStepState: StepState = { status: "idle", lastError: null };
 
@@ -137,7 +87,6 @@ function StepCard({
   helperText,
   children,
   icon,
-  stepNumber,
 }: {
   title: string;
   description: string;
@@ -148,113 +97,80 @@ function StepCard({
   helperText?: string;
   children?: React.ReactNode;
   icon?: React.ReactNode;
-  stepNumber?: number;
 }) {
-  const config = STATUS_COPY[status.status];
   const isVerified = status.status === "verified";
   const isInProgress =
     status.status === "in_progress" || status.status === "processing";
+  const isPending = status.status === "idle";
+  const isActionDisabled = Boolean(disabled || isVerified);
+  const buttonVariant = isActionDisabled ? "secondary" : "primary";
 
   return (
     <div
       className={`
-        relative rounded-2xl border backdrop-blur-sm p-6 transition-all duration-300
+        relative h-full rounded-xl border p-4 lg:p-5 shadow-sm transition-all duration-300
         ${
           isVerified
-            ? "border-green-500/40 bg-green-500/10 shadow-lg shadow-green-500/20"
-            : isInProgress
-            ? "border-blue-500/40 bg-blue-500/10 shadow-lg shadow-blue-500/20 animate-pulse-slow"
-            : "border-white/10 bg-white/5 hover:border-white/20"
+            ? "border-green-300 bg-green-50 shadow-[0_18px_45px_rgba(25,130,52,0.15)]"
+            : "border-[#E4E9F2] bg-[#F8FAFD] hover:border-[#d6dde8] hover:bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
         }
       `}
     >
-      {/* Step Number Badge */}
-      {stepNumber && (
-        <div
-          className={`
-          absolute -top-3 -left-3 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-lg
-          ${
-            isVerified
-              ? "bg-green-500 text-black"
-              : isInProgress
-              ? "bg-blue-500 text-black"
-              : " text-black/70 border border-white/20"
-          }
-        `}
-        >
-          {isVerified ? <CheckCircle2 className="w-5 h-5" /> : stepNumber}
-        </div>
-      )}
-
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            {icon && (
-              <div
-                className={`
-                p-2 rounded-lg
-                ${
-                  isVerified
-                    ? "bg-green-500/20"
-                    : isInProgress
-                    ? "bg-blue-500/20"
-                    : "bg-white/10"
-                }
-              `}
-              >
-                {icon}
-              </div>
+      <div className="flex h-full flex-col gap-3 lg:gap-3.5">
+        <div className="flex items-start gap-2.5 lg:gap-3">
+          {icon && (
+            <div
+              className={`
+              p-1.5 lg:p-2 rounded-lg shrink-0
+              ${
+                isVerified
+                  ? "bg-green-500/20 text-green-700"
+                  : "bg-secondary-100/20 text-secondary-400"
+              }
+            `}
+            >
+              {icon}
+            </div>
+          )}
+          <div className="flex-1">
+            <p className="text-[10px] uppercase tracking-wider text-secondary-300 font-medium mb-0.5 lg:text-xs lg:mb-1">
+              {title}
+            </p>
+            <p className="text-sm lg:text-base font-semibold text-secondary-900">
+              {description}
+            </p>
+            {helperText && (
+              <p className="mt-1.5 text-[11px] lg:text-xs text-secondary-400 leading-relaxed lg:mt-2">
+                {helperText}
+              </p>
             )}
-            <div>
-              <p className="text-xs uppercase tracking-wider text-black font-medium">
-                {title}
-              </p>
-              <p className="text-lg font-semibold text-black/60 mt-0.5">
-                {description}
-              </p>
+          </div>
+        </div>
+
+        {status.lastError && (
+          <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 lg:p-3">
+            <div className="flex items-start gap-1.5 lg:gap-2">
+              <AlertCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0 lg:w-4 lg:h-4" />
+              <p className="text-xs text-red-600 lg:text-sm">{status.lastError}</p>
             </div>
           </div>
+        )}
 
-          {helperText && (
-            <p className="mt-3 text-sm text-black/60 leading-relaxed pl-14">
-              {helperText}
-            </p>
-          )}
+        {children}
 
-          {status.lastError && (
-            <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30 pl-14">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-                <p className="text-sm text-red-400">{status.lastError}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 ${config.badgeClass}`}
-          >
-            {config.icon}
-            {config.label}
-          </span>
-        </div>
+        {onAction && actionLabel && (
+          <div className="mt-auto">
+            <Button
+              onClick={onAction}
+              text={actionLabel}
+              variant={isVerified ? "secondary" : buttonVariant}
+              className="w-full text-xs lg:text-sm"
+              disabled={isActionDisabled}
+              showArrow={!isVerified}
+            />
+          </div>
+        )}
       </div>
-
-      {children}
-
-      {onAction && actionLabel && (
-        <div className="mt-5 pl-14">
-          <Button
-            onClick={onAction}
-            text={actionLabel}
-            variant={isVerified ? "secondary" : "primary"}
-            className="w-full"
-            disabled={disabled || isVerified}
-            showArrow={!isVerified}
-          />
-        </div>
-      )}
     </div>
   );
 }
@@ -362,7 +278,9 @@ export default function KycPage() {
       } catch (err) {
         console.error("Failed to load profile:", err);
         if (!cancelled) {
-          setGlobalError("Unable to load your profile. Please try again.");
+          setGlobalError(
+            resolveApiErrorMessage(err, "Unable to load your profile. Please try again.")
+          );
         }
       } finally {
         if (!cancelled) setIsBootstrapping(false);
@@ -555,10 +473,10 @@ export default function KycPage() {
         updateStep(stepKey, (prev) => ({
           ...prev,
           status: "error",
-          lastError:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred while syncing verification.",
+          lastError: resolveApiErrorMessage(
+            error,
+            "Failed to sync verification with our servers. Please try again."
+          ),
         }));
       }
     },
@@ -645,8 +563,10 @@ export default function KycPage() {
         updateStep(stepKey, (prev) => ({
           ...prev,
           status: "error",
-          lastError:
-            error instanceof Error ? error.message : "Verification failed.",
+          lastError: resolveApiErrorMessage(
+            error,
+            "Verification failed. Please try again."
+          ),
         }));
       }
     },
@@ -676,9 +596,10 @@ export default function KycPage() {
     } catch (error) {
       console.error("Failed to send verification email:", error);
       setGlobalError(
-        error instanceof Error
-          ? error.message
-          : "Unable to continue to email verification."
+        resolveApiErrorMessage(
+          error,
+          "Unable to continue to email verification. Please try again."
+        )
       );
     } finally {
       setIsContinuingToEmail(false);
@@ -692,11 +613,7 @@ export default function KycPage() {
     if (!documentReady || !idReady) return null;
 
     return (
-      <div className="space-y-4 pt-4">
-        <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-black/80">
-          Both identity checks are complete! Next, verify your email to continue
-          onboarding.
-        </div>
+      <div className="flex items-center justify-center pt-2">
         <Button
           text={
             isContinuingToEmail
@@ -704,7 +621,7 @@ export default function KycPage() {
               : "Continue to Email Verification"
           }
           variant="primary"
-          className="w-full"
+          className="w-fit text-xs lg:text-sm"
           onClick={handleContinueToEmail}
           disabled={isContinuingToEmail}
           showArrow
@@ -745,120 +662,91 @@ export default function KycPage() {
   }
 
   return (
-    <CardAuth
-      title="Identity Verification"
-      description="Complete secure verification with Stripe to protect your account and ensure platform safety."
-    >
-      <div className="space-y-6">
-        {globalError && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-200">{globalError}</p>
+    <div className="w-full h-full flex items-center justify-center px-2 sm:px-4 lg:px-0">
+      <div className="mx-auto w-full max-w-[1040px]">
+        <div className="space-y-4 rounded-[16px] border border-[#E2E8F0] bg-white px-4 py-5 shadow-[0_35px_120px_rgba(15,23,42,0.12)] sm:px-6 lg:space-y-6 lg:px-8 lg:py-8">
+          <div className="space-y-1.5 text-center lg:space-y-2">
+            <h1 className="text-xl font-bold text-secondary-900 lg:text-2xl">
+              Identity Verification
+            </h1>
+            <p className="mx-auto max-w-2xl text-xs text-secondary-400 lg:text-sm">
+              Complete secure verification with Stripe to protect your account
+              and ensure platform safety.
+            </p>
           </div>
-        )}
 
-        {/* Progress Indicator */}
-        <div className="flex items-center gap-2 px-1">
-          <div className="flex items-center gap-2 flex-1">
-            <div
-              className={`h-2 rounded-full flex-1 ${
-                steps.document.status === "verified"
-                  ? "bg-green-500"
-                  : steps.document.status === "in_progress" ||
-                    steps.document.status === "processing"
-                  ? "bg-blue-500 animate-pulse"
-                  : "bg-white/10"
-              }`}
-            />
-            <div
-              className={`h-2 rounded-full flex-1 ${
-                steps.idNumber.status === "verified"
-                  ? "bg-green-500"
-                  : steps.idNumber.status === "in_progress" ||
-                    steps.idNumber.status === "processing"
-                  ? "bg-blue-500 animate-pulse"
-                  : "bg-white/10"
-              }`}
-            />
-          </div>
-          <span className="text-xs text-black/50 font-medium">
-            {steps.document.status === "verified" &&
-            steps.idNumber.status === "verified"
-              ? "2/2 Complete"
-              : steps.document.status === "verified"
-              ? "1/2 Complete"
-              : "0/2 Complete"}
-          </span>
-        </div>
-
-        <StepCard
-          stepNumber={1}
-          title="Document Verification"
-          description="ID & Selfie Capture"
-          helperText="Upload a government-issued ID and take a live selfie. Stripe uses advanced verification to match your photo and prevent fraud."
-          status={steps.document}
-          icon={<Camera className="w-5 h-5 " />}
-          onAction={() => runVerification("document")}
-          actionLabel={
-            steps.document.status === "verified"
-              ? "Verified Successfully"
-              : isVerifying && steps.document.status === "in_progress"
-              ? "Opening Stripe Verification..."
-              : "Begin ID Verification"
-          }
-          disabled={
-            steps.document.status === "verified" ||
-            steps.document.status === "processing" ||
-            isVerifying
-          }
-        />
-
-        <StepCard
-          stepNumber={2}
-          title="Identity Confirmation"
-          description="SSN & Personal Details"
-          helperText="Verify your Social Security Number and date of birth. Stripe securely validates this information with trusted data sources to comply with KYC regulations."
-          status={steps.idNumber}
-          icon={<Shield className="w-5 h-5" />}
-          onAction={() => runVerification("id_number")}
-          actionLabel={
-            steps.idNumber.status === "verified"
-              ? "Verified Successfully"
-              : steps.document.status !== "verified"
-              ? "Complete ID verification first"
-              : isVerifying && steps.idNumber.status === "in_progress"
-              ? "Opening Stripe Verification..."
-              : "Verify SSN & Details"
-          }
-          disabled={
-            steps.document.status !== "verified" ||
-            steps.idNumber.status === "verified" ||
-            steps.idNumber.status === "processing" ||
-            isVerifying
-          }
-        />
-
-        {renderSuccessCTA()}
-
-        {/* Help Section */}
-        <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
-          <div className="flex items-start gap-3">
-            <FileText className="w-5 h-5 text-white/60 shrink-0 mt-0.5" />
-            <div className="text-sm">
-              <p className="text-black/90 font-medium mb-1">Need assistance?</p>
-              <p className="text-black/60">
-                Having trouble with verification? Contact our support team at{" "}
-                <a
-                  className="text-blue-400 underline hover:text-blue-300 transition-colors"
-                  href="mailto:hello@koajo.com"
-                >
-                  hello@koajo.com
-                </a>
-              </p>
+          {globalError && (
+            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50/80 p-3 lg:p-4">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500 lg:h-5 lg:w-5" />
+              <p className="text-xs text-red-600 lg:text-sm">{globalError}</p>
             </div>
+          )}
+
+          {/* Cards Layout - Horizontal on Desktop, Vertical on Mobile */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
+            <StepCard
+              title="Document Verification"
+              description="ID & Selfie Capture"
+              helperText="Upload a government-issued ID and take a live selfie. Stripe uses advanced verification to match your photo and prevent fraud."
+              status={steps.document}
+              icon={<Camera className="w-4 h-4 lg:w-5 lg:h-5" />}
+              onAction={() => runVerification("document")}
+              actionLabel={
+                steps.document.status === "verified"
+                  ? "Verified Successfully"
+                  : isVerifying && steps.document.status === "in_progress"
+                  ? "Opening Stripe Verification..."
+                  : "Begin ID Verification"
+              }
+              disabled={
+                steps.document.status === "verified" ||
+                steps.document.status === "processing" ||
+                isVerifying
+              }
+            />
+
+            <StepCard
+              title="Document Verification"
+              description="SSN & Personal Details"
+              helperText="Verify your Social Security Number and date of birth. Stripe securely validates this information with trusted data sources to comply with KYC regulations."
+              status={steps.idNumber}
+              icon={<Shield className="w-4 h-4 lg:w-5 lg:h-5" />}
+              onAction={() => runVerification("id_number")}
+              actionLabel={
+                steps.idNumber.status === "verified"
+                  ? "Verified Successfully"
+                  : steps.document.status !== "verified"
+                  ? "Complete ID verification first"
+                  : isVerifying && steps.idNumber.status === "in_progress"
+                  ? "Opening Stripe Verification..."
+                  : "Complete ID verification first"
+              }
+              disabled={
+                steps.document.status !== "verified" ||
+                steps.idNumber.status === "verified" ||
+                steps.idNumber.status === "processing" ||
+                isVerifying
+              }
+            />
+          </div>
+
+          {renderSuccessCTA()}
+
+          {/* Help Section */}
+          <div className="border-t border-[#E4E9F2] pt-4 text-center lg:pt-5">
+            <p className="text-sm font-semibold text-secondary-900 lg:text-base">Need assistance?</p>
+            <p className="text-xs text-secondary-400 lg:text-sm">
+              Having trouble with verification? Contact our support team at{" "}
+              <a
+                className="text-tertiary-100 underline transition-colors hover:text-tertiary-100/80"
+                href="mailto:hello@koajo.com"
+              >
+                hello@koajo.com
+              </a>
+            </p>
           </div>
         </div>
       </div>
-    </CardAuth>
+    </div>
   );
 }

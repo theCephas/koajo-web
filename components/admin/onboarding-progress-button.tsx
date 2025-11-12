@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useOnboarding } from "@/lib/provider-onboarding";
 import { useDashboard } from "@/lib/provider-dashboard";
@@ -19,6 +19,8 @@ export interface SetupStep {
 }
 
 const SETUP_GUIDE_CLOSED_KEY = "setup_guide_closed";
+const AUTO_PROMPT_KEY_PREFIX = "setup_prompted_user_";
+const AUTO_PROMPTABLE_STEPS = new Set(["bank_connection", "join_pod"]);
 
 export default function OnboardingProgressButton() {
   const router = useRouter();
@@ -28,8 +30,9 @@ export default function OnboardingProgressButton() {
     kycCompleted,
     kycStatus,
     bankConnected,
-    setupCompleted,
     hasPods,
+    user,
+    userLoading,
   } = useDashboard();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -63,24 +66,27 @@ export default function OnboardingProgressButton() {
       {
         id: "join_pod",
         label: "Join a Pod",
-        status: "pending", 
+        status: hasPods ? "completed" : "pending",
       },
     ];
-  }, [emailVerified, kycCompleted, kycStatus, bankConnected]);
+  }, [emailVerified, kycCompleted, kycStatus, bankConnected, hasPods]);
 
-  const isStepEnabled = (stepId: string): boolean => {
-    switch (stepId) {
-      case "email_verification":
-      case "identity_verification":
-        return true;
-      case "bank_connection":
-        return canAccessBankConnection;
-      case "join_pod":
-        return canAccessJoinPod;
-      default:
-        return true;
-    }
-  };
+  const isStepEnabled = useCallback(
+    (stepId: string): boolean => {
+      switch (stepId) {
+        case "email_verification":
+        case "identity_verification":
+          return true;
+        case "bank_connection":
+          return canAccessBankConnection;
+        case "join_pod":
+          return canAccessJoinPod;
+        default:
+          return true;
+      }
+    },
+    [canAccessBankConnection, canAccessJoinPod]
+  );
 
   useEffect(() => {
     const closed = localStorage.getItem(SETUP_GUIDE_CLOSED_KEY);
@@ -113,39 +119,101 @@ export default function OnboardingProgressButton() {
     }
   };
 
+  const startStepFlow = useCallback(
+    (stepId: string): boolean => {
+      if (!isStepEnabled(stepId)) {
+        return false;
+      }
+
+      switch (stepId) {
+        case "email_verification":
+          if (emailVerified) return false;
+          router.push("/register/verify-email");
+          break;
+        case "identity_verification":
+          if (kycCompleted) return false;
+          router.push("/register/kyc");
+          break;
+        case "bank_connection":
+          if (!canAccessBankConnection) {
+            return false;
+          }
+          setStep("bank_connection");
+          open();
+          break;
+        case "join_pod":
+          if (!canAccessJoinPod) {
+            return false;
+          }
+          setStep("pod_plan_selection");
+          open();
+          break;
+        default:
+          return false;
+      }
+
+      setIsExpanded(false);
+      return true;
+    },
+    [
+      canAccessBankConnection,
+      canAccessJoinPod,
+      emailVerified,
+      isStepEnabled,
+      kycCompleted,
+      open,
+      router,
+      setStep,
+    ]
+  );
+
   const handleStepClick = (stepId: string) => {
-    if (!isStepEnabled(stepId)) {
+    startStepFlow(stepId);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (userLoading || !user?.id || hasPods) {
       return;
     }
 
-    switch (stepId) {
-      case "email_verification":
-        if (emailVerified) return;
-        router.push("/register/verify-email");
-        break;
-      case "identity_verification":
-        if (kycCompleted) return;
-        router.push("/register/kyc");
-        break;
-      case "bank_connection":
-        if (!canAccessBankConnection) {
-          return;
-        }
-        setStep("bank_connection");
-        open();
-        break;
-      case "join_pod":
-        if (!canAccessJoinPod) {
-          return;
-        }
-        setStep("pod_plan_selection");
-        open();
-        break;
-      default:
-        break;
+    const nextModalStep = setupSteps.find(
+      (step) =>
+        AUTO_PROMPTABLE_STEPS.has(step.id) && step.status !== "completed"
+    );
+
+    if (!nextModalStep) {
+      return;
     }
-    setIsExpanded(false);
-  };
+
+    const storageKey = `${AUTO_PROMPT_KEY_PREFIX}${user.id}`;
+    let lastPromptedStep: string | null = null;
+
+    try {
+      lastPromptedStep = window.sessionStorage.getItem(storageKey);
+    } catch (error) {
+      console.warn("Unable to read onboarding prompt state:", error);
+    }
+
+    if (lastPromptedStep === nextModalStep.id) {
+      return;
+    }
+
+    const triggered = startStepFlow(nextModalStep.id);
+    if (triggered) {
+      try {
+        window.sessionStorage.setItem(storageKey, nextModalStep.id);
+      } catch (error) {
+        console.warn("Unable to persist onboarding prompt state:", error);
+      }
+    }
+  }, [
+    hasPods,
+    setupSteps,
+    startStepFlow,
+    user?.id,
+    userLoading,
+  ]);
 
   // Hide if user manually closed it OR if user has already joined pods
   if (isClosed || hasPods) {
@@ -353,5 +421,3 @@ export default function OnboardingProgressButton() {
     </div>
   );
 }
-
-

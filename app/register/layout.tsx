@@ -11,14 +11,11 @@ interface RegisterLayoutProps {
 export default function RegisterLayout({ children }: RegisterLayoutProps) {
   return (
     <StripeProvider>
-      <div className="relative min-h-[100dvh] w-full bg-gray overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-[-35%] h-[60%] bg-[radial-gradient(circle_at_top,_rgba(70,157,163,0.25),_transparent_65%)] blur-3xl"
-          aria-hidden
-        />
-
-        <div className="page_auth_container relative z-10 flex min-h-[100dvh] flex-col gap-8 py-8 lg:flex-row">
-          <div className="relative isolate flex w-full flex-col gap-10 overflow-hidden rounded-3xl bg-[image:linear-gradient(180deg,#469DA3_0%,#1C2634_100%)] px-6 py-8 text-white shadow-2xl lg:sticky lg:top-8 lg:max-w-[420px]">
+      <div className="relative w-full min-h-dvh lg:h-dvh bg-[#F5F5F5] overflow-auto lg:overflow-hidden">
+        <div className="flex h-full flex-col lg:flex-row">
+          {/* Left Panel - Registration Steps */}
+          <div className="relative z-0 flex w-full min-h-[200px] flex-col lg:items-start items-center justify-start pt-6 pb-8 md:justify-start overflow-hidden bg-[linear-gradient(180deg,#134446_0%,#010E0F_100%)] lg:m-2 lg:rounded-[16px] px-8 text-white lg:w-[40%] lg:max-w-[420px] lg:py-8 lg:h-[calc(100vh-16px)]">
+            {/* Grid Background Effect */}
             <div className="absolute inset-0 opacity-20">
               <Image
                 src="/media/images/background-grid-light.svg"
@@ -28,10 +25,9 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
                 priority
               />
             </div>
-            <Link
-              href="/"
-              className="relative z-10 flex items-center justify-center lg:justify-start"
-            >
+
+            {/* Content */}
+            <Link href="/" className="relative z-10 mb-8 lg:mb-12">
               <Image
                 src="/media/icons/logo-light-gradient.svg"
                 alt="Koajo Logo"
@@ -42,31 +38,38 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
               />
             </Link>
 
-            <div className="relative z-10 flex-1">
+            <div className="relative z-10 flex-1 w-full flex items-center lg:items-start">
               <RegistrationSteps />
             </div>
           </div>
 
-          <div className="flex w-full flex-1 flex-col">
-            <div className="flex flex-1 items-center justify-center">
-              <div className="w-full max-w-[520px]">{children}</div>
-            </div>
+          {/* Right Panel - Form Section */}
+          <div className="-mt-12 lg:mt-0 flex w-full lg:flex-1 flex-col bg-[#F5F5F5] px-3 pb-6 pt-2 lg:px-12 lg:py-8 overflow-visible lg:overflow-y-auto">
+            <div className="relative w-full max-w-[1200px] mx-auto flex flex-col lg:flex-1 justify-between gap-6 lg:gap-8 min-h-full">
+              {/* Main Content */}
+              <div className="flex-1 flex items-center justify-center py-4 lg:py-6">
+                {children}
+              </div>
 
-            <div className="mt-8 mb-6 flex flex-wrap items-center justify-center gap-3 text-center text-sm text-secondary-300">
-              <span>© Koajo. All rights reserved.</span>
-              <Link
-                href="/legals/privacy-policy"
-                className="text-tertiary-100 hover:text-tertiary-100/80"
-              >
-                Privacy Policy
-              </Link>
-              <span className="hidden text-secondary-300 sm:inline">|</span>
-              <Link
-                href="/legals/terms-of-use"
-                className="text-tertiary-100 hover:text-tertiary-100/80"
-              >
-                Terms of Use
-              </Link>
+              {/* Footer */}
+              <div className="mt-auto pt-4 lg:pt-6 pb-4 text-center text-xs lg:text-sm text-secondary-300">
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+                  <span>© Koajo. All rights reserved.</span>
+                  <Link
+                    href="/legals/terms-of-use"
+                    className="text-tertiary-100 hover:text-tertiary-100/80"
+                  >
+                    Term & Condition
+                  </Link>
+                  <span className="hidden sm:inline">|</span>
+                  <Link
+                    href="/legals/privacy-policy"
+                    className="text-tertiary-100 hover:text-tertiary-100/80"
+                  >
+                    Privacy & Policy
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>

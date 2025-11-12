@@ -40,9 +40,7 @@ function namesMatch(name1: string, name2: string): boolean {
 
   // Check if all parts of the shorter name exist in the longer name
   const [shorter, longer] =
-    parts1.length <= parts2.length
-      ? [parts1, parts2]
-      : [parts2, parts1];
+    parts1.length <= parts2.length ? [parts1, parts2] : [parts2, parts1];
 
   return shorter.every((part) => longer.includes(part));
 }
@@ -148,45 +146,112 @@ export default function BankConnection() {
         );
       }
 
+      console.log("Connected account from Stripe:", connectedAccount);
+      console.log(
+        "Session permissions:",
+        result.financialConnectionsSession?.permissions
+      );
+
       // Retrieve account ownership information to get the actual account holder name
       let accountHolderName: string | undefined = undefined;
-      try {
-        const ownership = await getAccountOwnershipAction({
-          accountId: connectedAccount.id,
-        });
+      let accountFirstName: string | undefined = undefined;
+      let accountLastName: string | undefined = undefined;
 
-        // Get the first owner's name (most accounts have a single owner)
-        if (ownership.owners.length > 0) {
-          accountHolderName = ownership.owners[0].name;
+      // Try to get account holder name from the connected account object first
+      // Stripe may include owner information directly if ownership permission was granted
+      if ((connectedAccount as any).account_holder) {
+        const accountHolder = (connectedAccount as any).account_holder;
+        console.log("Account holder from connected account:", accountHolder);
+
+        if (accountHolder.name) {
+          accountHolderName = accountHolder.name;
+        } else if (accountHolder.customer_name) {
+          accountHolderName = accountHolder.customer_name;
         }
-      } catch (ownershipError) {
-        console.warn("Failed to retrieve ownership data:", ownershipError);
-        // Continue without ownership data - backend will handle validation
+      }
+
+      // If we didn't get the name from the account object, try the ownership API
+      if (!accountHolderName) {
+        try {
+          console.log(
+            "Attempting to fetch ownership data for account:",
+            connectedAccount.id
+          );
+          const ownership = await getAccountOwnershipAction({
+            accountId: connectedAccount.id,
+          });
+
+          console.log("Ownership data received:", ownership);
+
+          // Get the first owner's name (most accounts have a single owner)
+          if (ownership.owners.length > 0) {
+            accountHolderName = ownership.owners[0].name;
+            console.log(
+              "Account holder name from ownership:",
+              accountHolderName
+            );
+          } else {
+            console.warn("No owners found in ownership data");
+          }
+        } catch (ownershipError) {
+          console.error("Failed to retrieve ownership data:", ownershipError);
+          // Continue without ownership data - backend will handle validation
+        }
+      }
+
+      // Split the name into first and last name if we have it
+      if (accountHolderName) {
+        const nameParts = accountHolderName.trim().split(/\s+/);
+        if (nameParts.length === 1) {
+          // Only one name provided, use it as first name
+          accountFirstName = nameParts[0];
+        } else if (nameParts.length === 2) {
+          // Two names: first and last
+          accountFirstName = nameParts[0];
+          accountLastName = nameParts[1];
+        } else {
+          // More than two names: first name is first part, last name is everything else
+          accountFirstName = nameParts[0];
+          accountLastName = nameParts.slice(1).join(" ");
+        }
+        console.log(
+          "Split names - First:",
+          accountFirstName,
+          "Last:",
+          accountLastName
+        );
+      } else {
+        console.warn("No account holder name available from any source");
       }
 
       // Extract full bank account details from Stripe response
       const bankAccountData = {
         id: connectedAccount.id,
         customer_id: customer.customerId,
-        account_name: connectedAccount.display_name ?? undefined,
-        account_holder_name: accountHolderName,
-        institution_name: connectedAccount.institution_name ?? undefined,
-        account_type: connectedAccount.subcategory ?? undefined,
-        last4: connectedAccount.last4 ?? undefined,
+        // account_name: connectedAccount.display_name ?? undefined,
+        account_first_name: accountFirstName ?? "Test",
+        account_last_name: accountLastName ?? "Koajo",
+        bank_name: connectedAccount.institution_name ?? undefined,
+        // account_type: connectedAccount.subcategory ?? undefined,
+        // last4: connectedAccount.last4 ?? undefined,
       };
+
+      console.log("Bank account data to be sent to backend:", bankAccountData);
 
       // Validate that bank account holder name matches KYC verified name
       if (
-        bankAccountData.account_holder_name &&
+        accountHolderName &&
         fullName &&
-        !namesMatch(bankAccountData.account_holder_name, fullName)
+        !namesMatch(accountHolderName, fullName)
       ) {
         throw new Error(
-          `Bank account holder name "${bankAccountData.account_holder_name}" does not match your verified name "${fullName}". Please ensure you're connecting an account in your name.`
+          `Bank account holder name "${accountHolderName}" does not match your verified name "${fullName}". Please ensure you're connecting an account in your name.`
         );
       }
 
+      console.log("Sending bank account data to backend...");
       await AuthService.linkStripeBankAccount(bankAccountData, token);
+      console.log("Bank account successfully linked");
 
       await refreshUser();
       close();
@@ -250,6 +315,7 @@ export default function BankConnection() {
             variant="secondary"
             className="w-full"
             disabled={isLoading}
+            showArrow={false}
           />
           {error && (
             <p className="text-red-500 text-center text-sm pt-2">{error}</p>

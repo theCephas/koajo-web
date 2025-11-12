@@ -43,13 +43,6 @@ const STEPS: Step[] = [
     href: "/register/verify-email",
     Icon: VerifiedIcon,
   },
-  {
-    id: "complete",
-    label: "Complete",
-    description: "Connect your US bank account.",
-    href: "/register/complete",
-    Icon: BankIcon,
-  },
 ];
 
 const STEP_STATUS_COPY: Record<
@@ -210,15 +203,17 @@ export default function RegistrationSteps() {
   }, [statuses]);
 
   return (
-    <div className="relative w-full max-w-[364px]">
-      <div className="absolute left-5 top-10 bottom-10 w-px bg-white/15">
+    <div className="relative w-full">
+      {/* Desktop: Vertical layout with connector line */}
+      <div className="hidden lg:block absolute left-6 top-12 bottom-12 w-px bg-white/15">
         <div
           className="w-full origin-top bg-linear-to-b from-white to-tertiary-100 transition-all duration-500 ease-out"
           style={{ height: `${progressPercent}%` }}
         />
       </div>
 
-      <ul className="space-y-6">
+      {/* Desktop: Vertical steps */}
+      <ul className="hidden lg:block space-y-8">
         {STEPS.map((step, index) => {
           const status = statuses[index];
           const Icon = step.Icon;
@@ -246,10 +241,10 @@ export default function RegistrationSteps() {
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span
                     className={cn(
-                      "text-base font-semibold tracking-[0.2em] flex items-center gap-1",
+                      "text-base font-semibold flex items-center gap-1",
                       statusCopy.text,
                       isComplete && "line-through text-white/60"
                     )}
@@ -260,19 +255,6 @@ export default function RegistrationSteps() {
                       </span>
                     )}
                     {step.label}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide",
-                      statusCopy.badge,
-                      statusCopy.pulse
-                    )}
-                  >
-                    {status === "complete"
-                      ? "Done"
-                      : status === "active"
-                      ? "In progress"
-                      : "Next"}
                   </span>
                 </div>
                 <p
@@ -285,6 +267,56 @@ export default function RegistrationSteps() {
           );
         })}
       </ul>
+
+      {/* Mobile: Horizontal layout with connector line */}
+      <div className="lg:hidden">
+        <div className="relative flex items-center justify-center pb-4">
+          {STEPS.map((step, index) => {
+            const status = statuses[index];
+            const Icon = step.Icon;
+            const isComplete = status === "complete";
+            const isActive = status === "active";
+
+            return (
+              <div key={step.id} className="flex items-center">
+                <div className="relative">
+                  <div
+                    className={cn(
+                      "h-[40px] w-[40px] rounded-[8px] border flex items-center justify-center transition-colors duration-300",
+                      status === "complete"
+                        ? "border-white bg-white/10"
+                        : status === "active"
+                        ? "border-white text-white bg-white/10"
+                        : "border-white/30 text-white/40"
+                    )}
+                  >
+                    <Icon className="size4" />
+                  </div>
+                  {isActive && (
+                    <span className="absolute inset-0 rounded-xl border border-white/30 animate-pulse" />
+                  )}
+                </div>
+
+                {/* Connector line between icons */}
+                {index < STEPS.length - 1 && (
+                  <div className="w-16 h-px bg-white/15 relative">
+                    <div
+                      className={cn(
+                        "h-full transition-all duration-500 ease-out",
+                        isComplete
+                          ? "w-full bg-linear-to-r from-white to-tertiary-100"
+                          : isActive
+                          ? "w-1/2 bg-linear-to-r from-white to-tertiary-100"
+                          : "w-0 bg-transparent"
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

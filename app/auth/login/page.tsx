@@ -20,24 +20,7 @@ import {
   REGISTRATION_STAGE,
   type RegistrationStage,
 } from "@/lib/constants/dashboard";
-
-const resolveApiMessage = (
-  message: string | string[] | undefined,
-  fallback: string
-): string => {
-  if (Array.isArray(message)) {
-    const first = message.find(
-      (value) => typeof value === "string" && value.trim().length > 0
-    );
-    return first ? first.trim() : fallback;
-  }
-
-  if (typeof message === "string" && message.trim().length > 0) {
-    return message.trim();
-  }
-
-  return fallback;
-};
+import { resolveApiErrorMessage } from "@/lib/utils/api-helpers";
 
 interface LoginFormData {
   email: string;
@@ -166,6 +149,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    setFaillureMessage("");
 
     try {
       const response = await AuthService.login({
@@ -174,17 +158,12 @@ export default function LoginPage() {
         rememberMe: data.rememberMe || false,
       });
 
-      if (
-        response &&
-        "error" in response &&
-        "message" in response &&
-        response.message.length > 0
-      ) {
-        setFaillureMessage(
-          Array.isArray(response.message)
-            ? response.message.join(", ")
-            : response.message || "Invalid email or password"
+      if (response && "error" in response && "message" in response) {
+        const message = resolveApiErrorMessage(
+          response,
+          "Invalid email or password"
         );
+        setFaillureMessage(message);
         setModalVisible(true);
       } else if (
         response &&
@@ -196,16 +175,20 @@ export default function LoginPage() {
         TokenManager.setAuthData(loginResponse);
         await navigateAfterAuth(loginResponse.user);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      setFaillureMessage("Invalid email or password");
+      const message = resolveApiErrorMessage(
+        error,
+        "Invalid email or password"
+      );
+      setFaillureMessage(message);
       setModalVisible(true);
     } finally {
       setIsLoading(false);
       setTimeout(() => {
         setModalVisible(false);
+        setFaillureMessage("");
       }, 4000);
-      setFaillureMessage("");
     }
   };
 
@@ -269,14 +252,14 @@ export default function LoginPage() {
                 {...register("rememberMe")}
                 className="w-4 h-4 text-primary bg-white/10 border-white/20 rounded focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer checked:bg-primary checked:border-primary"
               />
-              <span className="text-base text-text-500  transition-colors select-none">
+              <span className="text-sm lg:text-base text-text-500  transition-colors select-none">
                 Remember me for 30 days
               </span>
             </label>
 
             <Link
               href="/auth/forgot-password"
-              className="text-base text-tertiary-100 hover:text-tertiary-100/80 transition-colors"
+              className="text-sm lg:text-base text-tertiary-100 hover:text-tertiary-100/80 transition-colors"
             >
               Forgot Password
             </Link>
