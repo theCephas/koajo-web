@@ -22,11 +22,23 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const getOrigin = () => {
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin;
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) return "https://koajo-frontend.vercel.app";
+    return baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
+  };
+
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
 
     try {
-      const response = await AuthService.forgotPassword({ email: data.email });
+      const response = await AuthService.forgotPassword({
+        email: data.email,
+        origin: getOrigin()
+      });
       if (response && "email" in response && "requested" in response) {
         // Navigate to check-inbox page with email
         router.push(`/auth/forgot-password/check-inbox?email=${encodeURIComponent(data.email)}`);

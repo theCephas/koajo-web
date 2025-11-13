@@ -72,6 +72,7 @@ export interface VerifyEmailResponse {
 
 export interface ForgotPasswordRequest {
   email: string;
+  origin: string;
 }
 
 export interface ForgotPasswordResponse {
@@ -81,6 +82,7 @@ export interface ForgotPasswordResponse {
 
 export interface ResendForgotPasswordRequest {
   email: string;
+  origin: string;
 }
 
 export interface ResendForgotPasswordResponse {

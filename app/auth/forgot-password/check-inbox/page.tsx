@@ -13,12 +13,24 @@ function CheckInboxContent() {
   const emailFromUrl = searchParams.get("email") || "";
   const [isResending, setIsResending] = useState(false);
 
+  const getOrigin = () => {
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin;
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) return "https://koajo-frontend.vercel.app";
+    return baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
+  };
+
   const handleResend = async () => {
     if (!emailFromUrl) return;
 
     setIsResending(true);
     try {
-      await AuthService.forgotPassword({ email: emailFromUrl });
+      await AuthService.forgotPassword({
+        email: emailFromUrl,
+        origin: getOrigin()
+      });
     } catch (error) {
       console.error("Failed to resend:", error);
     } finally {
