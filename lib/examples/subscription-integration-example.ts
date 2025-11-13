@@ -4,7 +4,10 @@
  * This file shows practical examples of using the subscription system
  */
 
-import { createPodSubscription, cancelPodSubscription } from "@/lib/services/stripeSubscriptionService";
+import {
+  createPodSubscription,
+  cancelPodSubscription,
+} from "@/lib/services/stripeSubscriptionService";
 import { isContributionDue } from "@/lib/utils/payment-utils";
 
 /**
@@ -26,7 +29,9 @@ export async function handleUserJoinsPod(
   }
 ) {
   try {
-    console.log(`Creating subscription for user ${userId} joining pod ${podData.podId}`);
+    console.log(
+      `Creating subscription for user ${userId} joining pod ${podData.podId}`
+    );
 
     // Create the Stripe subscription
     const subscription = await createPodSubscription({
@@ -45,17 +50,20 @@ export async function handleUserJoinsPod(
 
     // Store the subscription ID in your database
     // This is crucial for future reference and cancellation
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/pods/${podData.podId}/membership`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getUserToken()}`,
-      },
-      body: JSON.stringify({
-        membershipId: podData.membershipId,
-        stripeSubscriptionId: subscription.subscriptionId,
-      }),
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/v1/pods/${podData.podId}/membership`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getUserToken()}`,
+        },
+        body: JSON.stringify({
+          membershipId: podData.membershipId,
+          stripeSubscriptionId: subscription.subscriptionId,
+        }),
+      }
+    );
 
     return {
       success: true,
@@ -80,24 +88,29 @@ export async function handleUserLeavesPod(
   subscriptionId: string
 ) {
   try {
-    console.log(`Canceling subscription ${subscriptionId} for user ${userId} leaving pod ${podId}`);
+    console.log(
+      `Canceling subscription ${subscriptionId} for user ${userId} leaving pod ${podId}`
+    );
 
     await cancelPodSubscription(subscriptionId);
 
     console.log(`Subscription canceled successfully`);
 
     // Update your database to remove the subscription ID
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/pods/${podId}/membership`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getUserToken()}`,
-      },
-      body: JSON.stringify({
-        stripeSubscriptionId: null,
-        status: "canceled",
-      }),
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/v1/pods/${podId}/membership`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getUserToken()}`,
+        },
+        body: JSON.stringify({
+          stripeSubscriptionId: null,
+          status: "canceled",
+        }),
+      }
+    );
 
     return { success: true };
   } catch (error) {
@@ -123,10 +136,7 @@ export function checkContributionStatus(pod: {
     };
   }
 
-  const isDue = isContributionDue(
-    pod.nextContributionDate,
-    pod.graceEndsAt
-  );
+  const isDue = isContributionDue(pod.nextContributionDate, pod.graceEndsAt);
 
   if (isDue) {
     return {
@@ -149,21 +159,21 @@ export function checkContributionStatus(pod: {
 export function ContributionStatusBadge({ pod }: { pod: any }) {
   const status = checkContributionStatus(pod);
 
-  if (status.isDue) {
-    return (
-      <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-        ⏰ Contribution processing...
-      </div>
-    );
-  }
+  // if (status.isDue) {
+  //   return (
+  //     <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+  //       ⏰ Contribution processing...
+  //     </div>
+  //   );
+  // }
 
-  if (status.status === "contribution_scheduled") {
-    return (
-      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
-        ✓ Next: {new Date(status.nextDate!).toLocaleDateString()}
-      </div>
-    );
-  }
+  // if (status.status === "contribution_scheduled") {
+  //   return (
+  //     <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+  //       ✓ Next: {new Date(status.nextDate!).toLocaleDateString()}
+  //     </div>
+  //   );
+  // }
 
   return null;
 }
@@ -209,7 +219,9 @@ export async function joinPodWithSubscription(
     const user = await userResponse.json();
 
     if (!user.customer?.id || !user.bankAccount?.id) {
-      throw new Error("User must have a Stripe customer and bank account connected");
+      throw new Error(
+        "User must have a Stripe customer and bank account connected"
+      );
     }
 
     // Step 3: Create subscription
