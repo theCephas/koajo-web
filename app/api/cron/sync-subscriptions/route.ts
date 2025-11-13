@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSubscriptionDetails } from "@/lib/services/stripeSubscriptionService";
+import {
+  getSubscriptionDetails,
+  resolveSubscriptionPeriodEnd,
+} from "@/lib/services/stripeSubscriptionService";
 import { isContributionDue, isWithinGracePeriod } from "@/lib/utils/payment-utils";
+import type Stripe from "stripe";
 
 /**
  * Vercel Cron Job: Sync Subscription Status
@@ -56,7 +60,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Fetch subscription details from Stripe
-        const subscription = await getSubscriptionDetails(
+        const subscription: Stripe.Subscription = await getSubscriptionDetails(
           pod.stripeSubscriptionId
         );
 
@@ -100,10 +104,12 @@ export async function GET(request: NextRequest) {
         }
 
         // Update pod status in backend if needed
+        const currentPeriodEnd = await resolveSubscriptionPeriodEnd(subscription);
+
         await updatePodSubscriptionStatus(pod.podId, {
           subscriptionId: subscription.id,
           status: subscription.status,
-          currentPeriodEnd: subscription.current_period_end,
+          currentPeriodEnd,
         });
 
         results.synced++;
@@ -178,7 +184,7 @@ async function updatePodSubscriptionStatus(
   status: {
     subscriptionId: string;
     status: string;
-    currentPeriodEnd: number;
+    currentPeriodEnd: number | null;
   }
 ): Promise<void> {
   try {

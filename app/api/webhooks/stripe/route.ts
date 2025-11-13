@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { recordPayment } from "@/lib/services/paymentService";
-import { retryFailedPayment } from "@/lib/services/stripeSubscriptionService";
 
 const STRIPE_API_VERSION: Stripe.LatestApiVersion = "2025-08-27.basil";
 
@@ -112,33 +110,40 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   try {
     console.log(`Processing successful payment for invoice: ${invoice.id}`);
 
-    const subscription = invoice.subscription;
-    if (!subscription) {
+    if (!invoice.id) {
+      console.error("Invoice ID is missing, skipping");
+      return;
+    }
+
+    const stripe = getStripe();
+    const latestInvoice = await stripe.invoices.retrieve(invoice.id, {
+      expand: ["payments"],
+    });
+
+    const { subscriptionId, metadata } =
+      extractInvoiceSubscriptionContext(latestInvoice);
+
+    if (!subscriptionId) {
       console.log("Invoice is not associated with a subscription, skipping");
       return;
     }
 
-    const subscriptionId =
-      typeof subscription === "string" ? subscription : subscription.id;
+    let subscriptionMetadata = metadata;
+    if (!subscriptionMetadata) {
+      const subscriptionData = await stripe.subscriptions.retrieve(
+        subscriptionId
+      );
+      subscriptionMetadata = subscriptionData.metadata;
+    }
 
-    // Get subscription metadata
-    const stripe = getStripe();
-    const subscriptionData = await stripe.subscriptions.retrieve(subscriptionId);
-    const metadata = subscriptionData.metadata;
-
-    const podId = metadata.pod_id;
-    const membershipId = metadata.membership_id;
-
+    const podId = subscriptionMetadata?.pod_id;
     if (!podId) {
       console.error("No pod_id found in subscription metadata");
       return;
     }
 
     // Get payment intent details
-    const paymentIntentId =
-      typeof invoice.payment_intent === "string"
-        ? invoice.payment_intent
-        : invoice.payment_intent?.id;
+    const paymentIntentId = extractInvoicePaymentIntentId(latestInvoice);
 
     if (!paymentIntentId) {
       console.error("No payment intent found for invoice");
@@ -153,10 +158,10 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
     const paymentData = {
       podId,
       stripeReference: paymentIntent.id,
-      amount: invoice.amount_paid,
-      currency: invoice.currency.toUpperCase(),
+      amount: latestInvoice.amount_paid,
+      currency: latestInvoice.currency.toUpperCase(),
       status: "succeeded",
-      description: `Subscription payment for pod ${podId} - Invoice ${invoice.id}`,
+      description: `Subscription payment for pod ${podId} - Invoice ${latestInvoice.id}`,
     };
 
     console.log("Recording payment:", paymentData);
@@ -178,21 +183,34 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   try {
     console.log(`Processing failed payment for invoice: ${invoice.id}`);
 
-    const subscription = invoice.subscription;
-    if (!subscription) {
+    if (!invoice.id) {
+      console.error("Invoice ID is missing, skipping");
+      return;
+    }
+
+    const stripe = getStripe();
+    const latestInvoice = await stripe.invoices.retrieve(invoice.id, {
+      expand: ["payments"],
+    });
+
+    const { subscriptionId, metadata } =
+      extractInvoiceSubscriptionContext(latestInvoice);
+
+    if (!subscriptionId) {
       console.log("Invoice is not associated with a subscription, skipping");
       return;
     }
 
-    const subscriptionId =
-      typeof subscription === "string" ? subscription : subscription.id;
+    let subscriptionMetadata = metadata;
+    if (!subscriptionMetadata) {
+      const subscriptionData = await stripe.subscriptions.retrieve(
+        subscriptionId
+      );
+      subscriptionMetadata = subscriptionData.metadata;
+    }
 
-    const stripe = getStripe();
-    const subscriptionData = await stripe.subscriptions.retrieve(subscriptionId);
-    const metadata = subscriptionData.metadata;
-
-    const podId = metadata.pod_id;
-    const attemptCount = invoice.attempt_count || 0;
+    const podId = subscriptionMetadata?.pod_id;
+    const attemptCount = latestInvoice.attempt_count || 0;
 
     console.log(
       `Payment failed for pod ${podId}, attempt ${attemptCount}`
@@ -212,10 +230,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     }
 
     // Record the failed payment attempt
-    const paymentIntentId =
-      typeof invoice.payment_intent === "string"
-        ? invoice.payment_intent
-        : invoice.payment_intent?.id;
+    const paymentIntentId = extractInvoicePaymentIntentId(latestInvoice);
 
     if (paymentIntentId) {
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -223,8 +238,8 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       const paymentData = {
         podId,
         stripeReference: paymentIntent.id,
-        amount: invoice.amount_due,
-        currency: invoice.currency.toUpperCase(),
+        amount: latestInvoice.amount_due,
+        currency: latestInvoice.currency.toUpperCase(),
         status: "failed",
         description: `Failed payment attempt ${attemptCount} for pod ${podId}`,
       };
@@ -330,6 +345,52 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   } catch (error) {
     console.error("Error handling payment intent failure:", error);
   }
+}
+
+function extractInvoiceSubscriptionContext(
+  invoice: Stripe.Invoice
+): {
+  subscriptionId: string | null;
+  metadata: Stripe.Metadata | null;
+} {
+  const parent = invoice.parent;
+  if (
+    !parent ||
+    parent.type !== "subscription_details" ||
+    !parent.subscription_details
+  ) {
+    return { subscriptionId: null, metadata: null };
+  }
+
+  const subscriptionRef = parent.subscription_details.subscription;
+  const subscriptionId =
+    typeof subscriptionRef === "string"
+      ? subscriptionRef
+      : subscriptionRef.id;
+
+  return {
+    subscriptionId,
+    metadata: parent.subscription_details.metadata,
+  };
+}
+
+function extractInvoicePaymentIntentId(invoice: Stripe.Invoice): string | null {
+  const payments = invoice.payments?.data;
+  if (!payments || payments.length === 0) {
+    return null;
+  }
+
+  const prioritizedPayment =
+    payments.find((payment) => payment.is_default) ?? payments[0];
+  const paymentIntentRef = prioritizedPayment.payment?.payment_intent;
+
+  if (!paymentIntentRef) {
+    return null;
+  }
+
+  return typeof paymentIntentRef === "string"
+    ? paymentIntentRef
+    : paymentIntentRef.id;
 }
 
 /**

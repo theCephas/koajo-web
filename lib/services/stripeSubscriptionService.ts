@@ -45,6 +45,43 @@ export interface SubscriptionResult {
   paymentMethodId: string | null;
 }
 
+export async function resolveSubscriptionPeriodEnd(
+  subscription: Stripe.Subscription
+): Promise<number | null> {
+  const items = subscription.items?.data;
+  if (!items || items.length === 0) {
+    return null;
+  }
+
+  const latestPeriodEnd = items.reduce((latest, item) => {
+    if (typeof item.current_period_end !== "number") {
+      return latest;
+    }
+    return Math.max(latest, item.current_period_end);
+  }, 0);
+
+  return latestPeriodEnd > 0 ? latestPeriodEnd : null;
+}
+
+function resolveInvoicePaymentIntentId(invoice: Stripe.Invoice): string | null {
+  const payments = invoice.payments?.data;
+  if (!payments || payments.length === 0) {
+    return null;
+  }
+
+  const prioritizedPayment =
+    payments.find((payment) => payment.is_default) ?? payments[0];
+  const paymentIntentRef = prioritizedPayment.payment?.payment_intent;
+
+  if (!paymentIntentRef) {
+    return null;
+  }
+
+  return typeof paymentIntentRef === "string"
+    ? paymentIntentRef
+    : paymentIntentRef.id;
+}
+
 /**
  * Creates a recurring subscription for pod contributions
  */
@@ -92,7 +129,8 @@ export async function createPodSubscription(
       billing_cycle_anchor: billingCycleAnchor,
       proration_behavior: "none",
       description:
-        input.description || `Koajo Pod ${input.podId} - ${input.cadence} contribution`,
+        input.description ||
+        `Koajo Pod ${input.podId} - ${input.cadence} contribution`,
       metadata: {
         pod_id: input.podId,
         membership_id: input.membershipId,
@@ -104,13 +142,15 @@ export async function createPodSubscription(
       },
       // Enable automatic retry with exponential backoff
       payment_behavior: "default_incomplete",
-      expand: ["latest_invoice.payment_intent"],
+      expand: ["latest_invoice.payments"],
     });
+
+    const nextPaymentDate = await resolveSubscriptionPeriodEnd(subscription);
 
     return {
       subscriptionId: subscription.id,
       status: subscription.status,
-      nextPaymentDate: subscription.current_period_end,
+      nextPaymentDate,
       paymentMethodId:
         typeof subscription.default_payment_method === "string"
           ? subscription.default_payment_method
@@ -137,14 +177,16 @@ export async function updateSubscriptionNextPaymentDate(
     );
 
     const subscription = await stripe.subscriptions.update(subscriptionId, {
-      billing_cycle_anchor: billingCycleAnchor,
+      billing_cycle_anchor: billingCycleAnchor as any,
       proration_behavior: "none",
     });
+
+    const nextPaymentDate = await resolveSubscriptionPeriodEnd(subscription);
 
     return {
       subscriptionId: subscription.id,
       status: subscription.status,
-      nextPaymentDate: subscription.current_period_end,
+      nextPaymentDate,
       paymentMethodId:
         typeof subscription.default_payment_method === "string"
           ? subscription.default_payment_method
@@ -181,16 +223,15 @@ export async function retryFailedPayment(
   const stripe = getStripe();
 
   try {
-    const invoice = await stripe.invoices.retrieve(invoiceId);
+    const invoice = await stripe.invoices.retrieve(invoiceId, {
+      expand: ["payments"],
+    });
 
-    if (!invoice.payment_intent) {
+    const paymentIntentId = resolveInvoicePaymentIntentId(invoice);
+
+    if (!paymentIntentId) {
       throw new Error("No payment intent found for this invoice");
     }
-
-    const paymentIntentId =
-      typeof invoice.payment_intent === "string"
-        ? invoice.payment_intent
-        : invoice.payment_intent.id;
 
     // Attempt to confirm the payment intent again
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
