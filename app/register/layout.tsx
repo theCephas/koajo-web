@@ -44,7 +44,7 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
           </div>
 
           {/* Right Panel - Form Section */}
-          <div className="-mt-12 lg:mt-0 flex w-full lg:flex-1 flex-col bg-[#F5F5F5] px-3 pb-6 pt-2 lg:px-12 lg:py-8 overflow-visible lg:overflow-y-auto">
+          <div className="-mt-12 lg:mt-0 flex w-full lg:flex-1 flex-col bg-[#F5F5F5] px-5 pb-6 pt-2 lg:px-12 lg:py-8 overflow-visible lg:overflow-y-auto">
             <div className="relative w-full max-w-[1200px] mx-auto flex flex-col lg:flex-1 justify-between gap-6 lg:gap-8 min-h-full">
               {/* Main Content */}
               <div className="flex-1 flex items-center justify-center py-4 lg:py-6">

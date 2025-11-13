@@ -9,7 +9,10 @@ import { Button, ButtonProps } from "@/components/utils";
 import { useDashboard } from "@/lib/provider-dashboard";
 import { useOnboarding } from "@/lib/provider-onboarding";
 import LockedOverlay from "@/components/admin/locked-overlay";
-import { SkeletonBlock, SkeletonLine } from "@/components/admin/dashboard-skeletons";
+import {
+  SkeletonBlock,
+  SkeletonLine,
+} from "@/components/admin/dashboard-skeletons";
 
 type PodInfoProps = {
   percent?: number;
@@ -152,7 +155,7 @@ const PodInfo = ({}: PodInfoProps) => {
           >
             {formatCurrency(currentPod.amount)}
           </div>
-          <div className="mt-2 text-sm text-gray-600">
+          {/* <div className="mt-2 text-sm text-gray-600">
             <p>
               <strong>Status:</strong> {currentPod.status}
             </p>
@@ -171,7 +174,7 @@ const PodInfo = ({}: PodInfoProps) => {
                 {new Date(currentPod.nextPayoutDate).toLocaleDateString()}
               </p>
             )}
-          </div>
+          </div> */}
 
           {/* Join More Pods Button */}
           {pods.length >= 1 && (

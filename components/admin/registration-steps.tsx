@@ -225,7 +225,7 @@ export default function RegistrationSteps() {
               <div className="relative">
                 <div
                   className={cn(
-                    "size-12 rounded-xl border flex items-center justify-center transition-colors duration-300",
+                    " rounded-[8px] h-[40px] w-[40px] border flex items-center justify-center transition-colors duration-300",
                     status === "complete"
                       ? "border-white bg-white/10"
                       : status === "active"
@@ -233,7 +233,7 @@ export default function RegistrationSteps() {
                       : "border-white/30 text-white/40"
                   )}
                 >
-                  <Icon className="size-5" />
+                  <Icon />
                 </div>
                 {status === "active" && (
                   <span className="absolute inset-0 rounded-xl border border-white/30 animate-pulse" />

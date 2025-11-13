@@ -295,6 +295,9 @@ export interface PodMembership {
   contributionProgress: number;
   nextPayoutDate?: string;
   nextContributionDate?: string;
+  membershipId?: string;
+  stripeSubscriptionId?: string;
+  currency?: string;
 }
 
 export interface CreateCustomPodRequest {
@@ -429,6 +432,7 @@ export interface PodActivityActor {
   email?: string | null;
   firstName?: string | null;
   lastName?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface PodActivityItem {
@@ -460,7 +464,7 @@ export interface CreateCustomPodResponse {
 
 export interface JoinPodRequestPayload {
   goal: string;
-  goalNote: string;
+  goalNote?: string;
 }
 
 export interface AcceptCustomInviteRequest {

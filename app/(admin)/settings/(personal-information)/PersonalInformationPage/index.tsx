@@ -160,9 +160,23 @@ const PersonalInformationPage = () => {
     >
       <Settings
         title="Personal Information"
-        tooltip="Update your personal information"
+        tooltip="View your personal information"
       >
         <PhotoProfile />
+
+        <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+          <p className="text-sm text-orange-400">
+            <strong>Note:</strong> Profile information cannot be edited
+            directly. To update your personal details, please contact our
+            support team at{" "}
+            <a
+              href="mailto:hello@koajo.com"
+              className="underline hover:text-blue-300 transition-colors"
+            >
+              hello@koajo.com
+            </a>
+          </p>
+        </div>
 
         {saveSuccess && (
           <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
@@ -183,7 +197,7 @@ const PersonalInformationPage = () => {
           label="First Name"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
-          disabled={!isEditing}
+          disabled={true}
           placeholder="Enter your first name"
         />
 
@@ -192,7 +206,7 @@ const PersonalInformationPage = () => {
           label="Last Name"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
-          disabled={!isEditing}
+          disabled={true}
           placeholder="Enter your last name"
         />
 
@@ -217,7 +231,7 @@ const PersonalInformationPage = () => {
           type="date"
           className={styles.field}
           label="Date of Birth"
-          value={dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : ""}
+          value={dateOfBirth ? dateOfBirth.toISOString().split("T")[0] : ""}
           onChange={(e) => {
             const value = e.target.value;
             if (value) {
@@ -226,7 +240,7 @@ const PersonalInformationPage = () => {
               setDateOfBirth(null);
             }
           }}
-          disabled={!isEditing}
+          disabled={true}
           placeholder="YYYY-MM-DD"
         />
 
@@ -262,31 +276,13 @@ const PersonalInformationPage = () => {
         </div> */}
 
         <div className={styles.btns}>
-          {!isEditing ? (
+          <a href="mailto:hello@koajo.com">
             <Button
               variant="primary"
               showArrow={false}
-              text="Edit Profile"
-              onClick={() => setIsEditing(true)}
+              text="Contact Support to Edit"
             />
-          ) : (
-            <div className="flex gap-4">
-              <Button
-                variant="secondary"
-                showArrow={false}
-                text="Cancel"
-                onClick={handleCancel}
-                disabled={isSaving}
-              />
-              <Button
-                variant="primary"
-                showArrow={false}
-                text={isSaving ? "Saving..." : "Save Changes"}
-                onClick={handleSave}
-                disabled={isSaving}
-              />
-            </div>
-          )}
+          </a>
         </div>
       </Settings>
     </Layout>

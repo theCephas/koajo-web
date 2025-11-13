@@ -167,28 +167,25 @@ const PhotoProfile = () => {
         onClose={() => setShowSelector(false)}
         position={{ vertical: "center", horizontal: "center" }}
       >
-        <div className="bg-white rounded-[28px] shadow-2xl w-[min(90vw,960px)] max-h-[85vh] mx-auto flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-            <div>
+        <div className="bg-white rounded-2xl md:rounded-[28px] shadow-2xl w-[min(95vw,960px)] max-h-[80vh] md:max-h-[85vh] mx-auto flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5 border-b border-slate-100 shrink-0">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg md:text-2xl font-semibold text-slate-900">
+                <h3 className="text-base md:text-lg lg:text-2xl font-semibold text-slate-900 truncate">
                   Avatars
                 </h3>
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold uppercase text-slate-500">
-                  i
-                </span>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-xs md:text-sm text-slate-500 line-clamp-2">
                 Choose the avatar that best represents you across the app.
               </p>
             </div>
             <button
               onClick={() => setShowSelector(false)}
-              className="text-slate-400 hover:text-slate-600 transition-colors rounded-full p-2 hover:bg-slate-100"
+              className="text-slate-400 hover:text-slate-600 transition-colors rounded-full p-1.5 md:p-2 hover:bg-slate-100 shrink-0 ml-2"
               aria-label="Close avatar picker"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 md:w-6 md:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -203,9 +200,9 @@ const PhotoProfile = () => {
             </button>
           </div>
 
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <div className="px-6 pt-5 pb-4 border-b border-slate-100">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 mb-3">
+          <div className="flex flex-col flex-1 overflow-hidden min-h-0">
+            <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 border-b border-slate-100 shrink-0">
+              <p className="text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] text-slate-400 mb-2 md:mb-3">
                 Filter
               </p>
               <div className="flex flex-wrap gap-2">
@@ -217,7 +214,7 @@ const PhotoProfile = () => {
                       type="button"
                       onClick={() => setGenderFilter(value)}
                       className={cn(
-                        "px-4 md:px-5 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                        "px-3 md:px-4 lg:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-200",
                         isActive
                           ? "bg-primary text-white shadow-lg shadow-primary/25"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -230,9 +227,9 @@ const PhotoProfile = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto py-4 md:py-6 custom-scrollbar overscroll-contain">
               {filteredAvatars.length > 0 ? (
-                <div className="mx-auto w-full max-w-3xl grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-5 sm:gap-6 place-items-center">
+                <div className="mx-auto w-full max-w-3xl grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5 lg:gap-6 place-items-center pb-2">
                   {filteredAvatars.map((avatar) => {
                     const isActive = previewAvatarId === avatar.id;
                     const isApplied = selectedAvatarId === avatar.id;
@@ -244,7 +241,7 @@ const PhotoProfile = () => {
                         onClick={() => setPreviewAvatarId(avatar.id)}
                         disabled={loading}
                         className={cn(
-                          "group flex flex-col items-center gap-2 text-xs sm:text-sm font-medium text-slate-500 transition-all duration-200 focus-visible:outline-none",
+                          "group flex flex-col items-center gap-1.5 md:gap-2 text-xs sm:text-sm font-medium text-slate-500 transition-all duration-200 focus-visible:outline-none w-full",
                           loading && "opacity-60 cursor-not-allowed"
                         )}
                         aria-pressed={isActive}
@@ -252,12 +249,12 @@ const PhotoProfile = () => {
                       >
                         <div
                           className={cn(
-                            "relative flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-linear-to-br from-white to-slate-50 shadow-[0_14px_28px_rgba(15,23,42,0.12)] ring-1 ring-white/70",
+                            "relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-linear-to-br from-white to-slate-50 ring-1 ring-white/70",
                             isActive &&
-                              "bg-linear-to-br from-orange-50 via-white to-white ring-4 ring-primary/40 shadow-[0_20px_45px_rgba(253,139,81,0.35)]"
+                              "bg-linear-to-br from-orange-50 via-white to-white ring-2 md:ring-4 ring-primary/40"
                           )}
                         >
-                          <div className="relative w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden bg-white">
+                          <div className="relative w-14 h-14 sm:w-[72px] sm:h-[72px] md:w-[84px] md:h-[84px] rounded-full overflow-hidden bg-white">
                             <Image
                               src={getAvatarUrl(
                                 avatar.id,
@@ -269,9 +266,9 @@ const PhotoProfile = () => {
                             />
                           </div>
                           {isActive && (
-                            <span className="absolute -bottom-1 -right-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-lg">
+                            <span className="absolute -bottom-0.5 -right-0.5 md:-bottom-1 md:-right-1 inline-flex h-5 w-5 md:h-7 md:w-7 items-center justify-center rounded-full bg-primary text-white shadow-lg">
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3 md:w-4 md:h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -288,7 +285,7 @@ const PhotoProfile = () => {
                         </div>
                         <span
                           className={cn(
-                            "text-[11px] uppercase tracking-wide",
+                            "text-[9px] md:text-[11px] uppercase tracking-wide",
                             isActive || isApplied
                               ? "text-primary"
                               : "text-slate-400"
@@ -301,7 +298,7 @@ const PhotoProfile = () => {
                   })}
                 </div>
               ) : (
-                <p className="text-center text-slate-500 py-8 text-sm">
+                <p className="text-center text-slate-500 py-6 md:py-8 text-xs md:text-sm">
                   {avatars.length === 0
                     ? "Loading avatars..."
                     : "No avatars found for this filter"}
@@ -309,12 +306,12 @@ const PhotoProfile = () => {
               )}
             </div>
 
-            <div className="px-6 py-5 border-t border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="px-4 md:px-6 py-4 md:py-5 border-t border-slate-100 flex flex-col gap-2 md:gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0">
               <button
                 type="button"
                 onClick={() => setShowSelector(false)}
                 disabled={loading}
-                className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto rounded-full border border-slate-200 px-5 md:px-6 py-2.5 md:py-3 text-xs md:text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
@@ -322,7 +319,7 @@ const PhotoProfile = () => {
                 type="button"
                 onClick={handleConfirmSelection}
                 disabled={loading || !hasPendingSelection}
-                className="w-full sm:w-auto rounded-full bg-primary px-8 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(253,139,81,0.35)] transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto rounded-full bg-primary px-6 md:px-8 py-2.5 md:py-3 text-xs md:text-sm font-semibold text-white shadow-[0_10px_25px_rgba(253,139,81,0.30)] md:shadow-[0_14px_30px_rgba(253,139,81,0.35)] transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Saving..." : "Select"}
               </button>

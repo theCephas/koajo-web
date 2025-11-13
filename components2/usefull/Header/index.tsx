@@ -81,7 +81,7 @@ const Header = () => {
             [styles.visible]: visible,
           })}
         >
-          <Link href="/" className="flex items-center">
+          <Link href="/dashboard" className="flex items-center">
             <Image
               src="/media/icons/logo-light-gradient.svg"
               alt="Koajo Logo"

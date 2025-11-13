@@ -13,6 +13,7 @@ import LockedOverlay from "@/components/admin/locked-overlay";
 import BalanceInfo from "@/components/admin/blance-info";
 import CycleDuration from "@/components/admin/cycle-duration";
 import Modal from "@/components/utils/modal";
+import Image from "@/components2/usefull/Image";
 import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import type {
@@ -24,10 +25,12 @@ import { ApiErrorClass } from "@/lib/utils/auth";
 import { resolveApiMessage } from "@/lib/utils/api-helpers";
 import { useDashboard } from "@/lib/provider-dashboard";
 import { DASHBOARD_BREADCRUMBS } from "@/lib/constants/dashboard";
+import { getAvatarUrl } from "@/lib/utils/avatar";
 import {
   SkeletonBlock,
   SkeletonLine,
 } from "@/components/admin/dashboard-skeletons";
+import { UserIcon } from "lucide-react";
 
 const MAX_VISIBLE_ACTIVITIES = 3;
 
@@ -373,11 +376,12 @@ function ActivityCard({ activity }: { activity: PodActivityItem }) {
     <div className="group relative p-4 rounded-xl border border-gray-100 hover:border-primary/20 hover:bg-primary/5 transition-all duration-200">
       {/* Activity Icon */}
       <div className="flex items-start gap-3">
-        <div
+        {/* <div
           className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${details.iconBg}`}
         >
           {details.icon}
-        </div>
+        </div> */}
+        <ActivityActorAvatar activity={activity} size="md" />
 
         <div className="flex-1 min-w-0">
           {/* Main Content */}
@@ -386,9 +390,16 @@ function ActivityCard({ activity }: { activity: PodActivityItem }) {
               <p className="text-sm font-semibold text-gray-900">
                 {details.title}
               </p>
-              <p className="text-xs text-gray-600 mt-0.5">
-                {details.description}
-              </p>
+              {activity.type === "member_joined" ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  {/* <ActivityActorAvatar activity={activity} size="sm" /> */}
+                  <p className="text-xs text-gray-600">{details.description}</p>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {details.description}
+                </p>
+              )}
             </div>
             <span
               className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${details.badgeBg} ${details.badgeText}`}
@@ -454,7 +465,14 @@ function ActivityDetailCard({ activity }: { activity: PodActivityItem }) {
               <h4 className="text-base font-bold text-gray-900 mb-1">
                 {details.title}
               </h4>
-              <p className="text-sm text-gray-600">{details.description}</p>
+              {activity.type === "member_joined" ? (
+                <div className="flex items-center gap-3 mt-1">
+                  <ActivityActorAvatar activity={activity} size="md" />
+                  <p className="text-sm text-gray-600">{details.description}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">{details.description}</p>
+              )}
             </div>
             <span
               className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full ${details.badgeBg} ${details.badgeText}`}
@@ -502,6 +520,42 @@ function ActivityDetailCard({ activity }: { activity: PodActivityItem }) {
   );
 }
 
+function ActivityActorAvatar({
+  activity,
+  size = "sm",
+}: {
+  activity: PodActivityItem;
+  size?: "sm" | "md";
+}) {
+  const avatarId =
+    typeof activity.actor?.avatarUrl === "string"
+      ? activity.actor?.avatarUrl
+      : null;
+  const avatarUrl = avatarId ? getAvatarUrl(avatarId) : null;
+
+  const dimensions = size === "md" ? "w-10 h-10" : "w-8 h-8";
+  const iconSize = size === "md" ? "w-5 h-5" : "w-4 h-4";
+  const imageSize = size === "md" ? "40px" : "32px";
+
+  return (
+    <div
+      className={`relative rounded-full overflow-hidden bg-gray-100 flex items-center justify-center ${dimensions}`}
+    >
+      {avatarUrl ? (
+        <Image
+          src={avatarUrl}
+          alt="Activity actor avatar"
+          fill
+          sizes={imageSize}
+          style={{ objectFit: "cover" }}
+        />
+      ) : (
+        <UserIcon className={`${iconSize} text-gray-400`} />
+      )}
+    </div>
+  );
+}
+
 // Helper Functions
 function getActivityDetails(activity: PodActivityItem) {
   const actorName = formatActivityActor(activity);
@@ -542,34 +596,22 @@ function getActivityDetails(activity: PodActivityItem) {
         ],
       };
 
-    case "member_joined":
+    case "member_joined": {
+      const goalType =
+        typeof metadata?.goalType === "string"
+          ? (metadata.goalType as string)
+          : undefined;
+
       return {
         title: "Member Joined",
         description: `${actorName} joined the pod`,
         badge: "Joined",
-        badgeBg: "bg-blue-100",
-        badgeText: "text-blue-700",
-        iconBg: "bg-blue-100",
-        icon: (
-          <svg
-            className="w-5 h-5 text-blue-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-            />
-          </svg>
-        ),
-        metadata: [
-          { label: "Source", value: String(metadata?.source || "-") },
-          { label: "Join Order", value: String(metadata?.joinOrder || "-") },
-        ],
+        badgeBg: "bg-orange-100",
+        badgeText: "text-orange-700",
+        iconBg: "bg-orange-100",
+        icon: <UserIcon className="h-5 w-5 text-orange-400" />,
       };
+    }
 
     case "invite_sent":
       const inviteeEmail = String(metadata?.email || "Unknown");
@@ -702,6 +744,9 @@ const capitalize = (value: string): string =>
 const formatActivityType = (type: string): string =>
   capitalize(type.replace(/_/g, " "));
 
+const formatGoalType = (goalType: string): string =>
+  capitalize(goalType.replace(/_/g, " "));
+
 const formatActivityTime = (timestamp: string): string => {
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) {
@@ -733,21 +778,27 @@ const formatActivityTimeFull = (timestamp: string): string => {
   });
 };
 
+const DEFAULT_ACTIVITY_ACTOR = "USER00000";
+
 const formatActivityActor = (activity: PodActivityItem): string => {
-  if (!activity.actor) {
-    return "Unknown user";
+  const accountId =
+    activity.actor && typeof activity.actor.accountId === "string"
+      ? activity.actor.accountId
+      : null;
+
+  if (!accountId) {
+    return DEFAULT_ACTIVITY_ACTOR;
   }
 
-  const names = [activity.actor.firstName, activity.actor.lastName].filter(
-    Boolean
-  );
-  if (names.length > 0) {
-    return names.join(" ");
+  const numericSegment = accountId.replace(/\D/g, "").slice(0, 5);
+  if (numericSegment) {
+    return `USER${numericSegment}`;
   }
 
-  if (activity.actor.email && typeof activity.actor.email === "string") {
-    return activity.actor.email;
+  const sanitized = accountId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 5);
+  if (sanitized) {
+    return `USER${sanitized.toUpperCase()}`;
   }
 
-  return "Unknown user";
+  return DEFAULT_ACTIVITY_ACTOR;
 };

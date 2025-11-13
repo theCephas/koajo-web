@@ -68,7 +68,7 @@ const TransactionPage = () => {
           </div>
         </div>
 
-        <div className={styles.transaction}>
+        {/* <div className={styles.transaction}>
           <Head
             search={search}
             setSearch={(e) => setSearch(e.target.value)}
@@ -125,7 +125,7 @@ const TransactionPage = () => {
             </div>
           </div>
           <Foot />
-        </div>
+        </div> */}
       </div>
     </Layout>
   );

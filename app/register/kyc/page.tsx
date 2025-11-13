@@ -111,8 +111,8 @@ function StepCard({
         relative h-full rounded-xl border p-4 lg:p-5 shadow-sm transition-all duration-300
         ${
           isVerified
-            ? "border-green-300 bg-green-50 shadow-[0_18px_45px_rgba(25,130,52,0.15)]"
-            : "border-[#E4E9F2] bg-[#F8FAFD] hover:border-[#d6dde8] hover:bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
+            ? "border-green-300 bg-green-50"
+            : "border-[#E4E9F2] bg-[#EDF1F3]"
         }
       `}
     >
@@ -151,7 +151,9 @@ function StepCard({
           <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 lg:p-3">
             <div className="flex items-start gap-1.5 lg:gap-2">
               <AlertCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0 lg:w-4 lg:h-4" />
-              <p className="text-xs text-red-600 lg:text-sm">{status.lastError}</p>
+              <p className="text-xs text-red-600 lg:text-sm">
+                {status.lastError}
+              </p>
             </div>
           </div>
         )}
@@ -279,7 +281,10 @@ export default function KycPage() {
         console.error("Failed to load profile:", err);
         if (!cancelled) {
           setGlobalError(
-            resolveApiErrorMessage(err, "Unable to load your profile. Please try again.")
+            resolveApiErrorMessage(
+              err,
+              "Unable to load your profile. Please try again."
+            )
           );
         }
       } finally {
@@ -666,7 +671,7 @@ export default function KycPage() {
       <div className="mx-auto w-full max-w-[1040px]">
         <div className="space-y-4 rounded-[16px] border border-[#E2E8F0] bg-white px-4 py-5 shadow-[0_35px_120px_rgba(15,23,42,0.12)] sm:px-6 lg:space-y-6 lg:px-8 lg:py-8">
           <div className="space-y-1.5 text-center lg:space-y-2">
-            <h1 className="text-xl font-bold text-secondary-900 lg:text-2xl">
+            <h1 className="text-[24px] font-semibold lg:font-bold text-secondary-900 lg:text-2xl">
               Identity Verification
             </h1>
             <p className="mx-auto max-w-2xl text-xs text-secondary-400 lg:text-sm">
@@ -734,7 +739,9 @@ export default function KycPage() {
 
           {/* Help Section */}
           <div className="border-t border-[#E4E9F2] pt-4 text-center lg:pt-5">
-            <p className="text-sm font-semibold text-secondary-900 lg:text-base">Need assistance?</p>
+            <p className="text-sm font-semibold text-secondary-900 lg:text-base">
+              Need assistance?
+            </p>
             <p className="text-xs text-secondary-400 lg:text-sm">
               Having trouble with verification? Contact our support team at{" "}
               <a

@@ -196,7 +196,7 @@ export default function RegisterPage() {
                   htmlFor="agreeToTerms"
                   className="text-base text-text-500"
                 >
-                  I agree to the terms
+                  I agree to Koajo terms
                 </Label>
               </div>
 
@@ -231,7 +231,7 @@ export default function RegisterPage() {
         </form>
 
         {/* Registration Link */}
-        <div className="text-center font-semibold flex items-center justify-center gap-1">
+        <div className="text-center text-sm flex items-center justify-center gap-1">
           <span className="text-text-400">Already have an account? </span>
           <Link
             href="/auth/login"
@@ -271,10 +271,10 @@ const SuccessModal = ({
     <Modal visible={visible} onClose={onClose}>
       <CardAuth
         title="Account Successfully Created"
-        description="Let's continue with your kyc verification"
+        description="Let's continue with your kyc verification. Please, login first."
         showSuccessIcon={true}
       >
-        <Link href="/register/kyc">
+        <Link href="/auth/login">
           <Button
             text="Continue"
             variant="primary"

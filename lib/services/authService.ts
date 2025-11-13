@@ -46,6 +46,8 @@ import type {
   RefreshTokenResponse,
   Avatar,
   RawAvatar,
+  CreatePaymentRequest,
+  RecordPaymentResponse,
 } from "@/lib/types/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { ApiErrorClass } from "@/lib/utils/auth";
@@ -650,6 +652,19 @@ async function getAvatars(): Promise<Avatar[] | ApiError> {
   }));
 }
 
+async function recordPayment(
+  data: CreatePaymentRequest,
+  token: string
+): Promise<RecordPaymentResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.PAYMENTS.RECORD);
+
+  return apiRequest<RecordPaymentResponse>(url, {
+    method: "POST",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+
 export const AuthService = {
   login,
   signup,
@@ -675,4 +690,5 @@ export const AuthService = {
   getMe,
   getMyPods,
   getAvatars,
+  recordPayment,
 };

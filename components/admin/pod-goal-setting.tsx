@@ -34,12 +34,8 @@ export default function PodGoalSetting() {
   const categories = useMemo(() => Object.values(POD_GOAL_CATEGORIES_MAP), []);
 
   const canProceed = useMemo(() => {
-    return (
-      Boolean(selectedPlanCode) &&
-      Boolean(selectedGoalCategoryValue) &&
-      goalNote.trim().length > 0
-    );
-  }, [goalNote, selectedGoalCategoryValue, selectedPlanCode]);
+    return Boolean(selectedPlanCode) && Boolean(selectedGoalCategoryValue);
+  }, [selectedGoalCategoryValue, selectedPlanCode]);
   const canJoinPod = canProceed && bankConnected;
 
   const handleSubmit = async () => {
@@ -58,8 +54,7 @@ export default function PodGoalSetting() {
     if (!canProceed) {
       setStatus({
         type: "error",
-        message:
-          "Please select a goal and provide a goal note before continuing.",
+        message: "Please select a goal before continuing.",
       });
       return;
     }
@@ -81,7 +76,7 @@ export default function PodGoalSetting() {
         selectedPlanCode,
         {
           goal: selectedGoalCategoryValue || POD_GOAL_CATEGORIES_MAP.MORTGAGE,
-          goalNote: goalNote.trim(),
+          ...(goalNote.trim() && { goalNote: goalNote.trim() }),
         },
         token
       );
@@ -103,11 +98,7 @@ export default function PodGoalSetting() {
       });
 
       // Refresh all pod-related data in real-time
-      await Promise.all([
-        refreshPodPlans(),
-        refreshPods(),
-        refreshUser(),
-      ]);
+      await Promise.all([refreshPodPlans(), refreshPods(), refreshUser()]);
 
       setTimeout(() => {
         close();
@@ -128,7 +119,7 @@ export default function PodGoalSetting() {
   };
 
   return (
-    <div className="flex flex-col gap-6.5 w-full max-w-[calc(720rem/16)] relative p-6 md:p-8 bg-white rounded-2xl shadow-lg">
+    <div className="flex flex-col gap-6.5 w-full max-w-[calc(720rem/16)] max-h-[88vh] overflow-y-scroll relative p-6 md:p-8 bg-white rounded-2xl shadow-lg">
       <div className="flex justify-between gap-14">
         <button
           className="text-sm text-gray-700 hover:text-gray-900 flex items-center justify-center border border-gray-100 size-12 gap-2 px-2 py-4 rounded-2xl"
@@ -139,14 +130,14 @@ export default function PodGoalSetting() {
         </button>
 
         <div className="text-center grow mr-16">
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-lg lg:text-2xl font-bold text-gray-900">
             Pod tracking goal
           </div>
           <p className="text-sm text-gray-500 mt-1">
             Help us tailor insights and tracking for your savings journey.
           </p>
         </div>
-{/* 
+        {/* 
         <button
           className="text-sm text-gray-700 hover:text-gray-900 border border-gray-100 px-8 py-3 rounded-full"
           onClick={close}
@@ -195,13 +186,12 @@ export default function PodGoalSetting() {
 
         <Field
           name="goalNote"
-          label="Goal note"
+          label="Goal note (optional)"
           placeholder="Tell us more about this goal…"
           labelClassName="!text-sm !text-gray-900 !font-medium"
           // as="textarea"
           value={goalNote}
           onChange={(e) => setGoalNote(e.target.value)}
-          required
         />
       </div>
 

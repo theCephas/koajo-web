@@ -253,7 +253,7 @@ export default function LoginPage() {
                 className="w-4 h-4 text-primary bg-white/10 border-white/20 rounded focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer checked:bg-primary checked:border-primary"
               />
               <span className="text-sm lg:text-base text-text-500  transition-colors select-none">
-                Remember me for 30 days
+                Remember me
               </span>
             </label>
 
@@ -290,7 +290,7 @@ export default function LoginPage() {
         </form>
 
         {/* Registration Link */}
-        <div className="text-center font-semibold flex items-center justify-center gap-1">
+        <div className="text-center text-sm flex items-center justify-center gap-1">
           <span className="text-text-400">Don&apos;t have an account? </span>
           <Link
             href="/register"
