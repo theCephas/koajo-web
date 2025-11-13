@@ -124,8 +124,8 @@ const Header = () => {
             })}
           >
             <Search
-              className={styles.search}
-              classInput={styles.input}
+              className={`${styles.search} bg-transparent`}
+              classInput={`${styles.input} bg-transparent`}
               placeholder="Search anything here"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
