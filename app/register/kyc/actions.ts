@@ -263,6 +263,8 @@ export async function retrieveVerificationSessionAction(
     throw new Error("Verification session ID is required.");
   }
 
+  console.log("🔍 [Stripe API] Retrieving verification session:", sessionId);
+
   const stripe = getStripe();
   const session = await stripe.identity.verificationSessions.retrieve(
     sessionId,
@@ -270,6 +272,15 @@ export async function retrieveVerificationSessionAction(
       expand: ["last_verification_report"],
     }
   );
+
+  console.log("📡 [Stripe API] Session retrieved:", {
+    id: session.id,
+    status: session.status,
+    type: session.type,
+    created: new Date(session.created * 1000).toISOString(),
+    lastError: session.last_error,
+    hasReport: !!session.last_verification_report,
+  });
 
   let firstName: string | null = null;
   let lastName: string | null = null;
@@ -284,6 +295,8 @@ export async function retrieveVerificationSessionAction(
       : session.last_verification_report?.id;
 
   if (reportId) {
+    console.log("📄 [Stripe API] Retrieving verification report:", reportId);
+
     const report = (await stripe.identity.verificationReports.retrieve(
       reportId
     )) as Stripe.Identity.VerificationReport & {
@@ -298,6 +311,20 @@ export async function retrieveVerificationSessionAction(
       };
     };
 
+    console.log("📋 [Stripe API] Verification report:", {
+      id: report.id,
+      type: report.type,
+      created: new Date(report.created * 1000).toISOString(),
+      hasVerifiedOutputs: !!report.verified_outputs,
+      documentName: report.verified_outputs?.document?.name,
+      idNumberData: report.verified_outputs?.id_number ? {
+        firstName: report.verified_outputs.id_number.first_name,
+        lastName: report.verified_outputs.id_number.last_name,
+        ssnLast4: report.verified_outputs.id_number.ssn_last4,
+        hasAddress: !!report.verified_outputs.id_number.address,
+      } : null,
+    });
+
     verificationReport = {
       id: report.id,
       type: report.type,
@@ -305,21 +332,37 @@ export async function retrieveVerificationSessionAction(
     };
 
     const outputs = report.verified_outputs;
+
+    // Extract name from document verification
     if (outputs?.document?.name) {
+      console.log("📝 [Document] Extracting name from document:", outputs.document.name);
       const [first, ...rest] = outputs.document.name.split(" ");
       if (first) firstName = first;
       if (rest.length) lastName = rest.join(" ");
+      console.log("✅ [Document] Extracted:", { firstName, lastName });
     }
 
+    // Extract data from ID number verification
     if (outputs?.id_number) {
+      console.log("🆔 [ID Number] Raw data from Stripe:", {
+        first_name: outputs.id_number.first_name,
+        last_name: outputs.id_number.last_name,
+        ssn_last4: outputs.id_number.ssn_last4,
+        address: outputs.id_number.address,
+      });
+
       firstName = outputs.id_number.first_name ?? firstName;
       lastName = outputs.id_number.last_name ?? lastName;
       ssnLast4 = outputs.id_number.ssn_last4 ?? ssnLast4;
       address = outputs.id_number.address ?? address;
+
+      console.log("✅ [ID Number] Extracted:", { firstName, lastName, ssnLast4, hasAddress: !!address });
     }
+  } else {
+    console.warn("⚠️ [Stripe API] No verification report available yet");
   }
 
-  return {
+  const result = {
     session: {
       id: session.id,
       status: session.status,
@@ -334,6 +377,19 @@ export async function retrieveVerificationSessionAction(
     ssnLast4,
     address,
   };
+
+  console.log("🎯 [Final Result]:", {
+    sessionId: result.session.id,
+    status: result.session.status,
+    type: result.session.type,
+    firstName: result.firstName,
+    lastName: result.lastName,
+    ssnLast4: result.ssnLast4,
+    hasAddress: !!result.address,
+    hasReport: !!result.verificationReport,
+  });
+
+  return result;
 }
 
 export async function ensureStripeCustomerAction(

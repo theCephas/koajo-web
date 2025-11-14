@@ -492,10 +492,70 @@ export default function KycPage() {
 
   const retrieveSession = useCallback(
     async (sessionId: string, fallbackType: "document" | "id_number") => {
-      const data = await retrieveVerificationSessionAction(sessionId);
+      console.log("🔍 Retrieving verification session:", sessionId);
+
+      // Poll for final verification status (especially for id_number which processes quickly)
+      const maxAttempts = 10; // Poll for up to 10 seconds
+      const delayMs = 1000; // 1 second between polls
+      let data = await retrieveVerificationSessionAction(sessionId);
+
+      console.log("📊 Initial verification data:", {
+        sessionId: data.session.id,
+        type: data.session.type,
+        status: data.session.status,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        ssnLast4: data.ssnLast4,
+        hasAddress: !!data.address,
+        verificationReportId: data.verificationReport?.id,
+      });
+
+      // If status is "processing", poll until we get "verified" or an error state
+      if (data.session.status === "processing") {
+        console.log("⏳ Status is 'processing', polling for final result...");
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+
+          data = await retrieveVerificationSessionAction(sessionId);
+
+          console.log(`🔄 Poll attempt ${attempt}/${maxAttempts}:`, {
+            status: data.session.status,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            ssnLast4: data.ssnLast4,
+          });
+
+          // Break if we reach a final state
+          if (
+            data.session.status === "verified" ||
+            data.session.status === "requires_input" ||
+            data.session.status === "canceled"
+          ) {
+            console.log(`✅ Final status reached: ${data.session.status}`);
+            break;
+          }
+        }
+
+        // Log warning if still processing after all attempts
+        if (data.session.status === "processing") {
+          console.warn("⚠️ Still processing after polling, will sync current state");
+        }
+      }
 
       // Ensure resultId is always present - use verificationReport.id or fallback to sessionId
       const resultId = data.verificationReport?.id || sessionId;
+
+      console.log("📤 Syncing verification session with backend:", {
+        sessionId,
+        verificationType: data.session.type,
+        verificationStatus: data.session.status,
+        resultId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        ssnLast4: data.ssnLast4,
+        hasAddress: !!data.address,
+      });
 
       await syncVerificationSession({
         sessionId,
