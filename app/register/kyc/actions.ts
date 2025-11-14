@@ -55,6 +55,7 @@ type CreateFinancialConnectionsSessionInput = {
   customerId: string;
   permissions?: Stripe.FinancialConnections.SessionCreateParams.Permission[];
   filters?: Stripe.FinancialConnections.SessionCreateParams.Filters;
+  prefetch?: Stripe.FinancialConnections.SessionCreateParams.Prefetch[];
   origin?: string | null;
 };
 
@@ -437,6 +438,9 @@ export async function createFinancialConnectionsSessionAction(
       ] as Stripe.FinancialConnections.SessionCreateParams.Filters.AccountSubcategory[],
     };
 
+  const prefetch: Stripe.FinancialConnections.SessionCreateParams.Prefetch[] =
+    input.prefetch?.length ? input.prefetch : ["ownership"];
+
   const session = await stripe.financialConnections.sessions.create({
     account_holder: {
       type: "customer",
@@ -444,6 +448,7 @@ export async function createFinancialConnectionsSessionAction(
     },
     permissions,
     filters,
+    prefetch, // Automatically fetch ownership data
     return_url: returnUrl,
   });
 
@@ -486,6 +491,7 @@ export async function getAccountOwnershipAction(
     );
 
     console.log("Initial account ownership status:", account.ownership);
+    console.log("Ownership refresh status:", (account as any).ownership_refresh);
 
     // If ownership is null, we need to refresh it
     if (!account.ownership) {
@@ -502,12 +508,44 @@ export async function getAccountOwnershipAction(
 
         console.log("Ownership refresh result:", refreshResult);
 
-        // Retrieve the account again to get the updated ownership
-        account = await stripe.financialConnections.accounts.retrieve(
-          input.accountId
-        );
+        // Wait for ownership refresh to complete (with timeout)
+        const maxAttempts = 5;
+        const delayMs = 1000; // 1 second between attempts
 
-        console.log("Account after refresh:", account.ownership);
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+
+          account = await stripe.financialConnections.accounts.retrieve(
+            input.accountId
+          );
+
+          const ownershipRefresh = (account as any).ownership_refresh;
+          console.log(`Attempt ${attempt + 1}: Ownership refresh status:`, ownershipRefresh?.status);
+
+          // If ownership is now available, break out
+          if (account.ownership) {
+            console.log("Ownership now available after refresh");
+            break;
+          }
+
+          // If refresh succeeded but ownership is still null, continue waiting
+          if (ownershipRefresh?.status === 'succeeded') {
+            console.log("Refresh succeeded, checking for ownership...");
+            // Try one more retrieval
+            account = await stripe.financialConnections.accounts.retrieve(
+              input.accountId
+            );
+            if (account.ownership) break;
+          }
+
+          // If refresh failed, stop trying
+          if (ownershipRefresh?.status === 'failed') {
+            console.error("Ownership refresh failed:", ownershipRefresh);
+            return { owners: [] };
+          }
+        }
+
+        console.log("Account after polling:", account.ownership);
       } catch (refreshError) {
         console.error("Failed to refresh ownership:", refreshError);
         // If refresh fails, ownership might not be available for this account
@@ -517,7 +555,7 @@ export async function getAccountOwnershipAction(
 
     // If ownership is still null after refresh, return empty
     if (!account.ownership) {
-      console.warn("Ownership data not available even after refresh");
+      console.warn("Ownership data not available even after refresh and polling");
       return { owners: [] };
     }
 
