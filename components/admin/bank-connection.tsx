@@ -228,12 +228,10 @@ export default function BankConnection() {
       const bankAccountData = {
         id: connectedAccount.id,
         customer_id: customer.customerId,
-        // account_name: connectedAccount.display_name ?? undefined,
         account_first_name: accountFirstName ?? "Test",
         account_last_name: accountLastName ?? "Koajo",
+        account_last4: connectedAccount.last4 ?? "0000",
         bank_name: connectedAccount.institution_name ?? undefined,
-        // account_type: connectedAccount.subcategory ?? undefined,
-        // last4: connectedAccount.last4 ?? undefined,
       };
 
       console.log("Bank account data to be sent to backend:", bankAccountData);

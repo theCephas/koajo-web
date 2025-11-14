@@ -541,6 +541,8 @@ const transformIdentityVerification = (
     type: record.type,
     completedAt: record.completed_at ?? null,
     recordedAt: record.recorded_at ?? null,
+    firstName: record.first_name ?? null,
+    lastName: record.last_name ?? null,
   };
 };
 

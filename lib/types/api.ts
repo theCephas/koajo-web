@@ -161,6 +161,8 @@ export interface IdentityVerificationRecord {
   type: StripeVerificationType;
   completedAt?: string | null;
   recordedAt?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export interface UpdateUserResponse {
@@ -206,12 +208,10 @@ export interface StripeVerificationResponse {
 export interface LinkStripeBankAccountRequest {
   id: string;
   customer_id: string;
-  account_name?: string; // Display name from Stripe (optional, can be used if first/last not available)
-  account_first_name?: string; // First name of account holder
-  account_last_name?: string; // Last name of account holder
   bank_name?: string; // Bank name (e.g., "Chase", "Bank of America")
-  account_type?: string; // "checking" or "savings"
-  last4?: string; // Last 4 digits of account number
+  account_first_name: string; // First name of account holder (required)
+  account_last_name: string; // Last name of account holder (required)
+  account_last4: string; // Last 4 digits of account number (required)
 }
 
 // ===== POD TYPES =====
@@ -518,6 +518,8 @@ export interface RawIdentityVerificationRecord {
   type: StripeVerificationType;
   completed_at?: string | null;
   recorded_at?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
 }
 
 export interface RawUserProfileResponse {

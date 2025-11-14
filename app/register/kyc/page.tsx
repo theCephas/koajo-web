@@ -431,6 +431,8 @@ export default function KycPage() {
               result_id: resultId || sessionId,
               type: verificationType,
               status: verificationStatus,
+              first_name: firstName || undefined,
+              last_name: lastName || undefined,
             }),
           }
         );
