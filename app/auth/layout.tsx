@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ReactNode } from "react";
 import KoajoLogoLarge from "@/public/media/icons/koajo-logo-large.svg";
 import KoajoSignUpLine from "@/public/media/icons/koajosignupline.svg";
+import Link from "next/link";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -48,13 +49,19 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
                 <span>© Koajo. All rights reserved.</span>
                 <span className="hidden sm:inline">|</span>
-                <span className="text-tertiary-100 hover:underline cursor-pointer">
-                  Term & Condition
-                </span>
+                <Link
+                  href="/legals/terms-of-use"
+                  className="text-tertiary-100 hover:underline cursor-pointer"
+                >
+                  Term of use
+                </Link>
                 <span>|</span>
-                <span className="text-tertiary-100 hover:underline cursor-pointer">
+                <Link
+                  href="/legals/privacy-policy"
+                  className="text-tertiary-100 hover:underline cursor-pointer"
+                >
                   Privacy & Policy
-                </span>
+                </Link>
               </div>
             </div>
           </div>
