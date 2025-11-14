@@ -20,6 +20,8 @@ export interface LoginFormValues {
 }
 
 export interface RegistrationFormValues {
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   password: string;
@@ -55,6 +57,8 @@ const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
     rememberMe: false,
   },
   registration: {
+    firstName: "",
+    lastName: "",
     email: "",
     phoneNumber: "",
     password: "",

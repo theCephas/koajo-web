@@ -10,6 +10,7 @@ import {
   ModalProps,
   PasswordField,
   PhoneNumberField,
+  Tooltip,
 } from "@/components/utils";
 import { useValidateForm } from "@/lib/hooks/useValidateForm";
 import CardAuth from "@/components/auth/card-auth";
@@ -32,6 +33,8 @@ interface RegisterFormData {
   password: string;
   confirmPassword: string;
   agreeToTerms: boolean;
+  firstName: string;
+  lastName: string;
 }
 
 export default function RegisterPage() {
@@ -75,6 +78,8 @@ export default function RegisterPage() {
         email: data.email,
         phoneNumber: getPhoneNumber(data.phoneNumber),
         password: data.password,
+        first_name: data.firstName,
+        last_name: data.lastName,
       });
 
       // Check for error response
@@ -140,6 +145,76 @@ export default function RegisterPage() {
           className="space-y-6.5"
           noValidate
         >
+          {/* First Name Field with Tooltip */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="firstName" required>
+                First Name
+              </Label>
+              <Tooltip
+                content={
+                  <div className="text-xs">
+                    <p className="font-semibold mb-1">⚠️ Important</p>
+                    <p>
+                      Your first and last name must match the name on your bank
+                      account. Accounts with mismatched names will be flagged
+                      and may be restricted.
+                    </p>
+                  </div>
+                }
+                position="top"
+              >
+                <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-white text-xs font-bold">i</span>
+                </div>
+              </Tooltip>
+            </div>
+            <Field
+              label=""
+              type="text"
+              placeholder="Enter your first name"
+              // required
+              error={formErrors.firstName?.message}
+              {...registerField("firstName")}
+              className="space-y-0"
+            />
+          </div>
+
+          {/* Last Name Field with Tooltip */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="lastName" required>
+                Last Name
+              </Label>
+              <Tooltip
+                content={
+                  <div className="text-xs">
+                    <p className="font-semibold mb-1">⚠️ Important</p>
+                    <p>
+                      Your first and last name must match the name on your bank
+                      account. Accounts with mismatched names will be flagged
+                      and may be restricted.
+                    </p>
+                  </div>
+                }
+                position="top"
+              >
+                <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-white text-xs font-bold">i</span>
+                </div>
+              </Tooltip>
+            </div>
+            <Field
+              label=""
+              type="text"
+              placeholder="Enter your last name"
+              // required
+              error={formErrors.lastName?.message}
+              {...registerField("lastName")}
+              className="space-y-0"
+            />
+          </div>
+
           {/* Email Field */}
           <Field
             label="Email"
