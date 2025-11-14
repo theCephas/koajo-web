@@ -25,10 +25,13 @@ export default function Solutions() {
           <div className="relative hidden lg:flex flex-col gap-4 shrink-0 grow-0 rounded-[0.875rem] w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]">
             {solutions.map((solution, idx) =>
               solution.image(
-                cn("absolute top-0 left-0 transition-all duration-300 ease-in-out", {
-                  "opacity-0 scale-95": activeSolution !== idx,
-                  "opacity-100 scale-100": activeSolution === idx,
-                })
+                cn(
+                  "absolute top-0 left-0 transition-all duration-300 ease-in-out",
+                  {
+                    "opacity-0 scale-95": activeSolution !== idx,
+                    "opacity-100 scale-100": activeSolution === idx,
+                  }
+                )
               )
             )}
           </div>
@@ -46,10 +49,18 @@ export default function Solutions() {
                     {solution.title}
                   </h3>
                   <ChevronUpIcon
-                    className={cn("size-6 shrink-0 grow-0 transition-transform duration-300 ease-in-out", activeSolution === idx ? "rotate-0" : "rotate-180")}
+                    className={cn(
+                      "size-6 shrink-0 grow-0 transition-transform duration-300 ease-in-out",
+                      activeSolution === idx ? "rotate-0" : "rotate-180"
+                    )}
                   />
                 </div>
-                <p className={cn("text-sm md:text-base lg:text-md text-gray-700 lg:max-h-0 overflow-hidden transition-all duration-300 ease-in-out", activeSolution === idx && "lg:max-h-96")}>
+                <p
+                  className={cn(
+                    "text-sm md:text-base lg:text-md text-gray-700 lg:max-h-0 overflow-hidden transition-all duration-300 ease-in-out",
+                    activeSolution === idx && "lg:max-h-96"
+                  )}
+                >
                   {solution.description}
                 </p>
               </div>
@@ -71,7 +82,10 @@ const solutions = [
         key={1}
         width={343}
         height={353}
-        className={cn("w-[calc(343rem/16)] h-[calc(353rem/16)] lg:w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]", className)}
+        className={cn(
+          "w-[calc(343rem/16)] h-[calc(353rem/16)] lg:w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]",
+          className
+        )}
         isCloudinary
       />
     ),
@@ -87,12 +101,15 @@ const solutions = [
         key={2}
         width={343}
         height={353}
-        className={cn("w-[calc(343rem/16)] h-[calc(353rem/16)] lg:w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]", className)}
+        className={cn(
+          "w-[calc(343rem/16)] h-[calc(353rem/16)] lg:w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]",
+          className
+        )}
         isCloudinary
       />
     ),
     description:
-      "People struggle to save! not because they don’t want to, but because they don’t have a system that works. Access Lump Sum Savings Without Loans; think of it as borrowing money from your ",
+      "People struggle to save! not because they don’t want to, but because they don’t have a system that works. Access Lump Sum Savings Without Loans; think of it as borrowing money from your future.",
   },
   {
     title: "Financial Fluidity",
@@ -107,7 +124,10 @@ const solutions = [
           width: 621,
           height: 640,
         }}
-        className={cn("w-[calc(343rem/16)] h-[calc(353rem/16)] lg:w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]", className)}
+        className={cn(
+          "w-[calc(343rem/16)] h-[calc(353rem/16)] lg:w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]",
+          className
+        )}
         isCloudinary
       />
     ),

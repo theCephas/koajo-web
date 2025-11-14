@@ -62,12 +62,20 @@ const members: Member[] = [
     name: "William Ikwogo",
     imageId: "william-ikwogo-headshot_yljijs",
     position: "Co-founder / Chief Executive Officer",
-    bio: ["William is a visionary entrepreneur and the driving force behind Koajo, a platform revolutionizing the traditional rotating savings model through technology and automation. With a Master’s degree in Information Science specializing in Data Science, he brings deep expertise in machine learning, data wrangling, and financial technology.", "Before launching Koajo, he honorably served in the U.S. Army, where he developed strong leadership, discipline, and problem-solving skills, qualities that now shape the foundation of Koajo’s mission. His passion for financial empowerment, inspired him to modernize the age-old rotating savings system, making it more secure, efficient, and scalable.", "Under his leadership, Koajo integrates cutting-edge data-driven solutions, ensuring a seamless, transparent, and trustworthy savings experience. His unique blend of military discipline, data science expertise, and financial innovation positions Koajo as a game-changer in the world of collective savings and wealth-building."],
+    bio: [
+      "William is a visionary entrepreneur and the driving force behind Koajo, a platform revolutionizing the traditional rotating savings model through technology and automation. With a Master’s degree in Information Science specializing in Data Science, he brings deep expertise in machine learning, data wrangling, and financial technology.",
+      "Before launching Koajo, he honorably served in the U.S. Army, where he developed strong leadership, discipline, and problem-solving skills, qualities that now shape the foundation of Koajo’s mission. His passion for financial empowerment, inspired him to modernize the age-old rotating savings system, making it more secure, efficient, and scalable.",
+      "Under his leadership, Koajo integrates cutting-edge data-driven solutions, ensuring a seamless, transparent, and trustworthy savings experience. His unique blend of military discipline, data science expertise, and financial innovation positions Koajo as a game-changer in the world of collective savings and wealth-building.",
+    ],
   },
   {
     name: "Ama Adeniyi",
     imageId: "ama-adeniyi_axq6ew",
-    position: "Co-founder / Chief Executive Officer",
-    bio: ["Ama is a visionary entrepreneur and the driving force behind Koajo, a platform revolutionizing the traditional rotating savings model through technology and automation. With a Master’s degree in Information Science specializing in Data Science, he brings deep expertise in machine learning, data wrangling, and financial technology.", "Before launching Koajo, he honorably served in the U.S. Army, where he developed strong leadership, discipline, and problem-solving skills, qualities that now shape the foundation of Koajo’s mission. His passion for financial empowerment, inspired him to modernize the age-old rotating savings system, making it more secure, efficient, and scalable.", "Under his leadership, Koajo integrates cutting-edge data-driven solutions, ensuring a seamless, transparent, and trustworthy savings experience. His unique blend of military discipline, data science expertise, and financial innovation positions Koajo as a game-changer in the world of collective savings and wealth-building."],
+    position: "Co-founder / Chief Revenue Officer",
+    bio: [
+      "Ama is a seasoned business leader and entrepreneur with over a dozen years of combined experience in business development, sales, marketing, and financial operations. Holding a Bachelor's degree in Science, she has built a career at the intersection of finance, compliance, and strategic growth. ",
+      "Before joining Koajo, Ama worked in the financial sector as a Fraud Investigator, Compliance Analyst, and AML & KYC Operations Analyst, gaining invaluable expertise in risk management, regulatory compliance, and financial security. Her deep understanding of fraud prevention and financial regulations ensures that Koajo remains a trusted and secure platform for its users.  ",
+      "Expanding on the CEO's vision, Ama played a critical role in shaping Koajo into what it is today; a modern, automated rotating savings platform designed to empower individuals financially and build wealth. Her expertise in revenue growth, user acquisition, and strategic partnerships will continue to drive Koajo’s success, making financial security and wealth-building more accessible to the communities it serves.",
+    ],
   },
 ];

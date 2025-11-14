@@ -22,11 +22,11 @@ export default function Pricing() {
             const isLast = idx === plans.length - 1;
             const isOdd = plans.length % 2 !== 0;
             return (
-              <div key={plan.id} className={cn(isLast && isOdd && "md:col-span-2")}>
-                <PlanCard
-                  title={plan.title}
-                  description={plan.description}
-                />
+              <div
+                key={plan.id}
+                className={cn(isLast && isOdd && "md:col-span-2")}
+              >
+                <PlanCard title={plan.title} description={plan.description} />
               </div>
             );
           })}
@@ -47,19 +47,19 @@ const plans = [
     id: "200",
     title: "$200",
     description:
-      "$100 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$200 contribution payment due on the 1st & 16th of each month for 3 months.",
   },
   {
     id: "500",
     title: "$500",
     description:
-      "$100 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$500 contribution payment due on the 1st & 16th of each month for 3 months.",
   },
   {
     id: "1000",
     title: "$1000",
     description:
-      "$100 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$1000 contribution payment due on the 1st & 16th of each month for 3 months.",
   },
   {
     id: "custom",

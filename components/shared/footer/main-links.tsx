@@ -47,10 +47,10 @@ const footerLinksMobile = [
         title: "Contact",
         id: "contact",
         links: [
-          {
-            label: "000-000-0000",
-            href: "tel:000-000-0000",
-          },
+          // {
+          //   label: "000-000-0000",
+          //   href: "tel:000-000-0000",
+          // },
           {
             label: "Support@koajo.com",
             href: "mailto:support@koajo.com",
@@ -120,10 +120,10 @@ const footerLinksDesktop = [
         title: "Contact",
         id: "contact",
         links: [
-          {
-            label: "000-000-0000",
-            href: "tel:000-000-0000",
-          },
+          // {
+          //   label: "000-000-0000",
+          //   href: "tel:000-000-0000",
+          // },
           {
             label: "Support@koajo.com",
             href: "mailto:support@koajo.com",

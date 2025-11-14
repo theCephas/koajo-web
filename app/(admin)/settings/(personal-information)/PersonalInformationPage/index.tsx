@@ -170,10 +170,10 @@ const PersonalInformationPage = () => {
             directly. To update your personal details, please contact our
             support team at{" "}
             <a
-              href="mailto:hello@koajo.com"
+              href="mailto:support@koajo.com"
               className="underline hover:text-blue-300 transition-colors"
             >
-              hello@koajo.com
+              support@koajo.com
             </a>
           </p>
         </div>
@@ -276,7 +276,7 @@ const PersonalInformationPage = () => {
         </div> */}
 
         <div className={styles.btns}>
-          <a href="mailto:hello@koajo.com">
+          <a href="mailto:support@koajo.com">
             <Button
               variant="primary"
               showArrow={false}

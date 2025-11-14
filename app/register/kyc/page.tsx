@@ -746,9 +746,9 @@ export default function KycPage() {
               Having trouble with verification? Contact our support team at{" "}
               <a
                 className="text-tertiary-100 underline transition-colors hover:text-tertiary-100/80"
-                href="mailto:hello@koajo.com"
+                href="mailto:support@koajo.com"
               >
-                hello@koajo.com
+                support@koajo.com
               </a>
             </p>
           </div>
