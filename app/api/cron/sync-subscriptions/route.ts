@@ -155,6 +155,18 @@ async function fetchActivePodMemberships(): Promise<
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.koajo.com";
     const internalApiKey = process.env.INTERNAL_API_KEY;
 
+    // NOTE: Using /pods/mine endpoint since /pods/subscriptions/active doesn't exist in API
+    // This endpoint requires user authentication, so cron job needs a service account token
+    // For now, returning empty array - backend needs to implement subscription management endpoint
+    console.warn("fetchActivePodMemberships: Backend endpoint /pods/subscriptions/active not implemented yet");
+
+    // TODO: Backend needs to create this endpoint:
+    // GET /v1/pods/subscriptions/active
+    // Returns all pods with active Stripe subscriptions
+
+    return [];
+
+    /* TEMPORARILY DISABLED - Endpoint doesn't exist
     const response = await fetch(`${apiUrl}/v1/pods/subscriptions/active`, {
       method: "GET",
       headers: {
@@ -170,6 +182,7 @@ async function fetchActivePodMemberships(): Promise<
 
     const data = await response.json();
     return data;
+    */
   } catch (error) {
     console.error("Error fetching active pod memberships:", error);
     return [];
@@ -191,6 +204,13 @@ async function updatePodSubscriptionStatus(
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.koajo.com";
     const internalApiKey = process.env.INTERNAL_API_KEY;
 
+    console.warn("updatePodSubscriptionStatus: Backend endpoint /pods/{podId}/subscription/status not implemented yet");
+
+    // TODO: Backend needs to create this endpoint:
+    // PATCH /v1/pods/{podId}/subscription/status
+    // Updates subscription status for a pod
+
+    /* TEMPORARILY DISABLED - Endpoint doesn't exist
     await fetch(`${apiUrl}/v1/pods/${podId}/subscription/status`, {
       method: "PATCH",
       headers: {
@@ -199,6 +219,7 @@ async function updatePodSubscriptionStatus(
       },
       body: JSON.stringify(status),
     });
+    */
   } catch (error) {
     console.error(
       `Error updating subscription status for pod ${podId}:`,

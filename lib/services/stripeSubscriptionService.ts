@@ -139,10 +139,17 @@ export async function createPodSubscription(
       payment_settings: {
         payment_method_types: ["us_bank_account", "link"],
         save_default_payment_method: "on_subscription",
+        payment_method_options: {
+          us_bank_account: {
+            verification_method: "instant",
+          },
+        },
       },
-      // Enable automatic retry with exponential backoff
-      payment_behavior: "default_incomplete",
-      expand: ["latest_invoice.payments"],
+      // CRITICAL FIX: Use allow_incomplete to enable automatic charging at billing_cycle_anchor
+      // This allows Stripe to automatically charge verified bank accounts on the anchor date
+      payment_behavior: "allow_incomplete",
+      collection_method: "charge_automatically",
+      expand: ["latest_invoice", "latest_invoice.payment_intent"],
     });
 
     const nextPaymentDate = await resolveSubscriptionPeriodEnd(subscription);
