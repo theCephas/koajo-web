@@ -142,6 +142,7 @@ export async function createPodSubscription(
         payment_method_options: {
           us_bank_account: {
             verification_method: "instant",
+            // Mandate will be automatically used from the payment method
           },
         },
       },
@@ -149,6 +150,10 @@ export async function createPodSubscription(
       // This allows Stripe to automatically charge verified bank accounts on the anchor date
       payment_behavior: "allow_incomplete",
       collection_method: "charge_automatically",
+      // Disable automatic tax collection
+      automatic_tax: {
+        enabled: false,
+      },
       expand: ["latest_invoice", "latest_invoice.payment_intent"],
     });
 
@@ -288,6 +293,10 @@ export async function createManualPaymentIntent(
     podId: string;
     membershipId: string;
     contributionType: string;
+  },
+  clientInfo?: {
+    ipAddress?: string;
+    userAgent?: string;
   }
 ): Promise<Stripe.PaymentIntent> {
   const stripe = getStripe();
@@ -306,6 +315,16 @@ export async function createManualPaymentIntent(
         contribution_type: metadata.contributionType,
       },
       description: `Manual contribution for pod ${metadata.podId}`,
+      // Use the mandate from the payment method for ACH authorization
+      mandate_data: {
+        customer_acceptance: {
+          type: "online",
+          online: {
+            ip_address: clientInfo?.ipAddress || "0.0.0.0",
+            user_agent: clientInfo?.userAgent || "Koajo Platform",
+          },
+        },
+      },
     });
 
     return paymentIntent;

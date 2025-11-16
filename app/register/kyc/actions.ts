@@ -663,6 +663,34 @@ export async function getAccountOwnershipAction(
 }
 
 // ============================
+// GET CLIENT INFO FOR MANDATE
+// ============================
+
+/**
+ * Gets the client IP address and user agent from request headers
+ * This is required for Stripe mandate compliance
+ */
+export async function getClientInfoAction(): Promise<{
+  ipAddress: string;
+  userAgent: string;
+}> {
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+
+  // Get IP address from various possible headers
+  const ipAddress =
+    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headersList.get("x-real-ip") ||
+    headersList.get("cf-connecting-ip") || // Cloudflare
+    "0.0.0.0";
+
+  // Get user agent
+  const userAgent = headersList.get("user-agent") || "Koajo Platform";
+
+  return { ipAddress, userAgent };
+}
+
+// ============================
 // CREATE PAYMENT METHOD
 // ============================
 
@@ -670,6 +698,8 @@ interface CreatePaymentMethodInput {
   financialConnectionsAccountId: string;
   customerId: string;
   billingName: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 interface CreatePaymentMethodResult {
@@ -695,7 +725,7 @@ export async function createPaymentMethodFromFinancialConnectionsAction(
       input.financialConnectionsAccountId
     );
 
-    // Create payment method from Financial Connections account
+    // Create payment method from Financial Connections account with mandate
     const paymentMethod = await stripe.paymentMethods.create({
       type: "us_bank_account",
       us_bank_account: {
@@ -717,6 +747,28 @@ export async function createPaymentMethodFromFinancialConnectionsAction(
     });
 
     console.log("✅ Payment method attached to customer:", input.customerId);
+
+    // Create SetupIntent to collect mandate for ACH debit authorization
+    // This is CRITICAL for US bank account payments - without a mandate, payment intents will fail
+    const setupIntent = await stripe.setupIntents.create({
+      customer: input.customerId,
+      payment_method: paymentMethod.id,
+      payment_method_types: ["us_bank_account"],
+      confirm: true,
+      mandate_data: {
+        customer_acceptance: {
+          type: "online",
+          online: {
+            ip_address: input.ipAddress || "0.0.0.0",
+            user_agent: input.userAgent || "Koajo Platform",
+          },
+        },
+      },
+    });
+
+    console.log("✅ Mandate collected via SetupIntent:", setupIntent.id);
+    console.log("   Status:", setupIntent.status);
+    console.log("   Mandate:", setupIntent.mandate);
 
     // Set as default payment method for future invoices
     await stripe.customers.update(input.customerId, {

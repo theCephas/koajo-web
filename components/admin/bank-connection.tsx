@@ -14,6 +14,7 @@ import {
   ensureStripeCustomerAction,
   getAccountOwnershipAction,
   createPaymentMethodFromFinancialConnectionsAction,
+  getClientInfoAction,
 } from "@/app/register/kyc/actions";
 
 /**
@@ -157,10 +158,16 @@ export default function BankConnection() {
       // Without this step, Stripe Dashboard will show no payment methods and cannot charge
       console.log("🔄 Creating payment method from Financial Connections account...");
 
+      // Get client IP and user agent for mandate compliance
+      const clientInfo = await getClientInfoAction();
+      console.log("Client info for mandate:", clientInfo);
+
       const paymentMethodResult = await createPaymentMethodFromFinancialConnectionsAction({
         financialConnectionsAccountId: connectedAccount.id,
         customerId: customer.customerId,
         billingName: fullName || `${resolvedUser.firstName} ${resolvedUser.lastName}`.trim(),
+        ipAddress: clientInfo.ipAddress,
+        userAgent: clientInfo.userAgent,
       });
 
       if (!paymentMethodResult.success || !paymentMethodResult.paymentMethodId) {
