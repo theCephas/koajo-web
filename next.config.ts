@@ -19,15 +19,6 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
-  redirects: async () => {
-    return [
-      {
-        source: '/help-center/:path*',
-        destination: '/dashboard',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 export default withNextVideo(nextConfig, { folder: '/public/media/videos' });

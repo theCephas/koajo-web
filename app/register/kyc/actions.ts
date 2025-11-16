@@ -669,11 +669,14 @@ export async function getAccountOwnershipAction(
 interface CreatePaymentMethodInput {
   financialConnectionsAccountId: string;
   customerId: string;
+  billingName: string;
 }
 
 interface CreatePaymentMethodResult {
-  paymentMethodId: string;
-  status: string;
+  success: boolean;
+  paymentMethodId?: string;
+  status?: string;
+  error?: string;
 }
 
 /**
@@ -684,19 +687,22 @@ interface CreatePaymentMethodResult {
 export async function createPaymentMethodFromFinancialConnectionsAction(
   input: CreatePaymentMethodInput
 ): Promise<CreatePaymentMethodResult> {
-  const stripe = getStripe();
-
-  console.log(
-    "🔄 Creating payment method for Financial Connections account:",
-    input.financialConnectionsAccountId
-  );
-
   try {
+    const stripe = getStripe();
+
+    console.log(
+      "🔄 Creating payment method for Financial Connections account:",
+      input.financialConnectionsAccountId
+    );
+
     // Create payment method from Financial Connections account
     const paymentMethod = await stripe.paymentMethods.create({
       type: "us_bank_account",
       us_bank_account: {
         financial_connections_account: input.financialConnectionsAccountId,
+      },
+      billing_details: {
+        name: input.billingName,
       },
     });
 
@@ -704,7 +710,6 @@ export async function createPaymentMethodFromFinancialConnectionsAction(
     console.log("   Type:", paymentMethod.type);
     console.log("   Bank:", paymentMethod.us_bank_account?.bank_name);
     console.log("   Last 4:", paymentMethod.us_bank_account?.last4);
-    // console.log("   Status:", paymentMethod.us_bank_account?.status_details?.status);
 
     // Attach payment method to customer
     await stripe.paymentMethods.attach(paymentMethod.id, {
@@ -723,15 +728,18 @@ export async function createPaymentMethodFromFinancialConnectionsAction(
     console.log("✅ Set as default payment method");
 
     return {
+      success: true,
       paymentMethodId: paymentMethod.id,
       status: "verified", // Financial Connections with instant verification auto-verifies
     };
   } catch (error) {
     console.error("❌ Error creating payment method:", error);
-    throw new Error(
-      `Failed to create payment method: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error details:", errorMessage);
+
+    return {
+      success: false,
+      error: `Failed to create payment method: ${errorMessage}`,
+    };
   }
 }

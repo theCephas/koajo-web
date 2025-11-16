@@ -157,23 +157,23 @@ export default function BankConnection() {
       // Without this step, Stripe Dashboard will show no payment methods and cannot charge
       console.log("🔄 Creating payment method from Financial Connections account...");
 
-      let paymentMethodId: string;
-      try {
-        const paymentMethodResult = await createPaymentMethodFromFinancialConnectionsAction({
-          financialConnectionsAccountId: connectedAccount.id,
-          customerId: customer.customerId,
-        });
+      const paymentMethodResult = await createPaymentMethodFromFinancialConnectionsAction({
+        financialConnectionsAccountId: connectedAccount.id,
+        customerId: customer.customerId,
+        billingName: fullName || `${resolvedUser.firstName} ${resolvedUser.lastName}`.trim(),
+      });
 
-        paymentMethodId = paymentMethodResult.paymentMethodId;
-
-        console.log("✅ Payment method created and attached:", paymentMethodId);
-        console.log("   Status:", paymentMethodResult.status);
-      } catch (pmError) {
-        console.error("❌ Failed to create payment method:", pmError);
+      if (!paymentMethodResult.success || !paymentMethodResult.paymentMethodId) {
+        console.error("❌ Failed to create payment method:", paymentMethodResult.error);
         throw new Error(
-          "Connected bank account but failed to create payment method. Please try again or contact support."
+          paymentMethodResult.error || "Connected bank account but failed to create payment method. Please try again or contact support."
         );
       }
+
+      const paymentMethodId = paymentMethodResult.paymentMethodId;
+
+      console.log("✅ Payment method created and attached:", paymentMethodId);
+      console.log("   Status:", paymentMethodResult.status);
 
       // Retrieve account ownership information to get the actual account holder name
       let accountHolderName: string | undefined = undefined;
