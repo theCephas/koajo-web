@@ -504,7 +504,7 @@ export interface User {
     customerId?: string | null;
     accountName?: string | null;
     accountHolderName?: string | null;
-    institutionName?: string | null;
+    bank_name?: string | null;
     accountType?: string | null;
     last4?: string | null;
     createdAt?: string;

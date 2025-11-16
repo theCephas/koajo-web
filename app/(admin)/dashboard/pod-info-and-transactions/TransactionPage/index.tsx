@@ -51,7 +51,7 @@ const TransactionPage = () => {
 
   return (
     <Layout
-      title="Welcome back 👏🏻"
+      title="Welcome 👏🏻"
       breadcrumbs={DASHBOARD_BREADCRUMBS.POD_INFO_AND_TRANSACTIONS}
       head={<Navigation />}
     >

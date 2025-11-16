@@ -185,10 +185,6 @@ export default function LoginPage() {
       setModalVisible(true);
     } finally {
       setIsLoading(false);
-      setTimeout(() => {
-        setModalVisible(false);
-        setFaillureMessage("");
-      }, 4000);
     }
   };
 

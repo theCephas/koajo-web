@@ -6,14 +6,42 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import cn from "clsx";
 
-export default function FaqListings() {
+type FaqListingsProps = {
+  variant?: "marketing" | "dashboard";
+  wrapperClassName?: string;
+  containerClassName?: string;
+  searchPlaceholder?: string;
+};
+
+export default function FaqListings({
+  variant = "marketing",
+  wrapperClassName,
+  containerClassName,
+  searchPlaceholder = "Search",
+}: FaqListingsProps = {}) {
   const categories = useMemo(
     () => faqsData.map((item) => item.category).sort(),
     []
   ); // sort alphabetically
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(categories[0]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    categories[0] ?? null
+  );
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+
+  const wrapperClasses = cn(
+    "w-full",
+    variant === "marketing"
+      ? "bg-gray py-7.5 md:py-20 lg:py-30"
+      : "bg-transparent py-7.5 md:py-10 lg:py-12",
+    wrapperClassName
+  );
+
+  const containerClasses = cn(
+    "w-full",
+    variant === "marketing" ? "page_container" : "",
+    containerClassName
+  );
 
   // Filter data based on search query and selected category
   const filteredData = useMemo(() => {
@@ -62,8 +90,8 @@ export default function FaqListings() {
   };
 
   return (
-    <section className="w-full bg-gray py-7.5 md:py-20 lg:py-30">
-      <div className="page_container">
+    <section className={wrapperClasses}>
+      <div className={containerClasses}>
         {/* Search Bar */}
         <div className="flex items-center justify-between w-full px-5 md:px-6 py-4.5 md:py-5 gap-2.5 md:gap-3 rounded-xl bg-white mb-5 md:mb-7.5 border border-text-200 focus:border-primary">
           <div className="shrink-0 flex  items-center pointer-events-none">
@@ -77,7 +105,7 @@ export default function FaqListings() {
           </div>
           <input
             type="text"
-            placeholder="Search"
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-sm md:text-base text-text-400 placeholder-secondary-300 focus:outline-none"

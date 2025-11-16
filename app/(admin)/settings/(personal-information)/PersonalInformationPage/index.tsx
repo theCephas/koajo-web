@@ -16,53 +16,12 @@ import { AuthService } from "@/lib/services/authService";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import type { UpdateUserRequest } from "@/lib/types/api";
 
-// Commented out for future use
-// const countries = [
-//   {
-//     title: "Indonesia",
-//     value: "indonesia",
-//   },
-//   {
-//     title: "Ukraine",
-//     value: "ukraine",
-//   },
-//   {
-//     title: "USA",
-//     value: "usa",
-//   },
-// ];
-
-// const provincies = [
-//   {
-//     title: "Central Java",
-//     value: "central-java",
-//   },
-//   {
-//     title: "VIC",
-//     value: "vic",
-//   },
-// ];
-
-// const cities = [
-//   {
-//     title: "Semarang",
-//     value: "semarang",
-//   },
-//   {
-//     title: "New-York",
-//     value: "new-york",
-//   },
-//   {
-//     title: "Oslo",
-//     value: "oslo",
-//   },
-// ];
-
 const PersonalInformationPage = () => {
   const { emailVerified, kycCompleted, user, refreshUser } = useDashboard();
 
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
+  const [bankName, setBankName] = useState<string>("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -83,74 +42,8 @@ const PersonalInformationPage = () => {
     if (user) {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
-      if (user.dateOfBirth) {
-        setDateOfBirth(new Date(user.dateOfBirth));
-      }
+      setBankName(user.bankAccount?.bank_name || "");
     }
-  }, [user]);
-
-  const handleSave = useCallback(async () => {
-    if (!user) return;
-
-    const token = TokenManager.getToken();
-    if (!token) {
-      setSaveError("You must be logged in to update your profile");
-      return;
-    }
-
-    setIsSaving(true);
-    setSaveError(null);
-    setSaveSuccess(false);
-
-    try {
-      const updateData: UpdateUserRequest = {
-        first_name: firstName.trim() || undefined,
-        last_name: lastName.trim() || undefined,
-        date_of_birth: dateOfBirth
-          ? dateOfBirth.toISOString().split("T")[0]
-          : undefined,
-      };
-
-      const response = await AuthService.updateUser(updateData, token);
-
-      if (response && "error" in response) {
-        const message = Array.isArray(response.message)
-          ? response.message[0]
-          : response.message;
-        throw new Error(message || "Failed to update profile");
-      }
-
-      // Refresh user data
-      await refreshUser();
-
-      setSaveSuccess(true);
-      setIsEditing(false);
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-      setSaveError(
-        error instanceof Error ? error.message : "Failed to update profile"
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  }, [user, firstName, lastName, dateOfBirth, refreshUser]);
-
-  const handleCancel = useCallback(() => {
-    if (user) {
-      setFirstName(user.firstName || "");
-      setLastName(user.lastName || "");
-      if (user.dateOfBirth) {
-        setDateOfBirth(new Date(user.dateOfBirth));
-      } else {
-        setDateOfBirth(null);
-      }
-    }
-    setIsEditing(false);
-    setSaveError(null);
-    setSaveSuccess(false);
   }, [user]);
 
   return (
@@ -228,6 +121,15 @@ const PersonalInformationPage = () => {
         />
 
         <Field
+          className={styles.field}
+          label="Bank Name"
+          value={lastName}
+          onChange={(e) => setBankName(e.target.value)}
+          disabled={true}
+          // placeholder="Enter your last name"
+        />
+
+        {/* <Field
           type="date"
           className={styles.field}
           label="Date of Birth"
@@ -242,7 +144,7 @@ const PersonalInformationPage = () => {
           }}
           disabled={true}
           placeholder="YYYY-MM-DD"
-        />
+        /> */}
 
         {/* Commented out for future use */}
         {/* <div className={styles.row}>

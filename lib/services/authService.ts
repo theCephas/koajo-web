@@ -64,6 +64,27 @@ function onTokenRefreshed(token: string) {
   refreshSubscribers = [];
 }
 
+const hasAuthorizationHeader = (headers?: HeadersInit): boolean => {
+  if (!headers) {
+    return false;
+  }
+
+  if (headers instanceof Headers) {
+    return headers.has("Authorization");
+  }
+
+  if (Array.isArray(headers)) {
+    return headers.some(
+      ([key]) => key?.toLowerCase?.() === "authorization"
+    );
+  }
+
+  const headerRecord = headers as Record<string, string>;
+  return Object.keys(headerRecord).some(
+    (key) => key.toLowerCase() === "authorization"
+  );
+};
+
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = TokenManager.getRefreshToken();
   if (!refreshToken) {
@@ -127,10 +148,12 @@ async function apiRequest<T>(
         message: "An unexpected error occurred",
         statusCode: response.status,
       }));
+      const isProtectedRequest = hasAuthorizationHeader(options.headers);
 
       // Handle 401 with refresh token
       if (response.status === 401 && !isRetry) {
         const refreshToken = TokenManager.getRefreshToken();
+        const shouldRedirectToLogin = isProtectedRequest || Boolean(refreshToken);
 
         if (refreshToken) {
           if (isRefreshing) {
@@ -169,8 +192,8 @@ async function apiRequest<T>(
           }
         }
 
-        // No refresh token or refresh failed - redirect to login
-        if (typeof window !== "undefined") {
+        // No refresh token or refresh failed - redirect to login when appropriate
+        if (shouldRedirectToLogin && typeof window !== "undefined") {
           window.location.href = "/auth/login";
         }
       }

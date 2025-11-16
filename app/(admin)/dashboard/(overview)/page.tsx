@@ -185,7 +185,7 @@ const Dashboard = () => {
   return (
     <>
       <Layout
-        title={`Welcome ${user?.lastLoginAt && "back"} ${
+        title={`Welcome, ${user?.lastLoginAt && "back"} ${
           user?.firstName ? ", " + user.firstName : ""
         } 👏🏻`}
         breadcrumbs={DASHBOARD_BREADCRUMBS.OVERVIEW}
