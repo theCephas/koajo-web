@@ -13,6 +13,7 @@ import {
   createFinancialConnectionsSessionAction,
   ensureStripeCustomerAction,
   getAccountOwnershipAction,
+  createPaymentMethodFromFinancialConnectionsAction,
 } from "@/app/register/kyc/actions";
 
 /**
@@ -151,6 +152,28 @@ export default function BankConnection() {
         "Session permissions:",
         result.financialConnectionsSession?.permissions
       );
+
+      // ✅ CRITICAL: Create payment method from Financial Connections account
+      // Without this step, Stripe Dashboard will show no payment methods and cannot charge
+      console.log("🔄 Creating payment method from Financial Connections account...");
+
+      let paymentMethodId: string;
+      try {
+        const paymentMethodResult = await createPaymentMethodFromFinancialConnectionsAction({
+          financialConnectionsAccountId: connectedAccount.id,
+          customerId: customer.customerId,
+        });
+
+        paymentMethodId = paymentMethodResult.paymentMethodId;
+
+        console.log("✅ Payment method created and attached:", paymentMethodId);
+        console.log("   Status:", paymentMethodResult.status);
+      } catch (pmError) {
+        console.error("❌ Failed to create payment method:", pmError);
+        throw new Error(
+          "Connected bank account but failed to create payment method. Please try again or contact support."
+        );
+      }
 
       // Retrieve account ownership information to get the actual account holder name
       let accountHolderName: string | undefined = undefined;

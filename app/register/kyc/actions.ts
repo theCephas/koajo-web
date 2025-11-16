@@ -222,7 +222,9 @@ export async function createVerificationSessionAction(
     providedDetails.phone = input.phone;
   }
 
-  const options: Stripe.Identity.VerificationSessionCreateParams.Options | undefined =
+  const options:
+    | Stripe.Identity.VerificationSessionCreateParams.Options
+    | undefined =
     input.type === "document"
       ? {
           document: {
@@ -317,12 +319,14 @@ export async function retrieveVerificationSessionAction(
       created: new Date(report.created * 1000).toISOString(),
       hasVerifiedOutputs: !!report.verified_outputs,
       documentName: report.verified_outputs?.document?.name,
-      idNumberData: report.verified_outputs?.id_number ? {
-        firstName: report.verified_outputs.id_number.first_name,
-        lastName: report.verified_outputs.id_number.last_name,
-        ssnLast4: report.verified_outputs.id_number.ssn_last4,
-        hasAddress: !!report.verified_outputs.id_number.address,
-      } : null,
+      idNumberData: report.verified_outputs?.id_number
+        ? {
+            firstName: report.verified_outputs.id_number.first_name,
+            lastName: report.verified_outputs.id_number.last_name,
+            ssnLast4: report.verified_outputs.id_number.ssn_last4,
+            hasAddress: !!report.verified_outputs.id_number.address,
+          }
+        : null,
     });
 
     verificationReport = {
@@ -335,7 +339,10 @@ export async function retrieveVerificationSessionAction(
 
     // Extract name from document verification
     if (outputs?.document?.name) {
-      console.log("📝 [Document] Extracting name from document:", outputs.document.name);
+      console.log(
+        "📝 [Document] Extracting name from document:",
+        outputs.document.name
+      );
       const [first, ...rest] = outputs.document.name.split(" ");
       if (first) firstName = first;
       if (rest.length) lastName = rest.join(" ");
@@ -356,7 +363,12 @@ export async function retrieveVerificationSessionAction(
       ssnLast4 = outputs.id_number.ssn_last4 ?? ssnLast4;
       address = outputs.id_number.address ?? address;
 
-      console.log("✅ [ID Number] Extracted:", { firstName, lastName, ssnLast4, hasAddress: !!address });
+      console.log("✅ [ID Number] Extracted:", {
+        firstName,
+        lastName,
+        ssnLast4,
+        hasAddress: !!address,
+      });
     }
   } else {
     console.warn("⚠️ [Stripe API] No verification report available yet");
@@ -547,7 +559,10 @@ export async function getAccountOwnershipAction(
     );
 
     console.log("Initial account ownership status:", account.ownership);
-    console.log("Ownership refresh status:", (account as any).ownership_refresh);
+    console.log(
+      "Ownership refresh status:",
+      (account as any).ownership_refresh
+    );
 
     // If ownership is null, we need to refresh it
     if (!account.ownership) {
@@ -555,12 +570,10 @@ export async function getAccountOwnershipAction(
 
       try {
         // Refresh the ownership data
-        const refreshResult = await stripe.financialConnections.accounts.refresh(
-          input.accountId,
-          {
-            features: ['ownership'],
-          }
-        );
+        const refreshResult =
+          await stripe.financialConnections.accounts.refresh(input.accountId, {
+            features: ["ownership"],
+          });
 
         console.log("Ownership refresh result:", refreshResult);
 
@@ -569,14 +582,17 @@ export async function getAccountOwnershipAction(
         const delayMs = 1000; // 1 second between attempts
 
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
 
           account = await stripe.financialConnections.accounts.retrieve(
             input.accountId
           );
 
           const ownershipRefresh = (account as any).ownership_refresh;
-          console.log(`Attempt ${attempt + 1}: Ownership refresh status:`, ownershipRefresh?.status);
+          console.log(
+            `Attempt ${attempt + 1}: Ownership refresh status:`,
+            ownershipRefresh?.status
+          );
 
           // If ownership is now available, break out
           if (account.ownership) {
@@ -585,7 +601,7 @@ export async function getAccountOwnershipAction(
           }
 
           // If refresh succeeded but ownership is still null, continue waiting
-          if (ownershipRefresh?.status === 'succeeded') {
+          if (ownershipRefresh?.status === "succeeded") {
             console.log("Refresh succeeded, checking for ownership...");
             // Try one more retrieval
             account = await stripe.financialConnections.accounts.retrieve(
@@ -595,7 +611,7 @@ export async function getAccountOwnershipAction(
           }
 
           // If refresh failed, stop trying
-          if (ownershipRefresh?.status === 'failed') {
+          if (ownershipRefresh?.status === "failed") {
             console.error("Ownership refresh failed:", ownershipRefresh);
             return { owners: [] };
           }
@@ -611,24 +627,25 @@ export async function getAccountOwnershipAction(
 
     // If ownership is still null after refresh, return empty
     if (!account.ownership) {
-      console.warn("Ownership data not available even after refresh and polling");
+      console.warn(
+        "Ownership data not available even after refresh and polling"
+      );
       return { owners: [] };
     }
 
     // Extract ownership ID (it can be a string or object)
-    const ownershipId = typeof account.ownership === 'string'
-      ? account.ownership
-      : account.ownership.id;
+    const ownershipId =
+      typeof account.ownership === "string"
+        ? account.ownership
+        : account.ownership.id;
 
     console.log("Fetching owners with ownership ID:", ownershipId);
 
     // List all owners for this account using the ownership ID
-    const ownersResponse = await stripe.financialConnections.accounts.listOwners(
-      input.accountId,
-      {
+    const ownersResponse =
+      await stripe.financialConnections.accounts.listOwners(input.accountId, {
         ownership: ownershipId,
-      }
-    );
+      });
 
     console.log("Owners response:", ownersResponse);
 
@@ -642,5 +659,79 @@ export async function getAccountOwnershipAction(
   } catch (error) {
     console.error("Failed to retrieve account ownership:", error);
     return { owners: [] };
+  }
+}
+
+// ============================
+// CREATE PAYMENT METHOD
+// ============================
+
+interface CreatePaymentMethodInput {
+  financialConnectionsAccountId: string;
+  customerId: string;
+}
+
+interface CreatePaymentMethodResult {
+  paymentMethodId: string;
+  status: string;
+}
+
+/**
+ * Creates a payment method from a Financial Connections account
+ * and attaches it to the customer. This is CRITICAL - without this step,
+ * Stripe cannot charge the bank account.
+ */
+export async function createPaymentMethodFromFinancialConnectionsAction(
+  input: CreatePaymentMethodInput
+): Promise<CreatePaymentMethodResult> {
+  const stripe = getStripe();
+
+  console.log(
+    "🔄 Creating payment method for Financial Connections account:",
+    input.financialConnectionsAccountId
+  );
+
+  try {
+    // Create payment method from Financial Connections account
+    const paymentMethod = await stripe.paymentMethods.create({
+      type: "us_bank_account",
+      us_bank_account: {
+        financial_connections_account: input.financialConnectionsAccountId,
+      },
+    });
+
+    console.log("✅ Payment method created:", paymentMethod.id);
+    console.log("   Type:", paymentMethod.type);
+    console.log("   Bank:", paymentMethod.us_bank_account?.bank_name);
+    console.log("   Last 4:", paymentMethod.us_bank_account?.last4);
+    // console.log("   Status:", paymentMethod.us_bank_account?.status_details?.status);
+
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(paymentMethod.id, {
+      customer: input.customerId,
+    });
+
+    console.log("✅ Payment method attached to customer:", input.customerId);
+
+    // Set as default payment method for future invoices
+    await stripe.customers.update(input.customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethod.id,
+      },
+    });
+
+    console.log("✅ Set as default payment method");
+
+    return {
+      paymentMethodId: paymentMethod.id,
+      status: "verified", // Financial Connections with instant verification auto-verifies
+    };
+  } catch (error) {
+    console.error("❌ Error creating payment method:", error);
+    throw new Error(
+      `Failed to create payment method: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
