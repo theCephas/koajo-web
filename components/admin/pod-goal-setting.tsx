@@ -16,6 +16,8 @@ export default function PodGoalSetting() {
   const {
     close,
     prev,
+    open,
+    setStep,
     selectedPlanCode,
     setSelectedGoalCategoryValue,
     selectedGoalCategoryValue,
@@ -208,9 +210,25 @@ export default function PodGoalSetting() {
         </div>
       )}
       {!bankConnected && (
-        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-          Please connect your bank account to continue. This ensures payouts and
-          contributions can be automated safely.
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-sm text-yellow-800">
+              Please connect your bank account to continue. This ensures payouts and
+              contributions can be automated safely.
+            </p>
+            <Button
+              text="Connect Bank"
+              variant="primary"
+              onClick={() => {
+                close(); // Close the current modal first
+                setTimeout(() => {
+                  setStep("bank_connection");
+                  open();
+                }, 100);
+              }}
+              className="shrink-0"
+            />
+          </div>
         </div>
       )}
 
