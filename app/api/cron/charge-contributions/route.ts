@@ -35,11 +35,12 @@ export async function GET(request: NextRequest) {
     const today = new Date().toISOString().split("T")[0];
     console.log(`📅 Processing contributions for: ${today}`);
 
-    // Fetch memberships that need to be charged today
-    const apiUrl = getApiUrl(API_ENDPOINTS.ADMIN.PODS); // Adjust endpoint as needed
-    const internalSecret = process.env.INTERNAL_API_SECRET; // Server-to-server auth
+    // Fetch all pods/memberships that need to be charged today
+    // Backend endpoint returns all memberships where nextContributionDate === today and status === "grace"
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.koajo.com";
+    const internalSecret = process.env.INTERNAL_API_SECRET;
 
-    const response = await fetch(`${apiUrl}/contributions/due?date=${today}`, {
+    const response = await fetch(`${backendUrl}/v1/internal/pods/due-contributions?date=${today}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -70,33 +71,33 @@ export async function GET(request: NextRequest) {
     let failed = 0;
     const results = [];
 
-    for (const contribution of contributionsDue) {
+    for (const pod of contributionsDue) {
       try {
         console.log(
-          `💰 Processing contribution for membership ${contribution.membershipId} in pod ${contribution.podId}`
+          `💰 Processing contribution for pod ${pod.podId}`
         );
 
-        // Validate required data
-        if (!contribution.user?.stripeCustomerId) {
+        // Validate required data from /auth/me
+        if (!pod.user?.stripeCustomerId) {
           console.error(
-            `❌ Missing Stripe customer ID for membership ${contribution.membershipId}`
+            `❌ Missing Stripe customer ID for pod ${pod.podId}`
           );
           failed++;
           results.push({
-            membershipId: contribution.membershipId,
+            podId: pod.podId,
             status: "failed",
             error: "Missing Stripe customer ID",
           });
           continue;
         }
 
-        if (!contribution.user?.stripePaymentMethodId) {
+        if (!pod.user?.stripePaymentMethodId) {
           console.error(
-            `❌ Missing payment method for membership ${contribution.membershipId}`
+            `❌ Missing payment method for pod ${pod.podId}`
           );
           failed++;
           results.push({
-            membershipId: contribution.membershipId,
+            podId: pod.podId,
             status: "failed",
             error: "Missing payment method",
           });
@@ -104,16 +105,17 @@ export async function GET(request: NextRequest) {
         }
 
         // Check if within grace period
-        const graceEndsAt = new Date(contribution.graceEndsAt);
-        const todayDate = new Date(today);
+        // Logic: graceEndsAt >= nextContributionDate means auto-charging can be done
+        const graceEndsAt = new Date(pod.graceEndsAt);
+        const nextContribDate = new Date(pod.nextContributionDate);
 
-        if (todayDate > graceEndsAt) {
+        if (graceEndsAt < nextContribDate) {
           console.log(
-            `⚠️ Membership ${contribution.membershipId} past grace period, skipping auto-charge`
+            `⚠️ Pod ${pod.podId} past grace period (${pod.graceEndsAt} < ${pod.nextContributionDate}), skipping auto-charge`
           );
-          // Backend will handle kicking member or requiring manual payment
+          // User needs to use manual payment trigger
           results.push({
-            membershipId: contribution.membershipId,
+            podId: pod.podId,
             status: "grace_period_expired",
             message: "Requires manual payment",
           });
@@ -122,61 +124,50 @@ export async function GET(request: NextRequest) {
 
         // Attempt ACH charge
         const chargeResult = await chargeAchContribution({
-          customerId: contribution.user.stripeCustomerId,
-          paymentMethodId: contribution.user.stripePaymentMethodId,
-          amount: contribution.amount, // Amount in cents
-          podId: contribution.podId,
-          membershipId: contribution.membershipId,
-          contributionDate: new Date(contribution.nextContributionDate),
-          description: `Pod ${contribution.podName} - Contribution for ${contribution.nextContributionDate}`,
+          customerId: pod.user.stripeCustomerId,
+          paymentMethodId: pod.user.stripePaymentMethodId,
+          amount: pod.amount * 100, // Convert to cents (amount is in dollars)
+          podId: pod.podId,
+          membershipId: pod.membershipId || pod.podId, // Use podId as fallback
+          contributionDate: new Date(pod.nextContributionDate),
+          description: `Pod contribution - ${pod.nextContributionDate}`,
         });
 
         if (chargeResult.success) {
           console.log(
-            `✅ Payment initiated for membership ${contribution.membershipId}: ${chargeResult.intentId}`
+            `✅ Payment initiated for pod ${pod.podId}: ${chargeResult.intentId}`
           );
           charged++;
           results.push({
-            membershipId: contribution.membershipId,
+            podId: pod.podId,
             status: "processing",
             paymentIntentId: chargeResult.intentId,
           });
 
-          // Update backend to mark as "processing"
-          // Webhook will handle final success/failure
-          await updateContributionStatus(
-            contribution.membershipId,
-            "processing",
-            chargeResult.intentId || null
-          );
+          // No need to update backend here - webhook will handle it
+          // The payment_intent.processing webhook will notify backend
         } else {
           console.error(
-            `❌ Payment failed for membership ${contribution.membershipId}: ${chargeResult.error}`
+            `❌ Payment failed for pod ${pod.podId}: ${chargeResult.error}`
           );
           failed++;
           results.push({
-            membershipId: contribution.membershipId,
+            podId: pod.podId,
             status: "failed",
             error: chargeResult.error,
             errorCode: chargeResult.errorCode,
           });
 
-          // Update backend - backend will increment nextContributionDate
-          await updateContributionStatus(
-            contribution.membershipId,
-            "failed",
-            null,
-            chargeResult.error
-          );
+          // Backend will handle incrementing nextContributionDate on webhook failure
         }
       } catch (error) {
         console.error(
-          `❌ Error processing membership ${contribution.membershipId}:`,
+          `❌ Error processing pod ${pod.podId}:`,
           error
         );
         failed++;
         results.push({
-          membershipId: contribution.membershipId,
+          podId: pod.podId,
           status: "error",
           error: error instanceof Error ? error.message : "Unknown error",
         });
@@ -206,43 +197,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * Update contribution status in backend
- */
-async function updateContributionStatus(
-  membershipId: string,
-  status: "processing" | "failed",
-  paymentIntentId: string | null,
-  failureReason?: string
-) {
-  try {
-    const apiUrl = getApiUrl(API_ENDPOINTS.ADMIN.PODS); // Adjust as needed
-    const internalSecret = process.env.INTERNAL_API_SECRET;
-
-    const response = await fetch(
-      `${apiUrl}/contributions/${membershipId}/status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Internal-Secret": internalSecret || "",
-        },
-        body: JSON.stringify({
-          status,
-          paymentIntentId,
-          failureReason,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error("Failed to update contribution status:", error);
-    }
-
-    return response.ok;
-  } catch (error) {
-    console.error("Error updating contribution status:", error);
-    return false;
-  }
-}

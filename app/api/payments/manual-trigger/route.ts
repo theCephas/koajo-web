@@ -45,10 +45,11 @@ export async function POST(request: NextRequest) {
     );
 
     // Fetch membership details from backend
+    // Backend should return: { user: { stripeCustomerId, stripePaymentMethodId }, contributionAmount, nextContributionDate, pod: { name } }
     const { API_ENDPOINTS, getApiUrl, getAuthHeaders } = await import(
       "@/lib/constants/api"
     );
-    const apiUrl = getApiUrl(API_ENDPOINTS.PODS.MINE); // Adjust as needed
+    const apiUrl = getApiUrl(API_ENDPOINTS.PODS.MINE);
 
     const membershipResponse = await fetch(
       `${apiUrl}/${podId}/membership/${membershipId}`,
@@ -80,15 +81,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate contribution is overdue or in grace period
-    const today = new Date().toISOString().split("T")[0];
-    const nextContributionDate = new Date(membership.nextContributionDate)
-      .toISOString()
-      .split("T")[0];
+    // Validate payment is overdue (past grace period)
+    // Manual trigger should only work when graceEndsAt < nextContributionDate
+    const graceEndsAt = new Date(membership.graceEndsAt);
+    const nextContribDate = new Date(membership.nextContributionDate);
 
-    if (nextContributionDate > today) {
+    if (graceEndsAt >= nextContribDate) {
       return NextResponse.json(
-        { error: "Payment is not due yet" },
+        {
+          error: "Payment is still within grace period. Automatic charging will handle this.",
+          graceEndsAt: membership.graceEndsAt,
+          nextContributionDate: membership.nextContributionDate
+        },
         { status: 400 }
       );
     }

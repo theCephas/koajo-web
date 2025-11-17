@@ -54,8 +54,14 @@ export async function POST(request: NextRequest) {
       if (result) {
         console.log("📊 Webhook processed:", result);
 
-        // Update contribution status in your backend
-        await updateContributionStatus(result);
+        // Record payment in backend using /payments endpoint
+        // Only record on SUCCESS, not on PROCESSING or FAILED
+        if (result.status === "SUCCESS") {
+          await recordPayment(result);
+        } else if (result.status === "FAILED") {
+          console.log("⚠️ Payment failed, backend should increment nextContributionDate");
+          // Backend handles failure logic based on the payment status
+        }
 
         return NextResponse.json({
           received: true,
@@ -77,9 +83,9 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Update contribution status in the backend based on webhook result
+ * Record payment in the backend using existing /payments endpoint
  */
-async function updateContributionStatus(result: {
+async function recordPayment(result: {
   status: "SUCCESS" | "PROCESSING" | "FAILED" | "UNKNOWN";
   podId?: string;
   membershipId?: string;
@@ -88,44 +94,50 @@ async function updateContributionStatus(result: {
   failureReason?: string;
 }) {
   try {
-    console.log("🔄 Updating contribution status in backend:", result);
+    console.log("🔄 Recording payment in backend:", result);
 
-    const apiUrl = getApiUrl(API_ENDPOINTS.WEBHOOKS.STRIPE_PAYMENT);
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!webhookSecret) {
-      console.error("Missing STRIPE_WEBHOOK_SECRET");
+    // Only record if we have the required data
+    if (!result.podId || !result.intentId) {
+      console.warn("⚠️ Missing required data for payment recording");
       return;
     }
+
+    // Get the payment intent details from Stripe to get the amount
+    const { getPaymentIntent } = await import("@/lib/services/stripeAchService");
+    const paymentIntent = await getPaymentIntent(result.intentId);
+
+    const apiUrl = getApiUrl(API_ENDPOINTS.PAYMENTS.RECORD);
 
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Use webhook secret for server-to-server auth
-        "X-Webhook-Secret": webhookSecret,
       },
       body: JSON.stringify({
         podId: result.podId,
-        membershipId: result.membershipId,
-        contributionDate: result.contributionDate,
-        paymentIntentId: result.intentId,
-        status: result.status.toLowerCase(),
-        failureReason: result.failureReason,
+        stripeReference: result.intentId,
+        amount: paymentIntent.amount, // Amount in cents
+        currency: paymentIntent.currency.toUpperCase(),
+        status: result.status === "SUCCESS" ? "succeeded" : result.status.toLowerCase(),
+        description: {
+          contributionDate: result.contributionDate,
+          membershipId: result.membershipId,
+          failureReason: result.failureReason,
+        },
       }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("Failed to update contribution status:", error);
-      throw new Error(`Backend update failed: ${error}`);
+      console.error("Failed to record payment:", error);
+      throw new Error(`Payment recording failed: ${error}`);
     }
 
     const responseData = await response.json();
-    console.log("✅ Contribution status updated successfully:", responseData);
+    console.log("✅ Payment recorded successfully:", responseData);
     return responseData;
   } catch (error) {
-    console.error("❌ Error updating contribution status:", error);
+    console.error("❌ Error recording payment:", error);
     // Don't throw - we don't want to cause webhook retries for backend update failures
   }
 }

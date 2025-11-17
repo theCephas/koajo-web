@@ -258,6 +258,7 @@ export default function BankConnection() {
       const bankAccountData = {
         id: connectedAccount.id,
         customer_id: customer.customerId,
+        payment_method_id: paymentMethodId, // ✅ Include payment method ID
         account_first_name: accountFirstName ?? "Test",
         account_last_name: accountLastName ?? "Koajo",
         account_last4: connectedAccount.last4 ?? "0000",
