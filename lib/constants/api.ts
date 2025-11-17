@@ -44,6 +44,9 @@ export const API_ENDPOINTS = {
   ACHIEVEMENTS: {
     SUMMARY: "/achievements/summary",
   },
+  WEBHOOKS: {
+    STRIPE_PAYMENT: "/webhooks/stripe/payment",
+  },
   AVATARS: "/avatars",
   ADMIN: {
     LOGIN: "/admin/auth/login",

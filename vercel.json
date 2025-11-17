@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/sync-subscriptions",
+      "path": "/api/cron/charge-contributions",
       "schedule": "0 13 * * *"
     }
   ]

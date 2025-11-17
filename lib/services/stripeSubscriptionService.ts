@@ -121,25 +121,12 @@ export async function createPodSubscription(
       input.nextContributionDate.getTime() / 1000
     );
 
-    const now = Math.floor(Date.now() / 1000);
-    const isFutureDate = billingCycleAnchor > now;
-
     // Create the subscription
     const subscription = await stripe.subscriptions.create({
       customer: input.customerId,
       items: [{ price: price.id }],
       default_payment_method: input.bankAccountId,
-      ...(isFutureDate
-        ? {
-            // For future-dated subscriptions, use trial_end to prevent immediate invoice
-            // The first invoice will be created when the trial ends (at billing_cycle_anchor)
-            trial_end: billingCycleAnchor,
-            billing_cycle_anchor: billingCycleAnchor,
-          }
-        : {
-            // For immediate subscriptions, just use billing_cycle_anchor
-            billing_cycle_anchor: billingCycleAnchor,
-          }),
+      billing_cycle_anchor: billingCycleAnchor,
       proration_behavior: "none",
       description:
         input.description ||
@@ -159,6 +146,9 @@ export async function createPodSubscription(
           },
         },
       },
+      // CRITICAL: Set backdate to billing cycle anchor to prevent immediate invoice
+      // This ensures the first invoice is created at the billing_cycle_anchor date, not immediately
+      backdate_start_date: billingCycleAnchor,
       // CRITICAL FIX: Use allow_incomplete to enable automatic charging at billing_cycle_anchor
       // This allows Stripe to automatically charge verified bank accounts on the anchor date
       payment_behavior: "allow_incomplete",
