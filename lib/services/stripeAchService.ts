@@ -182,10 +182,10 @@ export async function chargeAchContribution(
 /**
  * Verify Stripe Webhook Signatures
  */
-export function verifyStripeWebhookSignature(
+export async function verifyStripeWebhookSignature(
   rawBody: string | Buffer,
   signature: string
-): Stripe.Event {
+): Promise<Stripe.Event> {
   const stripe = getStripe();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Verify the webhook signature
     let event;
     try {
-      event = verifyStripeWebhookSignature(rawBody, signature);
+      event = await verifyStripeWebhookSignature(rawBody, signature);
     } catch (err: any) {
       console.error("❌ Webhook signature verification failed:", err.message);
       return NextResponse.json(
