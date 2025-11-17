@@ -121,12 +121,25 @@ export async function createPodSubscription(
       input.nextContributionDate.getTime() / 1000
     );
 
+    const now = Math.floor(Date.now() / 1000);
+    const isFutureDate = billingCycleAnchor > now;
+
     // Create the subscription
     const subscription = await stripe.subscriptions.create({
       customer: input.customerId,
       items: [{ price: price.id }],
       default_payment_method: input.bankAccountId,
-      billing_cycle_anchor: billingCycleAnchor,
+      ...(isFutureDate
+        ? {
+            // For future-dated subscriptions, use trial_end to prevent immediate invoice
+            // The first invoice will be created when the trial ends (at billing_cycle_anchor)
+            trial_end: billingCycleAnchor,
+            billing_cycle_anchor: billingCycleAnchor,
+          }
+        : {
+            // For immediate subscriptions, just use billing_cycle_anchor
+            billing_cycle_anchor: billingCycleAnchor,
+          }),
       proration_behavior: "none",
       description:
         input.description ||
