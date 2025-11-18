@@ -48,6 +48,7 @@ import type {
   RawAvatar,
   CreatePaymentRequest,
   RecordPaymentResponse,
+  DashboardSummaryResponse,
 } from "@/lib/types/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { ApiErrorClass } from "@/lib/utils/auth";
@@ -690,6 +691,17 @@ async function recordPayment(
   });
 }
 
+async function getDashboardSummary(
+  token: string
+): Promise<DashboardSummaryResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.DASHBOARD.SUMMARY);
+
+  return apiRequest<DashboardSummaryResponse>(url, {
+    method: "GET",
+    headers: getAuthHeaders(token),
+  });
+}
+
 export const AuthService = {
   login,
   signup,
@@ -716,4 +728,5 @@ export const AuthService = {
   getMyPods,
   getAvatars,
   recordPayment,
+  getDashboardSummary,
 };

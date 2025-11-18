@@ -202,11 +202,11 @@ const Dashboard = () => {
           </div>
           <div className={styles.col}>
             <BalanceInfo />
-            <CycleDuration />
+            {/* <CycleDuration /> */}
             <PodGoals />
           </div>
           <div className={styles.col}>
-            <PodMembers />
+            {/* <PodMembers /> */}
             <Achievements
               summary={achievementsSummary}
               loading={achievementsLoading}

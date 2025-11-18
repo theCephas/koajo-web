@@ -795,3 +795,163 @@ export async function createPaymentMethodFromFinancialConnectionsAction(
     };
   }
 }
+
+// ============================
+// STRIPE CONNECT - CREATE CONNECTED ACCOUNT
+// ============================
+
+interface CreateConnectedAccountInput {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  country?: string;
+  userId: string;
+}
+
+interface CreateConnectedAccountResult {
+  success: boolean;
+  accountId?: string;
+  error?: string;
+}
+
+/**
+ * Creates a Stripe Connect Express account for payouts.
+ * This account will be used to send money TO the user's bank account.
+ */
+export async function createConnectedAccountAction(
+  input: CreateConnectedAccountInput
+): Promise<CreateConnectedAccountResult> {
+  try {
+    const stripe = getStripe();
+
+    console.log("🔄 Creating Stripe Connect Express account for:", input.email);
+
+    const account = await stripe.accounts.create({
+      type: "express",
+      country: input.country || "US",
+      email: input.email,
+      capabilities: {
+        transfers: { requested: true },
+      },
+      business_type: "individual",
+      individual: {
+        email: input.email,
+        first_name: input.firstName || undefined,
+        last_name: input.lastName || undefined,
+      },
+      metadata: {
+        user_id: input.userId,
+        platform: "koajo",
+      },
+    });
+
+    console.log("✅ Connected account created:", account.id);
+
+    return {
+      success: true,
+      accountId: account.id,
+    };
+  } catch (error) {
+    console.error("❌ Error creating connected account:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    return {
+      success: false,
+      error: `Failed to create connected account: ${errorMessage}`,
+    };
+  }
+}
+
+// ============================
+// STRIPE CONNECT - CREATE ACCOUNT SESSION
+// ============================
+
+interface CreateAccountSessionInput {
+  accountId: string;
+}
+
+interface CreateAccountSessionResult {
+  success: boolean;
+  clientSecret?: string;
+  error?: string;
+}
+
+/**
+ * Creates an Account Session for Stripe Connect embedded onboarding.
+ * The client secret is used to initialize the Connect embedded component.
+ */
+export async function createAccountSessionAction(
+  input: CreateAccountSessionInput
+): Promise<CreateAccountSessionResult> {
+  try {
+    const stripe = getStripe();
+
+    console.log("🔄 Creating account session for:", input.accountId);
+
+    const accountSession = await stripe.accountSessions.create({
+      account: input.accountId,
+      components: {
+        account_onboarding: { enabled: true },
+      },
+    });
+
+    console.log("✅ Account session created");
+
+    return {
+      success: true,
+      clientSecret: accountSession.client_secret,
+    };
+  } catch (error) {
+    console.error("❌ Error creating account session:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    return {
+      success: false,
+      error: `Failed to create account session: ${errorMessage}`,
+    };
+  }
+}
+
+// ============================
+// STRIPE CONNECT - GET ACCOUNT STATUS
+// ============================
+
+interface GetConnectedAccountStatusInput {
+  accountId: string;
+}
+
+interface GetConnectedAccountStatusResult {
+  success: boolean;
+  detailsSubmitted?: boolean;
+  chargesEnabled?: boolean;
+  payoutsEnabled?: boolean;
+  error?: string;
+}
+
+/**
+ * Retrieves the status of a connected account to check if onboarding is complete.
+ */
+export async function getConnectedAccountStatusAction(
+  input: GetConnectedAccountStatusInput
+): Promise<GetConnectedAccountStatusResult> {
+  try {
+    const stripe = getStripe();
+
+    const account = await stripe.accounts.retrieve(input.accountId);
+
+    return {
+      success: true,
+      detailsSubmitted: account.details_submitted,
+      chargesEnabled: account.charges_enabled,
+      payoutsEnabled: account.payouts_enabled,
+    };
+  } catch (error) {
+    console.error("❌ Error retrieving account status:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    return {
+      success: false,
+      error: `Failed to retrieve account status: ${errorMessage}`,
+    };
+  }
+}

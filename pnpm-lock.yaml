@@ -35,6 +35,12 @@ importers:
       '@radix-ui/react-toast':
         specifier: ^1.2.15
         version: 1.2.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@stripe/connect-js':
+        specifier: ^3.3.31
+        version: 3.3.31
+      '@stripe/react-connect-js':
+        specifier: ^3.3.31
+        version: 3.3.31(@stripe/connect-js@3.3.31)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@stripe/stripe-js':
         specifier: ^7.9.0
         version: 7.9.0
@@ -1964,6 +1970,16 @@ packages:
 
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
+
+  '@stripe/connect-js@3.3.31':
+    resolution: {integrity: sha512-vjsZbatveSMoceOKZHt4eImmlBQla112OV9+enxcZUC1dGziTl2J2E3iH3n01yx9nu9ziesMJnSh/Y2d62TA/Q==}
+
+  '@stripe/react-connect-js@3.3.31':
+    resolution: {integrity: sha512-lzJbFdnlUxyILuEjdE9CqYhGq10XPvz89m/Phe/9aqXhLi02eIbaNHZOL+WQo1NMOGWeLjASnMCUagCZwoOsiA==}
+    peerDependencies:
+      '@stripe/connect-js': '>=3.3.29'
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   '@stripe/stripe-js@7.9.0':
     resolution: {integrity: sha512-ggs5k+/0FUJcIgNY08aZTqpBTtbExkJMYMLSMwyucrhtWexVOEY1KJmhBsxf+E/Q15f5rbwBpj+t0t2AW2oCsQ==}
@@ -7526,6 +7542,14 @@ snapshots:
   '@standard-schema/spec@1.0.0': {}
 
   '@standard-schema/utils@0.3.0': {}
+
+  '@stripe/connect-js@3.3.31': {}
+
+  '@stripe/react-connect-js@3.3.31(@stripe/connect-js@3.3.31)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@stripe/connect-js': 3.3.31
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@stripe/stripe-js@7.9.0': {}
 

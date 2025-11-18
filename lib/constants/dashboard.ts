@@ -40,8 +40,18 @@ export const DASHBOARD_BREADCRUMBS = {
       url: "/dashboard",
     },
     {
-      title: "Transactions",
+      title: "Pod Info",
       url: "/dashboard/pod-info-and-transactions",
+    },
+  ],
+  TRANSACTIONS: [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+    },
+    {
+      title: "Transactions",
+      url: "/dashboard/transactions",
     },
   ],
   PERSONAL_INFORMATION: [

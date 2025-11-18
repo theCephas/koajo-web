@@ -214,6 +214,8 @@ export interface LinkStripeBankAccountRequest {
   account_first_name: string; // First name of account holder (required)
   account_last_name: string; // Last name of account holder (required)
   account_last4: string; // Last 4 digits of account number (required)
+  payment_method_id?: string; // Payment method ID for charging (pm_*)
+  connected_account_id?: string; // Stripe Connect account ID for payouts (acct_*)
 }
 
 // ===== POD TYPES =====
@@ -373,6 +375,53 @@ export interface RecordPayoutResponse {
   stripeReference: string;
   fee: string;
   membershipCompleted: boolean;
+}
+
+// ===== TRANSACTION TYPES =====
+
+export type TransactionTypeFilter = "payments" | "payouts" | "all";
+export type TransactionTimeframe = "past" | "upcoming";
+export type TransactionSortOrder = "asc" | "desc";
+export type TransactionStatus = "succeeded" | "pending" | "failed" | "canceled" | "processing";
+
+export interface Transaction {
+  id: string;
+  type: "payment" | "payout";
+  status: TransactionStatus;
+  amount: string;
+  currency: string;
+  fee?: string | null;
+  podId: string;
+  podName?: string | null;
+  podPlanCode?: string;
+  membershipId: string;
+  stripeReference?: string;
+  description?: string;
+  recordedAt: string;
+  payoutDate?: string | null;
+}
+
+export interface TransactionListParams {
+  limit?: number;
+  offset?: number;
+  type?: TransactionTypeFilter;
+  status?: string;
+  timeframe?: TransactionTimeframe;
+  from?: string;
+  to?: string;
+  sort?: TransactionSortOrder;
+}
+
+export interface TransactionListResponse {
+  total: number;
+  items: Transaction[];
+}
+
+// ===== DASHBOARD SUMMARY TYPES =====
+
+export interface DashboardSummaryResponse {
+  totalContributions: string;
+  totalPayouts: string;
 }
 
 // ===== ACHIEVEMENT TYPES =====

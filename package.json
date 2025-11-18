@@ -18,6 +18,8 @@
     "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-toast": "^1.2.15",
+    "@stripe/connect-js": "^3.3.31",
+    "@stripe/react-connect-js": "^3.3.31",
     "@stripe/stripe-js": "^7.9.0",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",

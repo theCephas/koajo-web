@@ -60,12 +60,12 @@ const TransactionPage = () => {
           <div className="col-span-1">
             <BalanceInfo inforType="contribution" />
           </div>
-          <div className="col-span-2">
+          {/* <div className="col-span-2">
             <PodMembers />
-          </div>
-          <div className="col-span-1">
+          </div> */}
+          {/* <div className="col-span-1">
             <CycleDuration />
-          </div>
+          </div> */}
         </div>
 
         {/* <div className={styles.transaction}>

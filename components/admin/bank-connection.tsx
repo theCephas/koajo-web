@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
+import { loadConnectAndInitialize } from "@stripe/connect-js";
+import {
+  ConnectComponentsProvider,
+  ConnectAccountOnboarding,
+} from "@stripe/react-connect-js";
 import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { useOnboarding } from "@/lib/provider-onboarding";
@@ -15,6 +20,9 @@ import {
   getAccountOwnershipAction,
   createPaymentMethodFromFinancialConnectionsAction,
   getClientInfoAction,
+  createConnectedAccountAction,
+  createAccountSessionAction,
+  getConnectedAccountStatusAction,
 } from "@/app/register/kyc/actions";
 
 /**
@@ -47,12 +55,32 @@ function namesMatch(name1: string, name2: string): boolean {
   return shorter.every((part) => longer.includes(part));
 }
 
+// Types for the multi-step flow
+type FlowStep = "initial" | "connect_onboarding" | "completing";
+
+// Store intermediate data between steps
+interface BankConnectionData {
+  connectedAccountId: string;
+  customerId: string;
+  paymentMethodId: string;
+  accountFirstName: string;
+  accountLastName: string;
+  accountLast4: string;
+  bankName?: string;
+  fcAccountId: string;
+}
+
 export default function BankConnection() {
   const { close } = useOnboarding();
   const { emailVerified, kycCompleted, user, refreshUser } = useDashboard();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stripe, setStripe] = useState<Stripe | null>(null);
+
+  // Multi-step flow state
+  const [flowStep, setFlowStep] = useState<FlowStep>("initial");
+  const [bankConnectionData, setBankConnectionData] = useState<BankConnectionData | null>(null);
+  const [stripeConnectInstance, setStripeConnectInstance] = useState<ReturnType<typeof loadConnectAndInitialize> | null>(null);
 
   useEffect(() => {
     const initStripe = async () => {
@@ -278,12 +306,72 @@ export default function BankConnection() {
         );
       }
 
-      console.log("Sending bank account data to backend...");
-      await AuthService.linkStripeBankAccount(bankAccountData, token);
-      console.log("Bank account successfully linked");
+      // ============================
+      // STEP 2: CREATE STRIPE CONNECT ACCOUNT FOR PAYOUTS
+      // ============================
+      console.log("🔄 Creating Stripe Connect Express account for payouts...");
 
-      await refreshUser();
-      close();
+      const connectAccountResult = await createConnectedAccountAction({
+        email: resolvedUser.email,
+        firstName: resolvedUser.firstName ?? undefined,
+        lastName: resolvedUser.lastName ?? undefined,
+        country: "US",
+        userId: resolvedUser.id,
+      });
+
+      if (!connectAccountResult.success || !connectAccountResult.accountId) {
+        throw new Error(
+          connectAccountResult.error || "Failed to create Connect account for payouts."
+        );
+      }
+
+      const connectedAccountId = connectAccountResult.accountId;
+      console.log("✅ Connect account created:", connectedAccountId);
+
+      // Store data for after onboarding completes
+      setBankConnectionData({
+        connectedAccountId,
+        customerId: customer.customerId,
+        paymentMethodId,
+        accountFirstName: accountFirstName ?? "Test",
+        accountLastName: accountLastName ?? "Koajo",
+        accountLast4: connectedAccount.last4 ?? "0000",
+        bankName: connectedAccount.institution_name ?? undefined,
+        fcAccountId: connectedAccount.id,
+      });
+
+      // ============================
+      // STEP 3: INITIALIZE CONNECT ONBOARDING
+      // ============================
+      console.log("🔄 Initializing Connect onboarding component...");
+
+      const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+      if (!stripeKey) {
+        throw new Error("Stripe publishable key not configured.");
+      }
+
+      const connectInstance = loadConnectAndInitialize({
+        publishableKey: stripeKey,
+        fetchClientSecret: async (): Promise<string> => {
+          const sessionResult = await createAccountSessionAction({
+            accountId: connectedAccountId,
+          });
+
+          if (!sessionResult.success || !sessionResult.clientSecret) {
+            console.error("Failed to create account session:", sessionResult.error);
+            throw new Error(sessionResult.error || "Failed to create account session");
+          }
+
+          return sessionResult.clientSecret;
+        },
+      });
+
+      setStripeConnectInstance(connectInstance);
+      setFlowStep("connect_onboarding");
+      setIsLoading(false);
+
+      console.log("✅ Connect onboarding initialized - showing UI");
+
     } catch (err) {
       console.error("Bank connection error:", err);
       setError(
@@ -291,6 +379,71 @@ export default function BankConnection() {
           ? err.message
           : "Failed to connect bank account. Please try again."
       );
+      setIsLoading(false);
+    }
+  };
+
+  // Handler for when Connect onboarding is completed
+  const handleConnectOnboardingExit = async () => {
+    if (!bankConnectionData) {
+      setError("Missing bank connection data. Please try again.");
+      setFlowStep("initial");
+      return;
+    }
+
+    setFlowStep("completing");
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = TokenManager.getToken();
+      if (!token) {
+        throw new Error("Please log in again to complete bank connection.");
+      }
+
+      // Check if onboarding was successful
+      console.log("🔍 Checking Connect account status...");
+      const statusResult = await getConnectedAccountStatusAction({
+        accountId: bankConnectionData.connectedAccountId,
+      });
+
+      console.log("Account status:", statusResult);
+
+      // Note: For Express accounts, payouts_enabled may not be immediately true
+      // The account needs to complete verification which can take time
+      if (!statusResult.detailsSubmitted) {
+        throw new Error(
+          "Onboarding was not completed. Please try again and complete all required steps."
+        );
+      }
+
+      // Send all data to backend
+      const bankAccountPayload = {
+        id: bankConnectionData.fcAccountId,
+        customer_id: bankConnectionData.customerId,
+        payment_method_id: bankConnectionData.paymentMethodId,
+        account_first_name: bankConnectionData.accountFirstName,
+        account_last_name: bankConnectionData.accountLastName,
+        account_last4: bankConnectionData.accountLast4,
+        bank_name: bankConnectionData.bankName,
+        connected_account_id: bankConnectionData.connectedAccountId,
+      };
+
+      console.log("Sending bank account data to backend:", bankAccountPayload);
+      await AuthService.linkStripeBankAccount(bankAccountPayload, token);
+      console.log("✅ Bank account successfully linked with Connect account");
+
+      await refreshUser();
+      close();
+    } catch (err) {
+      console.error("Error completing bank connection:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to complete bank connection. Please try again."
+      );
+      // Go back to initial state so user can retry
+      setFlowStep("initial");
     } finally {
       setIsLoading(false);
     }
@@ -323,6 +476,51 @@ export default function BankConnection() {
     );
   }
 
+  // Show Connect onboarding UI
+  if (flowStep === "connect_onboarding" && stripeConnectInstance) {
+    return (
+      <CardAuth
+        title="Complete Payout Setup"
+        description="Complete your account verification to enable receiving payouts from your pod."
+      >
+        <div className="space-y-6">
+          <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
+            <ConnectAccountOnboarding
+              onExit={handleConnectOnboardingExit}
+              collectionOptions={{
+                fields: "eventually_due",
+                futureRequirements: "include",
+              }}
+            />
+          </ConnectComponentsProvider>
+          {error && (
+            <p className="text-red-500 text-center text-sm pt-2">{error}</p>
+          )}
+        </div>
+      </CardAuth>
+    );
+  }
+
+  // Show completing state
+  if (flowStep === "completing") {
+    return (
+      <CardAuth
+        title="Completing Setup"
+        description="Finalizing your bank account connection..."
+      >
+        <div className="space-y-6">
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+          </div>
+          {error && (
+            <p className="text-red-500 text-center text-sm pt-2">{error}</p>
+          )}
+        </div>
+      </CardAuth>
+    );
+  }
+
+  // Initial state - show connect button
   return (
     <CardAuth
       title="Connect Your Bank Account"

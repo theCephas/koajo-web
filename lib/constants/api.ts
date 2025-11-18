@@ -41,6 +41,15 @@ export const API_ENDPOINTS = {
   PAYOUTS: {
     RECORD: "/payouts",
   },
+  TRANSACTIONS: {
+    LIST: "/transactions",
+    EXPORT: "/transactions/export",
+    BY_POD: (podId: string) => `/transactions/pods/${podId}`,
+    EXPORT_BY_POD: (podId: string) => `/transactions/pods/${podId}/export`,
+  },
+  DASHBOARD: {
+    SUMMARY: "/dashboard/summary",
+  },
   ACHIEVEMENTS: {
     SUMMARY: "/achievements/summary",
   },

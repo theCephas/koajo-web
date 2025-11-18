@@ -10,7 +10,7 @@ import {
   SkeletonLine,
 } from "@/components/admin/dashboard-skeletons";
 
-const members: MemberCardProps['member'][] = [
+const members: MemberCardProps["member"][] = [
   // {
   //   id: 1,
   //   name: "John Doe",
@@ -88,12 +88,12 @@ const PodMembers = ({ className }: PodMembersProps) => {
   const isLocked = !emailVerified;
   const isLoading = podsLoading;
 
-  const displayedMembers = members.slice(0, MAX_VISIBLE_MEMBERS); 
+  const displayedMembers = members.slice(0, MAX_VISIBLE_MEMBERS);
 
   return (
     <>
       <div className="relative">
-      <Card
+        {/* <Card
         title="Group Members"
         tooltip="View all members in your pod"
         onSeeMore={() => setModalVisible(true)}
@@ -128,7 +128,7 @@ const PodMembers = ({ className }: PodMembersProps) => {
             </div>
           )}
         </div>
-      </Card>
+      </Card> */}
         <LockedOverlay />
       </div>
 
@@ -139,7 +139,9 @@ const PodMembers = ({ className }: PodMembersProps) => {
       >
         <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">All Group Members</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              All Group Members
+            </h3>
             <button
               onClick={() => setModalVisible(false)}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -171,15 +173,19 @@ interface MemberCardProps {
 const MemberCard = ({ member }: MemberCardProps) => {
   return (
     <div className="rounded-xl px-5 py-2.5 flex flex-col items-center gap-3 border border-secondary-100">
-      <div className={cn(
-        "size-10 rounded-full flex items-center justify-center text-2xl",
-        member.avatarBg
-      )}>
+      <div
+        className={cn(
+          "size-10 rounded-full flex items-center justify-center text-2xl",
+          member.avatarBg
+        )}
+      >
         {member.avatar}
       </div>
       <div className="text-center">
         <div className="text-xs text-text-300 mb-1">User ID</div>
-        <div className="text-sm font-semibold text-text-300">{member.userId}</div>
+        <div className="text-sm font-semibold text-text-300">
+          {member.userId}
+        </div>
       </div>
     </div>
   );
