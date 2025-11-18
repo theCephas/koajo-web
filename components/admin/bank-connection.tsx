@@ -218,6 +218,8 @@ export default function BankConnection() {
         userId: resolvedUser.id,
       });
 
+      console.log("📋 Full customAccountResult response:", JSON.stringify(customAccountResult, null, 2));
+
       if (!customAccountResult.success || !customAccountResult.accountId) {
         console.error("❌ Failed to create custom account:", customAccountResult.error);
         throw new Error(
