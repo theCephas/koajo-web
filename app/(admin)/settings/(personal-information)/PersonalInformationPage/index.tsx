@@ -123,7 +123,7 @@ const PersonalInformationPage = () => {
         <Field
           className={styles.field}
           label="Bank Name"
-          value={lastName}
+          value={bankName}
           onChange={(e) => setBankName(e.target.value)}
           disabled={true}
           // placeholder="Enter your last name"

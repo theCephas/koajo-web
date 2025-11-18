@@ -8,7 +8,7 @@ export function getAvatarUrl(
   avatarId: string,
   transformation: string = "w_200,h_200,c_fill,g_face"
 ): string {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "koajo";
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_2 || "koajo";
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transformation}/${avatarId}`;
 }
 
