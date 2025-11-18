@@ -29,6 +29,7 @@ export interface RegistrationFormValues {
   agreeToTerms: boolean;
   dob: string;
   addressLine1: string;
+  addressCity: string;
   addressState: string;
   addressPostalCode: string;
 }
@@ -70,6 +71,7 @@ const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
     agreeToTerms: false,
     dob: "",
     addressLine1: "",
+    addressCity: "",
     addressState: "",
     addressPostalCode: "",
   },
@@ -196,6 +198,18 @@ function getRules<T extends FieldValues>(
           maxLength: {
             value: FORM_FIELDS_PATTERNS.ADDRESS.LINE1.MAX_LENGTH,
             message: FORM_FIELDS_MESSAGES.ADDRESS.LINE1.MAX_LENGTH,
+          },
+        } as RegisterOptions<T, Path<T>>;
+      case "addressCity":
+        return {
+          required: FORM_FIELDS_MESSAGES.ADDRESS.CITY.REQUIRED,
+          minLength: {
+            value: FORM_FIELDS_PATTERNS.ADDRESS.CITY.MIN_LENGTH,
+            message: FORM_FIELDS_MESSAGES.ADDRESS.CITY.MIN_LENGTH,
+          },
+          maxLength: {
+            value: FORM_FIELDS_PATTERNS.ADDRESS.CITY.MAX_LENGTH,
+            message: FORM_FIELDS_MESSAGES.ADDRESS.CITY.MAX_LENGTH,
           },
         } as RegisterOptions<T, Path<T>>;
       case "addressState":

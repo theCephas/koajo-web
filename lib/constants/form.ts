@@ -151,8 +151,8 @@ export const FORM_FIELDS_MESSAGES = {
       REQUIRED: "State is required",
     },
     POSTAL_CODE: {
-      REQUIRED: "Postal code is required",
-      PATTERN: "Please enter a valid US postal code",
+      REQUIRED: "Zip code is required",
+      PATTERN: "Please enter a valid US zip code",
     },
   },
 

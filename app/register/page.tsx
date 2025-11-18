@@ -38,6 +38,7 @@ interface RegisterFormData {
   lastName: string;
   dob: string;
   addressLine1: string;
+  addressCity: string;
   addressState: string;
   addressPostalCode: string;
 }
@@ -83,10 +84,6 @@ export default function RegisterPage() {
       const [year, month, day] = data.dob.split("-");
       const formattedDob = `${month}-${day}-${year}`;
 
-      // Get full state name for city field
-      const selectedState = US_STATES.find(s => s.code === data.addressState);
-      const cityName = selectedState?.name || data.addressState;
-
       const response = await AuthService.signup({
         email: data.email,
         phoneNumber: getPhoneNumber(data.phoneNumber),
@@ -95,7 +92,7 @@ export default function RegisterPage() {
         last_name: data.lastName,
         dob: formattedDob,
         line1: data.addressLine1,
-        city: cityName,
+        city: data.addressCity,
         state: data.addressState,
         postal_code: data.addressPostalCode,
         country: "US",
@@ -167,7 +164,9 @@ export default function RegisterPage() {
         >
           {/* Personal Information Section */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-text-600">Personal Information</h3>
+            <h3 className="text-sm font-medium text-text-600">
+              Personal Information
+            </h3>
 
             {/* Name Row - Grid */}
             <div className="grid grid-cols-2 gap-3">
@@ -181,15 +180,15 @@ export default function RegisterPage() {
                     content={
                       <div className="text-xs">
                         <p className="font-semibold mb-1">Important</p>
-                        <p>
-                          Must match your bank account name.
-                        </p>
+                        <p>Must match your bank account name.</p>
                       </div>
                     }
                     position="top"
                   >
                     <div className="w-3.5 h-3.5 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
-                      <span className="text-white text-[10px] font-bold">i</span>
+                      <span className="text-white text-[10px] font-bold">
+                        i
+                      </span>
                     </div>
                   </Tooltip>
                 </div>
@@ -273,8 +272,17 @@ export default function RegisterPage() {
               {...registerField("addressLine1")}
             />
 
-            {/* State and Postal Code Row - Grid */}
+            {/* City and State Row - Grid */}
             <div className="grid grid-cols-2 gap-3">
+              <Field
+                label="City"
+                type="text"
+                placeholder="Los Angeles"
+                required
+                error={formErrors.addressCity?.message}
+                {...registerField("addressCity")}
+              />
+
               {/* State Dropdown */}
               <div className="space-y-1.5">
                 <Label htmlFor="addressState" required className="text-sm">
@@ -297,16 +305,17 @@ export default function RegisterPage() {
                   </p>
                 )}
               </div>
-
-              <Field
-                label="Postal Code"
-                type="text"
-                placeholder="12345"
-                required
-                error={formErrors.addressPostalCode?.message}
-                {...registerField("addressPostalCode")}
-              />
             </div>
+
+            {/* Zip Code */}
+            <Field
+              label="Zip Code"
+              type="text"
+              placeholder="12345"
+              required
+              error={formErrors.addressPostalCode?.message}
+              {...registerField("addressPostalCode")}
+            />
           </div>
 
           {/* Password Section */}
