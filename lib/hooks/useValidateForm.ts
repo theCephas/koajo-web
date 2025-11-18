@@ -27,6 +27,10 @@ export interface RegistrationFormValues {
   password: string;
   confirmPassword: string;
   agreeToTerms: boolean;
+  dob: string;
+  addressLine1: string;
+  addressState: string;
+  addressPostalCode: string;
 }
 
 export interface OtpFormValues {
@@ -64,6 +68,10 @@ const defaultValuesByType: { [K in FormType]: Partial<FormValuesMap[K]> } = {
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
+    dob: "",
+    addressLine1: "",
+    addressState: "",
+    addressPostalCode: "",
   },
   otp: {
     otp: "",
@@ -158,6 +166,48 @@ function getRules<T extends FieldValues>(
         return {
           validate: (value: unknown) => {
             return Boolean(value) || FORM_FIELDS_MESSAGES.AGREE_TO_TERMS.REQUIRED;
+          },
+        } as RegisterOptions<T, Path<T>>;
+      case "dob":
+        return {
+          required: FORM_FIELDS_MESSAGES.DOB.REQUIRED,
+          validate: (value: unknown) => {
+            if (!value || typeof value !== "string") return FORM_FIELDS_MESSAGES.DOB.REQUIRED;
+            // Date input returns YYYY-MM-DD format
+            const [year, month, day] = value.split("-").map(Number);
+            if (!year || !month || !day) return FORM_FIELDS_MESSAGES.DOB.PATTERN;
+            const birthDate = new Date(year, month - 1, day);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+            }
+            return age >= FORM_FIELDS_PATTERNS.DOB.MIN_AGE || FORM_FIELDS_MESSAGES.DOB.MIN_AGE;
+          },
+        } as RegisterOptions<T, Path<T>>;
+      case "addressLine1":
+        return {
+          required: FORM_FIELDS_MESSAGES.ADDRESS.LINE1.REQUIRED,
+          minLength: {
+            value: FORM_FIELDS_PATTERNS.ADDRESS.LINE1.MIN_LENGTH,
+            message: FORM_FIELDS_MESSAGES.ADDRESS.LINE1.MIN_LENGTH,
+          },
+          maxLength: {
+            value: FORM_FIELDS_PATTERNS.ADDRESS.LINE1.MAX_LENGTH,
+            message: FORM_FIELDS_MESSAGES.ADDRESS.LINE1.MAX_LENGTH,
+          },
+        } as RegisterOptions<T, Path<T>>;
+      case "addressState":
+        return {
+          required: FORM_FIELDS_MESSAGES.ADDRESS.STATE.REQUIRED,
+        } as RegisterOptions<T, Path<T>>;
+      case "addressPostalCode":
+        return {
+          required: FORM_FIELDS_MESSAGES.ADDRESS.POSTAL_CODE.REQUIRED,
+          pattern: {
+            value: FORM_FIELDS_PATTERNS.ADDRESS.POSTAL_CODE.PATTERN,
+            message: FORM_FIELDS_MESSAGES.ADDRESS.POSTAL_CODE.PATTERN,
           },
         } as RegisterOptions<T, Path<T>>;
       default:

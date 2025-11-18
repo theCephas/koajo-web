@@ -846,6 +846,7 @@ export async function createConnectedAccountAction(
     });
 
     console.log("✅ Connected account created:", account.id);
+    console.log("📋 Account details:", JSON.stringify(account, null, 2));
 
     return {
       success: true,
@@ -858,6 +859,130 @@ export async function createConnectedAccountAction(
     return {
       success: false,
       error: `Failed to create connected account: ${errorMessage}`,
+    };
+  }
+}
+
+// ============================
+// STRIPE CONNECT - CREATE CUSTOM ACCOUNT WITH BANK
+// ============================
+
+interface CreateCustomConnectedAccountInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+  dob: string; // MM-DD-YYYY format
+  address: {
+    line1: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+  };
+  routingNumber: string;
+  accountNumber: string;
+  userId: string;
+}
+
+interface CreateCustomConnectedAccountResult {
+  success: boolean;
+  accountId?: string;
+  error?: string;
+}
+
+/**
+ * Creates a Stripe Connect Custom account with external bank account for payouts.
+ * This account will be used to send money TO the user's bank account.
+ * Uses user's DOB and address from /auth/me endpoint.
+ */
+export async function createCustomConnectedAccountAction(
+  input: CreateCustomConnectedAccountInput
+): Promise<CreateCustomConnectedAccountResult> {
+  try {
+    const stripe = getStripe();
+
+    console.log("🔄 Creating Stripe Connect Custom account for:", input.email);
+    console.log("📋 Input data:", JSON.stringify({
+      email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      dob: input.dob,
+      address: input.address,
+      routingNumber: `${input.routingNumber.substring(0, 3)}***`,
+      accountNumber: `***${input.accountNumber.slice(-4)}`,
+    }, null, 2));
+
+    // Parse DOB from MM-DD-YYYY format
+    const [month, day, year] = input.dob.split("-").map(Number);
+
+    const accountHolderName = `${input.firstName} ${input.lastName}`;
+
+    const account = await stripe.accounts.create({
+      type: "custom",
+      country: "US",
+      business_type: "individual",
+      email: input.email,
+      capabilities: {
+        transfers: { requested: true },
+      },
+      individual: {
+        first_name: input.firstName,
+        last_name: input.lastName,
+        email: input.email,
+        dob: {
+          day,
+          month,
+          year,
+        },
+        address: {
+          line1: input.address.line1,
+          city: input.address.city,
+          state: input.address.state,
+          postal_code: input.address.postal_code,
+          country: input.address.country,
+        },
+      },
+      external_account: {
+        object: "bank_account",
+        country: "US",
+        currency: "usd",
+        account_holder_name: accountHolderName,
+        routing_number: input.routingNumber,
+        account_number: input.accountNumber,
+      },
+      metadata: {
+        user_id: input.userId,
+        platform: "koajo",
+      },
+      tos_acceptance: {
+        date: Math.floor(Date.now() / 1000),
+        ip: "0.0.0.0", // Will be updated with actual IP
+      },
+    });
+
+    console.log("✅ Custom connected account created:", account.id);
+    console.log("📋 Account response:", JSON.stringify({
+      id: account.id,
+      type: account.type,
+      capabilities: account.capabilities,
+      details_submitted: account.details_submitted,
+      charges_enabled: account.charges_enabled,
+      payouts_enabled: account.payouts_enabled,
+      external_accounts: account.external_accounts?.data?.length,
+    }, null, 2));
+
+    return {
+      success: true,
+      accountId: account.id,
+    };
+  } catch (error) {
+    console.error("❌ Error creating custom connected account:", error);
+    console.error("📋 Error details:", JSON.stringify(error, null, 2));
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    return {
+      success: false,
+      error: `Failed to create custom connected account: ${errorMessage}`,
     };
   }
 }

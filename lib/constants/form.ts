@@ -43,6 +43,39 @@ export const FORM_FIELDS_PATTERNS = {
     PATTERN: /^\(\d{3}\) \d{3} \d{4}$/, // (XXX) XXX XXXX
     MAX_LENGTH: 14,
   },
+
+  DOB: {
+    PATTERN: /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}$/, // MM-DD-YYYY
+    MIN_AGE: 18,
+  },
+
+  ADDRESS: {
+    LINE1: {
+      MIN_LENGTH: 3,
+      MAX_LENGTH: 100,
+    },
+    CITY: {
+      MIN_LENGTH: 2,
+      MAX_LENGTH: 50,
+    },
+    STATE: {
+      LENGTH: 2,
+    },
+    POSTAL_CODE: {
+      PATTERN: /^\d{5}(-\d{4})?$/, // 12345 or 12345-6789
+    },
+  },
+
+  ROUTING_NUMBER: {
+    PATTERN: /^\d{9}$/, // 9 digits
+    LENGTH: 9,
+  },
+
+  ACCOUNT_NUMBER: {
+    PATTERN: /^\d{4,17}$/, // 4-17 digits
+    MIN_LENGTH: 4,
+    MAX_LENGTH: 17,
+  },
 };
 
 export const FORM_FIELDS_MESSAGES = {
@@ -95,5 +128,41 @@ export const FORM_FIELDS_MESSAGES = {
 
   AGREE_TO_TERMS: {
     REQUIRED: "You must agree to the terms and conditions",
+  },
+
+  DOB: {
+    REQUIRED: "Date of birth is required",
+    PATTERN: "Please enter a valid date in MM-DD-YYYY format",
+    MIN_AGE: "You must be at least 18 years old",
+  },
+
+  ADDRESS: {
+    LINE1: {
+      REQUIRED: "Street address is required",
+      MIN_LENGTH: "Street address must be at least 3 characters",
+      MAX_LENGTH: "Street address must be at most 100 characters",
+    },
+    CITY: {
+      REQUIRED: "City is required",
+      MIN_LENGTH: "City must be at least 2 characters",
+      MAX_LENGTH: "City must be at most 50 characters",
+    },
+    STATE: {
+      REQUIRED: "State is required",
+    },
+    POSTAL_CODE: {
+      REQUIRED: "Postal code is required",
+      PATTERN: "Please enter a valid US postal code",
+    },
+  },
+
+  ROUTING_NUMBER: {
+    REQUIRED: "Routing number is required",
+    PATTERN: "Routing number must be exactly 9 digits",
+  },
+
+  ACCOUNT_NUMBER: {
+    REQUIRED: "Account number is required",
+    PATTERN: "Account number must be between 4 and 17 digits",
   },
 };

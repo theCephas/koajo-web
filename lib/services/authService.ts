@@ -582,6 +582,7 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
     emailVerified: profile.email_verified,
     agreedToTerms: profile.agreed_to_terms,
     dateOfBirth: profile.date_of_birth,
+    dob: profile.dob,
     avatarId: profile.avatar_url,
     isActive: profile.is_active,
     lastLoginAt: profile.last_login_at,
@@ -594,6 +595,14 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
     ),
     customer: profile.customer,
     bankAccount: profile.bank_account,
+    // Address from /auth/me
+    address: profile.line1 ? {
+      line1: profile.line1,
+      city: profile.city ?? "",
+      state: profile.state ?? "",
+      postal_code: profile.postal_code ?? "",
+      country: profile.country ?? "US",
+    } : undefined,
   };
 };
 

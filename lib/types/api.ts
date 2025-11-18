@@ -47,6 +47,12 @@ export interface SignupRequest {
   password: string;
   first_name: string;
   last_name: string;
+  dob: string;
+  line1: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
 }
 
 export interface SignupResponse {
@@ -524,6 +530,14 @@ export interface AcceptCustomInviteRequest {
 
 // ===== USER TYPES =====
 
+export interface UserAddress {
+  line1: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -533,6 +547,7 @@ export interface User {
   emailVerified: boolean;
   agreedToTerms: boolean;
   dateOfBirth?: string;
+  dob?: string;
   avatarId?: string;
   isActive: boolean;
   lastLoginAt?: string;
@@ -542,6 +557,9 @@ export interface User {
 
   emailNotificationsEnabled?: boolean;
   transactionNotificationsEnabled?: boolean;
+
+  // Address fields from /auth/me
+  address?: UserAddress;
 
   customer?: {
     id?: string;
@@ -582,6 +600,7 @@ export interface RawUserProfileResponse {
   email_verified: boolean;
   agreed_to_terms: boolean;
   date_of_birth?: string;
+  dob?: string;
   avatar_url?: string;
   is_active: boolean;
   emailNotificationsEnabled?: boolean;
@@ -592,6 +611,12 @@ export interface RawUserProfileResponse {
   identity_verification?: RawIdentityVerificationRecord | null;
   customer?: User["customer"];
   bank_account?: User["bankAccount"];
+  // Address fields
+  line1?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
 }
 
 // ===== AVATAR TYPES =====

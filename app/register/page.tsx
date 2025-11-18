@@ -26,6 +26,7 @@ import {
 } from "@/lib/constants/dashboard";
 import { SignupResponse, User } from "@/lib/types/api";
 import { resolveApiErrorMessage } from "@/lib/utils/api-helpers";
+import { US_STATES } from "@/lib/constants/us-states";
 
 interface RegisterFormData {
   email: string;
@@ -35,6 +36,10 @@ interface RegisterFormData {
   agreeToTerms: boolean;
   firstName: string;
   lastName: string;
+  dob: string;
+  addressLine1: string;
+  addressState: string;
+  addressPostalCode: string;
 }
 
 export default function RegisterPage() {
@@ -74,12 +79,26 @@ export default function RegisterPage() {
     setIsLoading(true);
     setErrorMessage("");
     try {
+      // Convert date from YYYY-MM-DD (date input) to MM-DD-YYYY format
+      const [year, month, day] = data.dob.split("-");
+      const formattedDob = `${month}-${day}-${year}`;
+
+      // Get full state name for city field
+      const selectedState = US_STATES.find(s => s.code === data.addressState);
+      const cityName = selectedState?.name || data.addressState;
+
       const response = await AuthService.signup({
         email: data.email,
         phoneNumber: getPhoneNumber(data.phoneNumber),
         password: data.password,
         first_name: data.firstName,
         last_name: data.lastName,
+        dob: formattedDob,
+        line1: data.addressLine1,
+        city: cityName,
+        state: data.addressState,
+        postal_code: data.addressPostalCode,
+        country: "US",
       });
 
       // Check for error response
@@ -137,126 +156,188 @@ export default function RegisterPage() {
     <>
       <CardAuth
         title="Let's Create Your Account"
-        description="Get started with Koajo and take control of your finances."
+        // description="Get started with Koajo and take control of your finances."
+        description="Koajo is required by law to comply with US regulatory standards and verify the entity of every user according to the US patriots act. Please provide the following details to create your account:"
       >
         {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-6.5"
+          className="space-y-4"
           noValidate
         >
-          {/* First Name Field with Tooltip */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="firstName" required>
-                First Name
-              </Label>
-              <Tooltip
-                content={
-                  <div className="text-xs">
-                    <p className="font-semibold mb-1">⚠️ Important</p>
-                    <p>
-                      Your first and last name must match the name on your bank
-                      account. Accounts with mismatched names will be flagged
-                      and may be restricted.
-                    </p>
-                  </div>
-                }
-                position="top"
-              >
-                <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
-                  <span className="text-white text-xs font-bold">i</span>
+          {/* Personal Information Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-text-600">Personal Information</h3>
+
+            {/* Name Row - Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* First Name Field with Tooltip */}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="firstName" required className="text-sm">
+                    First Name
+                  </Label>
+                  <Tooltip
+                    content={
+                      <div className="text-xs">
+                        <p className="font-semibold mb-1">Important</p>
+                        <p>
+                          Must match your bank account name.
+                        </p>
+                      </div>
+                    }
+                    position="top"
+                  >
+                    <div className="w-3.5 h-3.5 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
+                      <span className="text-white text-[10px] font-bold">i</span>
+                    </div>
+                  </Tooltip>
                 </div>
-              </Tooltip>
+                <Field
+                  label=""
+                  type="text"
+                  placeholder="First name"
+                  error={formErrors.firstName?.message}
+                  {...registerField("firstName")}
+                  className="space-y-0"
+                />
+              </div>
+
+              {/* Last Name Field */}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="lastName" required className="text-sm">
+                    Last Name
+                  </Label>
+                </div>
+                <Field
+                  label=""
+                  type="text"
+                  placeholder="Last name"
+                  error={formErrors.lastName?.message}
+                  {...registerField("lastName")}
+                  className="space-y-0"
+                />
+              </div>
             </div>
-            <Field
-              label=""
-              type="text"
-              placeholder="Enter your first name"
-              // required
-              error={formErrors.firstName?.message}
-              {...registerField("firstName")}
-              className="space-y-0"
-            />
+
+            {/* Email and Phone Row - Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field
+                label="Email"
+                type="email"
+                placeholder="Email address"
+                required
+                error={formErrors.email?.message}
+                {...registerField("email")}
+              />
+
+              <PhoneNumberField
+                label="Phone"
+                placeholder="(650) 555 1234"
+                required
+                error={formErrors.phoneNumber?.message}
+                {...registerField("phoneNumber")}
+              />
+            </div>
+
+            {/* Date of Birth */}
+            <div className="space-y-1.5">
+              <Label htmlFor="dob" required className="text-sm">
+                Date of Birth
+              </Label>
+              <input
+                type="date"
+                {...registerField("dob")}
+                className="w-full px-3 py-2.5 border border-secondary-100 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+              {formErrors.dob && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.dob.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Last Name Field with Tooltip */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="lastName" required>
-                Last Name
-              </Label>
-              <Tooltip
-                content={
-                  <div className="text-xs">
-                    <p className="font-semibold mb-1">⚠️ Important</p>
-                    <p>
-                      Your first and last name must match the name on your bank
-                      account. Accounts with mismatched names will be flagged
-                      and may be restricted.
-                    </p>
-                  </div>
-                }
-                position="top"
-              >
-                <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
-                  <span className="text-white text-xs font-bold">i</span>
-                </div>
-              </Tooltip>
-            </div>
+          {/* Address Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-text-600">Address</h3>
+
+            {/* Street Address */}
             <Field
-              label=""
+              label="Street Address"
               type="text"
-              placeholder="Enter your last name"
-              // required
-              error={formErrors.lastName?.message}
-              {...registerField("lastName")}
-              className="space-y-0"
+              placeholder="123 Main St"
+              required
+              error={formErrors.addressLine1?.message}
+              {...registerField("addressLine1")}
             />
+
+            {/* State and Postal Code Row - Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* State Dropdown */}
+              <div className="space-y-1.5">
+                <Label htmlFor="addressState" required className="text-sm">
+                  State
+                </Label>
+                <select
+                  {...registerField("addressState")}
+                  className="w-full px-3 py-2.5 border border-secondary-100 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">Select state</option>
+                  {US_STATES.map((state) => (
+                    <option key={state.code} value={state.code}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.addressState && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.addressState.message}
+                  </p>
+                )}
+              </div>
+
+              <Field
+                label="Postal Code"
+                type="text"
+                placeholder="12345"
+                required
+                error={formErrors.addressPostalCode?.message}
+                {...registerField("addressPostalCode")}
+              />
+            </div>
           </div>
 
-          {/* Email Field */}
-          <Field
-            label="Email"
-            type="email"
-            placeholder="Enter Your email"
-            required
-            error={formErrors.email?.message}
-            {...registerField("email")}
-          />
+          {/* Password Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-text-600">Security</h3>
 
-          {/* Phone Number Field */}
-          <PhoneNumberField
-            label="Phone Number"
-            placeholder="(650) 555 1234"
-            required
-            error={formErrors.phoneNumber?.message}
-            {...registerField("phoneNumber")}
-          />
+            {/* Password Fields Row - Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <PasswordField
+                label="Password"
+                placeholder="Password"
+                required
+                error={formErrors.password?.message}
+                {...registerField("password")}
+              />
 
-          {/* Password Field */}
-          <PasswordField
-            label="Password"
-            placeholder="Enter your password"
-            required
-            error={formErrors.password?.message}
-            {...registerField("password")}
-          />
+              <PasswordField
+                label="Confirm"
+                placeholder="Confirm password"
+                required
+                error={formErrors.confirmPassword?.message}
+                {...registerField("confirmPassword")}
+              />
+            </div>
 
-          {/* Password Strength Indicator */}
-          <PasswordStrengthIndicator
-            password={password}
-            showDescription={false}
-          />
-
-          {/* Confirm Password Field */}
-          <PasswordField
-            label="Confirm Password"
-            placeholder="Re-enter your password"
-            required
-            error={formErrors.confirmPassword?.message}
-            {...registerField("confirmPassword")}
-          />
+            {/* Password Strength Indicator */}
+            <PasswordStrengthIndicator
+              password={password}
+              showDescription={false}
+            />
+          </div>
 
           {/* Remember Me & Forgot Password */}
           <div className="flex flex-col gap-2">

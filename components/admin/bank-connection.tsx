@@ -23,6 +23,7 @@ import {
   createConnectedAccountAction,
   createAccountSessionAction,
   getConnectedAccountStatusAction,
+  createCustomConnectedAccountAction,
 } from "@/app/register/kyc/actions";
 
 /**
@@ -56,7 +57,7 @@ function namesMatch(name1: string, name2: string): boolean {
 }
 
 // Types for the multi-step flow
-type FlowStep = "initial" | "connect_onboarding" | "completing";
+type FlowStep = "initial" | "bank_details" | "connect_onboarding" | "completing";
 
 // Store intermediate data between steps
 interface BankConnectionData {
@@ -68,6 +69,12 @@ interface BankConnectionData {
   accountLast4: string;
   bankName?: string;
   fcAccountId: string;
+}
+
+// Bank account form data
+interface BankAccountFormData {
+  routingNumber: string;
+  accountNumber: string;
 }
 
 export default function BankConnection() {
@@ -82,6 +89,13 @@ export default function BankConnection() {
   const [bankConnectionData, setBankConnectionData] = useState<BankConnectionData | null>(null);
   const [stripeConnectInstance, setStripeConnectInstance] = useState<ReturnType<typeof loadConnectAndInitialize> | null>(null);
 
+  // Bank account form state
+  const [bankFormData, setBankFormData] = useState<BankAccountFormData>({
+    routingNumber: "",
+    accountNumber: "",
+  });
+  const [formErrors, setFormErrors] = useState<{ routingNumber?: string; accountNumber?: string }>({});
+
   useEffect(() => {
     const initStripe = async () => {
       const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -93,7 +107,37 @@ export default function BankConnection() {
     initStripe();
   }, []);
 
+  // Validate bank account form
+  const validateBankForm = (): boolean => {
+    const errors: { routingNumber?: string; accountNumber?: string } = {};
+
+    if (!bankFormData.routingNumber) {
+      errors.routingNumber = "Routing number is required";
+    } else if (!/^\d{9}$/.test(bankFormData.routingNumber)) {
+      errors.routingNumber = "Routing number must be exactly 9 digits";
+    }
+
+    if (!bankFormData.accountNumber) {
+      errors.accountNumber = "Account number is required";
+    } else if (!/^\d{4,17}$/.test(bankFormData.accountNumber)) {
+      errors.accountNumber = "Account number must be between 4 and 17 digits";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Go to bank details step
+  const handleShowBankDetailsForm = () => {
+    setFlowStep("bank_details");
+  };
+
+  // Handle bank details form submission
   const handleConnectBank = async () => {
+    if (!validateBankForm()) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -133,6 +177,62 @@ export default function BankConnection() {
         .filter(Boolean)
         .join(" ");
 
+      // Check if user has required DOB and address data
+      if (!resolvedUser.dob && !resolvedUser.dateOfBirth) {
+        throw new Error("Date of birth is required. Please update your profile.");
+      }
+
+      if (!resolvedUser.address) {
+        throw new Error("Address is required. Please update your profile.");
+      }
+
+      const userDob = resolvedUser.dob || resolvedUser.dateOfBirth || "";
+
+      console.log("📋 User data for Stripe:", {
+        email: resolvedUser.email,
+        firstName: resolvedUser.firstName,
+        lastName: resolvedUser.lastName,
+        dob: userDob,
+        address: resolvedUser.address,
+      });
+
+      // ============================
+      // STEP 1: CREATE CUSTOM CONNECTED ACCOUNT WITH BANK
+      // ============================
+      console.log("🔄 Creating Stripe Connect Custom account with bank details...");
+
+      const customAccountResult = await createCustomConnectedAccountAction({
+        email: resolvedUser.email,
+        firstName: resolvedUser.firstName || "",
+        lastName: resolvedUser.lastName || "",
+        dob: userDob,
+        address: {
+          line1: resolvedUser.address.line1,
+          city: resolvedUser.address.city,
+          state: resolvedUser.address.state,
+          postal_code: resolvedUser.address.postal_code,
+          country: resolvedUser.address.country || "US",
+        },
+        routingNumber: bankFormData.routingNumber,
+        accountNumber: bankFormData.accountNumber,
+        userId: resolvedUser.id,
+      });
+
+      if (!customAccountResult.success || !customAccountResult.accountId) {
+        console.error("❌ Failed to create custom account:", customAccountResult.error);
+        throw new Error(
+          customAccountResult.error || "Failed to create Connect account for payouts."
+        );
+      }
+
+      const connectedAccountId = customAccountResult.accountId;
+      console.log("✅ Custom Connect account created:", connectedAccountId);
+
+      // ============================
+      // STEP 2: CREATE CUSTOMER AND FINANCIAL CONNECTIONS
+      // ============================
+      console.log("🔄 Creating Stripe customer and Financial Connections session...");
+
       const customer = await ensureStripeCustomerAction({
         token,
         userId: resolvedUser.id,
@@ -141,6 +241,8 @@ export default function BankConnection() {
         name: fullName || undefined,
         customerId: resolvedUser.customer?.id ?? undefined,
       });
+
+      console.log("✅ Stripe customer ensured:", customer.customerId);
 
       const session = await createFinancialConnectionsSessionAction({
         customerId: customer.customerId,
@@ -156,6 +258,8 @@ export default function BankConnection() {
       if (!session.clientSecret) {
         throw new Error("Failed to start Stripe bank connection.");
       }
+
+      console.log("✅ Financial Connections session created:", session.sessionId);
 
       const result = await stripe.collectFinancialConnectionsAccounts({
         clientSecret: session.clientSecret,
@@ -176,19 +280,17 @@ export default function BankConnection() {
         );
       }
 
-      console.log("Connected account from Stripe:", connectedAccount);
-      console.log(
-        "Session permissions:",
-        result.financialConnectionsSession?.permissions
-      );
+      console.log("✅ Connected account from Stripe:", connectedAccount);
+      console.log("📋 Session permissions:", result.financialConnectionsSession?.permissions);
 
-      // ✅ CRITICAL: Create payment method from Financial Connections account
-      // Without this step, Stripe Dashboard will show no payment methods and cannot charge
+      // ============================
+      // STEP 3: CREATE PAYMENT METHOD
+      // ============================
       console.log("🔄 Creating payment method from Financial Connections account...");
 
       // Get client IP and user agent for mandate compliance
       const clientInfo = await getClientInfoAction();
-      console.log("Client info for mandate:", clientInfo);
+      console.log("📋 Client info for mandate:", clientInfo);
 
       const paymentMethodResult = await createPaymentMethodFromFinancialConnectionsAction({
         financialConnectionsAccountId: connectedAccount.id,
@@ -208,169 +310,42 @@ export default function BankConnection() {
       const paymentMethodId = paymentMethodResult.paymentMethodId;
 
       console.log("✅ Payment method created and attached:", paymentMethodId);
-      console.log("   Status:", paymentMethodResult.status);
+      console.log("📋 Status:", paymentMethodResult.status);
 
-      // Retrieve account ownership information to get the actual account holder name
-      let accountHolderName: string | undefined = undefined;
-      let accountFirstName: string | undefined = undefined;
-      let accountLastName: string | undefined = undefined;
-
-      // Try to get account holder name from the connected account object first
-      // Stripe may include owner information directly if ownership permission was granted
-      if ((connectedAccount as any).account_holder) {
-        const accountHolder = (connectedAccount as any).account_holder;
-        console.log("Account holder from connected account:", accountHolder);
-
-        if (accountHolder.name) {
-          accountHolderName = accountHolder.name;
-        } else if (accountHolder.customer_name) {
-          accountHolderName = accountHolder.customer_name;
-        }
-      }
-
-      // If we didn't get the name from the account object, try the ownership API
-      if (!accountHolderName) {
-        try {
-          console.log(
-            "Attempting to fetch ownership data for account:",
-            connectedAccount.id
-          );
-          const ownership = await getAccountOwnershipAction({
-            accountId: connectedAccount.id,
-          });
-
-          console.log("Ownership data received:", ownership);
-
-          // Get the first owner's name (most accounts have a single owner)
-          if (ownership.owners.length > 0) {
-            accountHolderName = ownership.owners[0].name;
-            console.log(
-              "Account holder name from ownership:",
-              accountHolderName
-            );
-          } else {
-            console.warn("No owners found in ownership data");
-          }
-        } catch (ownershipError) {
-          console.error("Failed to retrieve ownership data:", ownershipError);
-          // Continue without ownership data - backend will handle validation
-        }
-      }
-
-      // Split the name into first and last name if we have it
-      if (accountHolderName) {
-        const nameParts = accountHolderName.trim().split(/\s+/);
-        if (nameParts.length === 1) {
-          // Only one name provided, use it as first name
-          accountFirstName = nameParts[0];
-        } else if (nameParts.length === 2) {
-          // Two names: first and last
-          accountFirstName = nameParts[0];
-          accountLastName = nameParts[1];
-        } else {
-          // More than two names: first name is first part, last name is everything else
-          accountFirstName = nameParts[0];
-          accountLastName = nameParts.slice(1).join(" ");
-        }
-        console.log(
-          "Split names - First:",
-          accountFirstName,
-          "Last:",
-          accountLastName
-        );
-      } else {
-        console.warn("No account holder name available from any source");
-      }
-
-      // Extract full bank account details from Stripe response
-      const bankAccountData = {
-        id: connectedAccount.id,
-        customer_id: customer.customerId,
-        payment_method_id: paymentMethodId, // ✅ Include payment method ID
-        account_first_name: accountFirstName ?? "Test",
-        account_last_name: accountLastName ?? "Koajo",
-        account_last4: connectedAccount.last4 ?? "0000",
-        bank_name: connectedAccount.institution_name ?? undefined,
-      };
-
-      console.log("Bank account data to be sent to backend:", bankAccountData);
-
-      // Validate that bank account holder name matches KYC verified name
-      if (
-        accountHolderName &&
-        fullName &&
-        !namesMatch(accountHolderName, fullName)
-      ) {
-        throw new Error(
-          `Bank account holder name "${accountHolderName}" does not match your verified name "${fullName}". Please ensure you're connecting an account in your name.`
-        );
-      }
-
-      // ============================
-      // STEP 2: CREATE STRIPE CONNECT ACCOUNT FOR PAYOUTS
-      // ============================
-      console.log("🔄 Creating Stripe Connect Express account for payouts...");
-
-      const connectAccountResult = await createConnectedAccountAction({
-        email: resolvedUser.email,
-        firstName: resolvedUser.firstName ?? undefined,
-        lastName: resolvedUser.lastName ?? undefined,
-        country: "US",
-        userId: resolvedUser.id,
-      });
-
-      if (!connectAccountResult.success || !connectAccountResult.accountId) {
-        throw new Error(
-          connectAccountResult.error || "Failed to create Connect account for payouts."
-        );
-      }
-
-      const connectedAccountId = connectAccountResult.accountId;
-      console.log("✅ Connect account created:", connectedAccountId);
-
-      // Store data for after onboarding completes
+      // Store data for completing the flow
       setBankConnectionData({
         connectedAccountId,
         customerId: customer.customerId,
         paymentMethodId,
-        accountFirstName: accountFirstName ?? "Test",
-        accountLastName: accountLastName ?? "Koajo",
-        accountLast4: connectedAccount.last4 ?? "0000",
+        accountFirstName: resolvedUser.firstName || "",
+        accountLastName: resolvedUser.lastName || "",
+        accountLast4: bankFormData.accountNumber.slice(-4),
         bankName: connectedAccount.institution_name ?? undefined,
         fcAccountId: connectedAccount.id,
       });
 
-      // ============================
-      // STEP 3: INITIALIZE CONNECT ONBOARDING
-      // ============================
-      console.log("🔄 Initializing Connect onboarding component...");
+      // Move directly to completing step since we're using custom account (no onboarding UI needed)
+      setFlowStep("completing");
 
-      const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-      if (!stripeKey) {
-        throw new Error("Stripe publishable key not configured.");
-      }
+      // Complete the bank connection
+      const bankAccountPayload = {
+        id: connectedAccount.id,
+        customer_id: customer.customerId,
+        payment_method_id: paymentMethodId,
+        account_first_name: resolvedUser.firstName || "",
+        account_last_name: resolvedUser.lastName || "",
+        account_last4: bankFormData.accountNumber.slice(-4),
+        bank_name: connectedAccount.institution_name ?? undefined,
+        connected_account_id: connectedAccountId,
+      };
 
-      const connectInstance = loadConnectAndInitialize({
-        publishableKey: stripeKey,
-        fetchClientSecret: async (): Promise<string> => {
-          const sessionResult = await createAccountSessionAction({
-            accountId: connectedAccountId,
-          });
+      console.log("📋 Sending bank account data to backend:", bankAccountPayload);
+      await AuthService.linkStripeBankAccount(bankAccountPayload, token);
+      console.log("✅ Bank account successfully linked with Connect account");
 
-          if (!sessionResult.success || !sessionResult.clientSecret) {
-            console.error("Failed to create account session:", sessionResult.error);
-            throw new Error(sessionResult.error || "Failed to create account session");
-          }
-
-          return sessionResult.clientSecret;
-        },
-      });
-
-      setStripeConnectInstance(connectInstance);
-      setFlowStep("connect_onboarding");
+      await refreshUser();
       setIsLoading(false);
-
-      console.log("✅ Connect onboarding initialized - showing UI");
+      close();
 
     } catch (err) {
       console.error("Bank connection error:", err);
@@ -520,6 +495,94 @@ export default function BankConnection() {
     );
   }
 
+  // Bank details form step
+  if (flowStep === "bank_details") {
+    const isBankFormValid = bankFormData.routingNumber.length === 9 && bankFormData.accountNumber.length >= 4;
+
+    return (
+      <CardAuth
+        title="Enter Bank Account Details"
+        description="Please enter your bank account routing and account numbers for payouts."
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-text-600">
+              Routing Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={bankFormData.routingNumber}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                setBankFormData((prev) => ({ ...prev, routingNumber: value }));
+                if (formErrors.routingNumber) {
+                  setFormErrors((prev) => ({ ...prev, routingNumber: undefined }));
+                }
+              }}
+              placeholder="123456789"
+              className="w-full px-3 py-2.5 border border-secondary-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              maxLength={9}
+            />
+            {formErrors.routingNumber && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.routingNumber}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-text-600">
+              Account Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={bankFormData.accountNumber}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "").slice(0, 17);
+                setBankFormData((prev) => ({ ...prev, accountNumber: value }));
+                if (formErrors.accountNumber) {
+                  setFormErrors((prev) => ({ ...prev, accountNumber: undefined }));
+                }
+              }}
+              placeholder="000123456789"
+              className="w-full px-3 py-2.5 border border-secondary-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              maxLength={17}
+            />
+            {formErrors.accountNumber && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.accountNumber}</p>
+            )}
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <Button
+              onClick={handleConnectBank}
+              text={isLoading ? "Connecting..." : "Connect Bank Account"}
+              variant="primary"
+              className="w-full"
+              disabled={isLoading || !isBankFormValid}
+              showArrow
+            />
+            <Button
+              onClick={() => setFlowStep("initial")}
+              text="Back"
+              variant="secondary"
+              className="w-full"
+              disabled={isLoading}
+              showArrow={false}
+            />
+            {error && (
+              <p className="text-red-500 text-center text-sm pt-2">{error}</p>
+            )}
+          </div>
+
+          <div className="text-xs text-text-400 text-center pt-2">
+            <p>
+              Your bank details are securely transmitted to Stripe and never stored by Koajo.
+            </p>
+          </div>
+        </div>
+      </CardAuth>
+    );
+  }
+
   // Initial state - show connect button
   return (
     <CardAuth
@@ -529,11 +592,10 @@ export default function BankConnection() {
       <div className="space-y-6">
         <div className="space-y-3 pt-4">
           <Button
-            onClick={handleConnectBank}
-            text={isLoading ? "Connecting..." : "Connect Bank Account"}
+            onClick={handleShowBankDetailsForm}
+            text="Connect Bank Account"
             variant="primary"
             className="w-full"
-            disabled={isLoading}
             showArrow
           />
           <Button
@@ -541,12 +603,8 @@ export default function BankConnection() {
             text="Cancel"
             variant="secondary"
             className="w-full"
-            disabled={isLoading}
             showArrow={false}
           />
-          {error && (
-            <p className="text-red-500 text-center text-sm pt-2">{error}</p>
-          )}
         </div>
         <div className="text-xs text-text-400 text-center pt-2">
           <p>
