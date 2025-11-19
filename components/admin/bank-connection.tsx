@@ -232,6 +232,9 @@ export default function BankConnection() {
         userId: resolvedUser.id,
       });
 
+      // Log full response BEFORE error check so we always see it
+      console.log("📋 Full customAccountResult response:", JSON.stringify(customAccountResult, null, 2));
+
       if (!customAccountResult.success || !customAccountResult.accountId) {
         console.error(
           "❌ Failed to create custom account:",
@@ -242,7 +245,6 @@ export default function BankConnection() {
             "Failed to create Connect account for payouts."
         );
       }
-      console.log("📋 Full customAccountResult response:", customAccountResult);
 
       const connectedAccountId = customAccountResult.accountId;
       console.log(

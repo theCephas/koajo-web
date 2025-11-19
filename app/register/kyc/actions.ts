@@ -888,6 +888,15 @@ interface CreateCustomConnectedAccountResult {
   success: boolean;
   accountId?: string;
   error?: string;
+  // Additional account details for debugging
+  accountDetails?: {
+    type: string;
+    capabilities: Record<string, unknown>;
+    details_submitted: boolean;
+    charges_enabled: boolean;
+    payouts_enabled: boolean;
+    external_accounts_count: number;
+  };
 }
 
 /**
@@ -971,9 +980,21 @@ export async function createCustomConnectedAccountAction(
       external_accounts: account.external_accounts?.data?.length,
     }, null, 2));
 
+    // Retrieve complete account details
+    const fullAccount = await stripe.accounts.retrieve(account.id);
+    console.log("📋 Full account details (retrieve):", JSON.stringify(fullAccount, null, 2));
+
     return {
       success: true,
       accountId: account.id,
+      accountDetails: {
+        type: account.type,
+        capabilities: account.capabilities as Record<string, unknown>,
+        details_submitted: account.details_submitted,
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled,
+        external_accounts_count: account.external_accounts?.data?.length || 0,
+      },
     };
   } catch (error) {
     console.error("❌ Error creating custom connected account:", error);
