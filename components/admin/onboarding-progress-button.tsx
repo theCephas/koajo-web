@@ -18,13 +18,12 @@ export interface SetupStep {
   subSteps?: SetupStep[];
 }
 
-const SETUP_GUIDE_CLOSED_KEY = "setup_guide_closed";
 const AUTO_PROMPT_KEY_PREFIX = "setup_prompted_user_";
-const AUTO_PROMPTABLE_STEPS = new Set(["bank_connection", "join_pod"]);
+const AUTO_PROMPTABLE_STEPS = new Set(["join_pod"]);
 
 export default function OnboardingProgressButton() {
   const router = useRouter();
-  const { open, setStep } = useOnboarding();
+  const { open, setStep, visible } = useOnboarding();
   const {
     emailVerified,
     kycCompleted,
@@ -88,13 +87,6 @@ export default function OnboardingProgressButton() {
     [canAccessBankConnection, canAccessJoinPod]
   );
 
-  useEffect(() => {
-    const closed = localStorage.getItem(SETUP_GUIDE_CLOSED_KEY);
-    if (closed === "true") {
-      setIsClosed(true);
-    }
-  }, []);
-
   const allCompleted = setupSteps.every((step) => step.status === "completed");
   const completedCount = setupSteps.filter(
     (step) => step.status === "completed"
@@ -104,7 +96,6 @@ export default function OnboardingProgressButton() {
 
   const handleClose = () => {
     setIsClosed(true);
-    localStorage.setItem(SETUP_GUIDE_CLOSED_KEY, "true");
   };
 
   const handleExpand = () => {
@@ -172,8 +163,16 @@ export default function OnboardingProgressButton() {
   };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (userLoading || !user?.id || hasPods) {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (
+      userLoading ||
+      !user?.id ||
+      hasPods ||
+      setupSteps.length === 0
+    ) {
       return;
     }
 
@@ -213,6 +212,30 @@ export default function OnboardingProgressButton() {
     startStepFlow,
     user?.id,
     userLoading,
+  ]);
+
+  useEffect(() => {
+    if (
+      userLoading ||
+      !user?.id ||
+      bankConnected ||
+      !canAccessBankConnection
+    ) {
+      return;
+    }
+
+    if (!visible) {
+      setStep("bank_connection");
+      open();
+    }
+  }, [
+    bankConnected,
+    canAccessBankConnection,
+    open,
+    setStep,
+    user?.id,
+    userLoading,
+    visible,
   ]);
 
   // Hide if user manually closed it OR if user has already joined pods

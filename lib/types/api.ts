@@ -528,6 +528,61 @@ export interface AcceptCustomInviteRequest {
   token: string;
 }
 
+// ===== NOTIFICATION TYPES =====
+
+export type NotificationSeverity =
+  | "success"
+  | "info"
+  | "warning"
+  | "critical"
+  | "error";
+
+export interface RawNotification {
+  id: string;
+  title: string;
+  body: string;
+  severity: NotificationSeverity;
+  action_url?: string | null;
+  read_at?: string | null;
+  created_at: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  body: string;
+  severity: NotificationSeverity;
+  actionUrl?: string | null;
+  readAt?: string | null;
+  createdAt: string;
+}
+
+export interface RawNotificationsResponse {
+  notifications: RawNotification[];
+}
+
+export interface NotificationsResponse {
+  notifications: NotificationItem[];
+}
+
+export interface RawNotificationReadResponse {
+  id: string;
+  read_at: string;
+}
+
+export interface NotificationReadResponse {
+  id: string;
+  readAt: string;
+}
+
+export interface RawNotificationReadAllResponse {
+  read_at: string;
+}
+
+export interface NotificationReadAllResponse {
+  readAt: string;
+}
+
 // ===== USER TYPES =====
 
 export interface UserAddress {

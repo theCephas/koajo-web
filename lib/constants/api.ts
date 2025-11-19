@@ -24,6 +24,10 @@ export const API_ENDPOINTS = {
       NOTIFICATIONS: "/auth/profile/notifications",
     },
     ME: "/auth/me",
+    NOTIFICATIONS: "/auth/notifications",
+    NOTIFICATION_READ: (notificationId: string) =>
+      `/auth/notifications/${notificationId}/read`,
+    NOTIFICATIONS_READ_ALL: "/auth/notifications/read-all",
   },
   PODS: {
     PLANS: "/pods/plans",

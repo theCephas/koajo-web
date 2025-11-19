@@ -10,9 +10,7 @@ import Search from "@/components2/usefull/Search";
 import Icon from "@/components2/usefull/Icon";
 import Notifications from "./Notifications";
 import { useDashboard } from "@/lib/provider-dashboard";
-import { getAvatarUrl, getDefaultAvatarUrl } from "@/lib/utils/avatar";
-
-import { notifications } from "@/mocks/notifications";
+import { getAvatarUrl } from "@/lib/utils/avatar";
 import { UserIcon } from "lucide-react";
 
 const navigation = [
@@ -139,7 +137,7 @@ const Header = () => {
               <Icon name="close" size="22" />
             </button>
           </div>
-          <Notifications items={notifications} />
+          <Notifications />
           <Link className={cn(styles.avatar, "relative")} href="/settings">
             {avatarUrl ? (
               <Image

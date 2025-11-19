@@ -77,15 +77,6 @@ export type HTMLTag =
   | "slot"
   | "slot";
 
-  export type NotificationsType = {
-    id: string;
-    type: string;
-    title: string;
-    time: string;
-    info: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    new: boolean;
-};
-
 export type Currency = "USD" | "GBP" | "EUR"
 
 export type TransactionType = {

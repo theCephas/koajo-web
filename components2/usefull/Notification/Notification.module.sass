@@ -2,48 +2,93 @@
 
 .notification
     display: flex
-    margin-bottom: 24px
-    
+    gap: 16px
+    padding: 16px 8px
+    border-bottom: 1px solid rgba($p0, .05)
+
+.notificationUnread
+    background: rgba($p4, .05)
+    border-radius: 16px
+    border: 1px solid rgba($p4, .15)
+
 .icon
     display: flex
     justify-content: center
     align-items: center
     flex-shrink: 0
-    width: 48px
-    height: 48px
-    margin-right: 16px
-    border-radius: 50%
-    background: #F4F4F7
+    width: 44px
+    height: 44px
+    border-radius: 12px
+    background: rgba($p0, .05)
+    color: $p4
+    &--info
+        background: rgba($p4, .12)
+        color: $p4
+    &--success
+        background: rgba(#22c55e, .15)
+        color: #16a34a
+    &--warning
+        background: rgba(#fbbf24, .15)
+        color: #d97706
+    &--error
+        background: rgba(#f87171, .15)
+        color: #dc2626
+    &--critical
+        background: rgba(#ef4444, .18)
+        color: #991b1b
 
 .details
-    flex-grow: 1
+    flex: 1
 
 .line
     display: flex
-    margin: -1px 0 4px
+    align-items: center
+    gap: 8px
+    margin-bottom: 6px
 
 .title
-    margin-right: auto
-    font-size: 16px
+    font-size: 15px
     font-weight: 600
+    color: $s6
 
 .time
-    flex-shrink: 0
-    margin: 2px 0 0 16px
-    font-weight: 500
+    font-size: 12px
     color: $s3
 
-.new
-    flex-shrink: 0
+.unreadDot
     width: 8px
     height: 8px
-    margin: 9px 0 0 12px
-    background: $e4
     border-radius: 50%
+    background: $p4
 
 .info
+    font-size: 14px
     font-weight: 500
-    color: $s4
-    span
-        font-weight: 600
-        color: $s5
+    color: $s5
+
+.meta
+    margin-top: 12px
+    display: flex
+    flex-wrap: wrap
+    gap: 12px
+    align-items: center
+
+.actionLink
+    font-size: 13px
+    font-weight: 600
+    color: $p4
+    text-decoration: underline
+
+.markReadButton
+    padding: 6px 14px
+    font-size: 12px
+    font-weight: 600
+    border-radius: 999px
+    border: none
+    background: $p4
+    color: $p0
+    cursor: pointer
+    transition: opacity .2s
+    &:disabled
+        opacity: .6
+        cursor: not-allowed

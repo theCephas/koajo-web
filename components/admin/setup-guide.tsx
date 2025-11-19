@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import cn from "clsx";
 import CollapseIcon from "@/public/media/icons/collapse.svg";
 import CloseIcon from "@/public/media/icons/close.svg";
@@ -21,22 +21,10 @@ interface SetupGuideProps {
   className?: string;
 }
 
-const SETUP_GUIDE_CLOSED_KEY = "setup_guide_closed";
-
 const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
   const [expandedStepId, setExpandedStepId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const closed = localStorage.getItem(SETUP_GUIDE_CLOSED_KEY);
-    if (closed === "true") {
-      const allCompleted = steps.every(
-        (step) => step.status === "completed"
-      );
-      setIsClosed(allCompleted);
-    }
-  }, [steps]);
 
   const allCompleted = steps.every((step) => step.status === "completed");
   const completedCount = steps.filter(
@@ -47,7 +35,6 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
 
   const handleClose = () => {
     setIsClosed(true);
-    localStorage.setItem(SETUP_GUIDE_CLOSED_KEY, "true");
   };
 
   const handleExpand = () => {
@@ -264,4 +251,3 @@ const SetupGuide = ({ steps, onStepClick, className }: SetupGuideProps) => {
 };
 
 export default SetupGuide;
-

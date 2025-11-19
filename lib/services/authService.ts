@@ -49,6 +49,14 @@ import type {
   CreatePaymentRequest,
   RecordPaymentResponse,
   DashboardSummaryResponse,
+  NotificationsResponse,
+  NotificationReadResponse,
+  NotificationReadAllResponse,
+  NotificationItem,
+  RawNotification,
+  RawNotificationsResponse,
+  RawNotificationReadResponse,
+  RawNotificationReadAllResponse,
 } from "@/lib/types/api";
 import { TokenManager } from "@/lib/utils/memory-manager";
 import { ApiErrorClass } from "@/lib/utils/auth";
@@ -142,6 +150,14 @@ async function apiRequest<T>(
     });
 
     clearTimeout(timeoutId);
+
+    // Handle 304 Not Modified - treat as success with empty data
+    // The browser cache will handle this, but we need to return something
+    if (response.status === 304) {
+      // For 304, return an empty object that matches expected response structure
+      // The caller should handle this appropriately
+      return {} as T;
+    }
 
     if (!response.ok) {
       const errorData: ApiError = await response.json().catch(() => ({
@@ -397,6 +413,96 @@ async function updateNotificationPreferences(
   });
 }
 
+async function getNotifications(
+  token: string
+): Promise<NotificationsResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.NOTIFICATIONS);
+
+  try {
+    const response = await apiRequest<RawNotificationsResponse>(url, {
+      method: "GET",
+      headers: {
+        ...getAuthHeaders(token),
+        "Cache-Control": "no-cache",
+      },
+    });
+
+    if (response && "error" in response) {
+      return response;
+    }
+
+    const payload = response as RawNotificationsResponse;
+
+    // Handle 304 Not Modified or empty response
+    if (!payload || !payload.notifications) {
+      return { notifications: [] };
+    }
+
+    const notifications = Array.isArray(payload.notifications)
+      ? payload.notifications.map(transformNotification)
+      : [];
+
+    return { notifications };
+  } catch (error) {
+    if (error instanceof ApiErrorClass) {
+      return {
+        error: error.error,
+        message: error.message,
+        statusCode: error.statusCode,
+      };
+    }
+    return {
+      error: "Unknown error",
+      message: "Failed to fetch notifications",
+      statusCode: 0,
+    };
+  }
+}
+
+async function markNotificationRead(
+  notificationId: string,
+  token: string
+): Promise<NotificationReadResponse | ApiError> {
+  const url = getApiUrl(
+    API_ENDPOINTS.AUTH.NOTIFICATION_READ(notificationId)
+  );
+
+  const response = await apiRequest<RawNotificationReadResponse>(url, {
+    method: "PATCH",
+    headers: getAuthHeaders(token),
+  });
+
+  if (response && "error" in response) {
+    return response;
+  }
+
+  const data = response as RawNotificationReadResponse;
+  return {
+    id: data.id,
+    readAt: data.read_at,
+  };
+}
+
+async function markAllNotificationsRead(
+  token: string
+): Promise<NotificationReadAllResponse | ApiError> {
+  const url = getApiUrl(API_ENDPOINTS.AUTH.NOTIFICATIONS_READ_ALL);
+
+  const response = await apiRequest<RawNotificationReadAllResponse>(url, {
+    method: "PATCH",
+    headers: getAuthHeaders(token),
+  });
+
+  if (response && "error" in response) {
+    return response;
+  }
+
+  const data = response as RawNotificationReadAllResponse;
+  return {
+    readAt: data.read_at,
+  };
+}
+
 async function completeStripeVerification(
   data: {
     email: string;
@@ -606,6 +712,18 @@ const transformUserProfile = (profile: RawUserProfileResponse): User => {
   };
 };
 
+const transformNotification = (
+  notification: RawNotification
+): NotificationItem => ({
+  id: notification.id,
+  title: notification.title,
+  body: notification.body,
+  severity: notification.severity,
+  actionUrl: notification.action_url ?? undefined,
+  readAt: notification.read_at ?? null,
+  createdAt: notification.created_at,
+});
+
 async function updateUser(
   data: UpdateUserRequest,
   token: string
@@ -738,4 +856,7 @@ export const AuthService = {
   getAvatars,
   recordPayment,
   getDashboardSummary,
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
 };
