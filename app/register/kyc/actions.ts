@@ -800,6 +800,8 @@ export async function createPaymentMethodFromFinancialConnectionsAction(
 // STRIPE CONNECT - CREATE CONNECTED ACCOUNT
 // ============================
 
+// COMMENTED OUT - stripe.accounts.create() functions
+/*
 interface CreateConnectedAccountInput {
   email: string;
   firstName?: string;
@@ -818,6 +820,7 @@ interface CreateConnectedAccountResult {
  * Creates a Stripe Connect Express account for payouts.
  * This account will be used to send money TO the user's bank account.
  */
+/*
 export async function createConnectedAccountAction(
   input: CreateConnectedAccountInput
 ): Promise<CreateConnectedAccountResult> {
@@ -862,15 +865,19 @@ export async function createConnectedAccountAction(
     };
   }
 }
+*/
 
 // ============================
 // STRIPE CONNECT - CREATE CUSTOM ACCOUNT WITH BANK
 // ============================
 
+// COMMENTED OUT - stripe.accounts.create() functions
+/*
 interface CreateCustomConnectedAccountInput {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   dob: string; // MM-DD-YYYY format
   address: {
     line1: string;
@@ -882,6 +889,8 @@ interface CreateCustomConnectedAccountInput {
   routingNumber: string;
   accountNumber: string;
   userId: string;
+  ssnLast4?: string; // Last 4 digits of SSN
+  ipAddress?: string; // For TOS acceptance
 }
 
 interface CreateCustomConnectedAccountResult {
@@ -896,6 +905,13 @@ interface CreateCustomConnectedAccountResult {
     charges_enabled: boolean;
     payouts_enabled: boolean;
     external_accounts_count: number;
+    requirements?: {
+      currently_due: string[];
+      eventually_due: string[];
+      past_due: string[];
+      pending_verification: string[];
+      disabled_reason: string | null;
+    };
   };
 }
 
@@ -904,6 +920,7 @@ interface CreateCustomConnectedAccountResult {
  * This account will be used to send money TO the user's bank account.
  * Uses user's DOB and address from /auth/me endpoint.
  */
+/*
 export async function createCustomConnectedAccountAction(
   input: CreateCustomConnectedAccountInput
 ): Promise<CreateCustomConnectedAccountResult> {
@@ -915,16 +932,48 @@ export async function createCustomConnectedAccountAction(
       email: input.email,
       firstName: input.firstName,
       lastName: input.lastName,
+      phone: input.phone,
       dob: input.dob,
       address: input.address,
       routingNumber: `${input.routingNumber.substring(0, 3)}***`,
       accountNumber: `***${input.accountNumber.slice(-4)}`,
+      ssnLast4: input.ssnLast4 ? "****" : "not provided",
+      ipAddress: input.ipAddress,
     }, null, 2));
 
     // Parse DOB from MM-DD-YYYY format
     const [month, day, year] = input.dob.split("-").map(Number);
 
     const accountHolderName = `${input.firstName} ${input.lastName}`;
+
+    // Build individual object with optional fields
+    const individualData: Record<string, unknown> = {
+      first_name: input.firstName,
+      last_name: input.lastName,
+      email: input.email,
+      dob: {
+        day,
+        month,
+        year,
+      },
+      address: {
+        line1: input.address.line1,
+        city: input.address.city,
+        state: input.address.state,
+        postal_code: input.address.postal_code,
+        country: input.address.country,
+      },
+    };
+
+    // Add phone if provided
+    if (input.phone) {
+      individualData.phone = input.phone;
+    }
+
+    // Add SSN last 4 if provided (required for US transfers capability)
+    if (input.ssnLast4) {
+      individualData.ssn_last_4 = input.ssnLast4;
+    }
 
     const account = await stripe.accounts.create({
       type: "custom",
@@ -934,23 +983,7 @@ export async function createCustomConnectedAccountAction(
       capabilities: {
         transfers: { requested: true },
       },
-      individual: {
-        first_name: input.firstName,
-        last_name: input.lastName,
-        email: input.email,
-        dob: {
-          day,
-          month,
-          year,
-        },
-        address: {
-          line1: input.address.line1,
-          city: input.address.city,
-          state: input.address.state,
-          postal_code: input.address.postal_code,
-          country: input.address.country,
-        },
-      },
+      individual: individualData,
       external_account: {
         object: "bank_account",
         country: "US",
@@ -965,7 +998,7 @@ export async function createCustomConnectedAccountAction(
       },
       tos_acceptance: {
         date: Math.floor(Date.now() / 1000),
-        ip: "0.0.0.0", // Will be updated with actual IP
+        ip: input.ipAddress || "0.0.0.0",
       },
     });
 
@@ -984,6 +1017,17 @@ export async function createCustomConnectedAccountAction(
     const fullAccount = await stripe.accounts.retrieve(account.id);
     console.log("📋 Full account details (retrieve):", JSON.stringify(fullAccount, null, 2));
 
+    // Log pending requirements for debugging
+    if (fullAccount.requirements) {
+      console.log("⚠️ Account requirements:", JSON.stringify({
+        currently_due: fullAccount.requirements.currently_due,
+        eventually_due: fullAccount.requirements.eventually_due,
+        past_due: fullAccount.requirements.past_due,
+        pending_verification: fullAccount.requirements.pending_verification,
+        disabled_reason: fullAccount.requirements.disabled_reason,
+      }, null, 2));
+    }
+
     return {
       success: true,
       accountId: account.id,
@@ -994,6 +1038,13 @@ export async function createCustomConnectedAccountAction(
         charges_enabled: account.charges_enabled,
         payouts_enabled: account.payouts_enabled,
         external_accounts_count: account.external_accounts?.data?.length || 0,
+        requirements: fullAccount.requirements ? {
+          currently_due: fullAccount.requirements.currently_due || [],
+          eventually_due: fullAccount.requirements.eventually_due || [],
+          past_due: fullAccount.requirements.past_due || [],
+          pending_verification: fullAccount.requirements.pending_verification || [],
+          disabled_reason: fullAccount.requirements.disabled_reason || null,
+        } : undefined,
       },
     };
   } catch (error) {
@@ -1007,6 +1058,7 @@ export async function createCustomConnectedAccountAction(
     };
   }
 }
+*/
 
 // ============================
 // STRIPE CONNECT - CREATE ACCOUNT SESSION

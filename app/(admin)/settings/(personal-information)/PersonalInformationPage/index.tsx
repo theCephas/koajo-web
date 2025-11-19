@@ -129,22 +129,69 @@ const PersonalInformationPage = () => {
           // placeholder="Enter your last name"
         />
 
-        {/* <Field
-          type="date"
+        {/* Date of Birth Field */}
+        <Field
           className={styles.field}
           label="Date of Birth"
-          value={dateOfBirth ? dateOfBirth.toISOString().split("T")[0] : ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value) {
-              setDateOfBirth(new Date(value));
-            } else {
-              setDateOfBirth(null);
-            }
-          }}
+          value={user?.dob || user?.dateOfBirth || ""}
+          onChange={() => {}}
           disabled={true}
-          placeholder="YYYY-MM-DD"
-        /> */}
+          placeholder="Not provided"
+        />
+
+        {/* Address Section */}
+        <div className="mt-6 mb-4">
+          <h3 className="text-sm font-semibold text-text-500 mb-3">Address Information</h3>
+        </div>
+
+        <Field
+          className={styles.field}
+          label="Street Address"
+          value={user?.address?.line1 || ""}
+          onChange={() => {}}
+          disabled={true}
+          placeholder="Not provided"
+        />
+
+        {/* City and State Row - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <Field
+            className={styles.field}
+            label="City"
+            value={user?.address?.city || ""}
+            onChange={() => {}}
+            disabled={true}
+            placeholder="Not provided"
+          />
+          <Field
+            className={styles.field}
+            label="State"
+            value={user?.address?.state || ""}
+            onChange={() => {}}
+            disabled={true}
+            placeholder="Not provided"
+          />
+        </div>
+
+        {/* Postal Code and Country Row - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <Field
+            className={styles.field}
+            label="Postal Code"
+            value={user?.address?.postal_code || ""}
+            onChange={() => {}}
+            disabled={true}
+            placeholder="Not provided"
+          />
+          <Field
+            className={styles.field}
+            label="Country"
+            value={user?.address?.country || "US"}
+            onChange={() => {}}
+            disabled={true}
+            placeholder="Not provided"
+          />
+        </div>
 
         {/* Commented out for future use */}
         {/* <div className={styles.row}>

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
-import { loadConnectAndInitialize } from "@stripe/connect-js";
-import {
-  ConnectComponentsProvider,
-  ConnectAccountOnboarding,
-} from "@stripe/react-connect-js";
+// Commented out - Connect components no longer needed
+// import { loadConnectAndInitialize } from "@stripe/connect-js";
+// import {
+//   ConnectComponentsProvider,
+//   ConnectAccountOnboarding,
+// } from "@stripe/react-connect-js";
 import { Button } from "@/components/utils";
 import CardAuth from "@/components/auth/card-auth";
 import { useOnboarding } from "@/lib/provider-onboarding";
@@ -20,10 +21,11 @@ import {
   getAccountOwnershipAction,
   createPaymentMethodFromFinancialConnectionsAction,
   getClientInfoAction,
-  createConnectedAccountAction,
-  createAccountSessionAction,
-  getConnectedAccountStatusAction,
-  createCustomConnectedAccountAction,
+  // Commented out - stripe.accounts.create() functions
+  // createConnectedAccountAction,
+  // createAccountSessionAction,
+  // getConnectedAccountStatusAction,
+  // createCustomConnectedAccountAction,
 } from "@/app/register/kyc/actions";
 
 /**
@@ -58,14 +60,12 @@ function namesMatch(name1: string, name2: string): boolean {
 
 // Types for the multi-step flow
 type FlowStep =
-  | "initial"
   | "bank_details"
   | "connect_onboarding"
   | "completing";
 
 // Store intermediate data between steps
 interface BankConnectionData {
-  connectedAccountId: string;
   customerId: string;
   paymentMethodId: string;
   accountFirstName: string;
@@ -73,6 +73,8 @@ interface BankConnectionData {
   accountLast4: string;
   bankName?: string;
   fcAccountId: string;
+  routingNumber: string;
+  accountNumber: string;
 }
 
 // Bank account form data
@@ -88,13 +90,14 @@ export default function BankConnection() {
   const [error, setError] = useState<string | null>(null);
   const [stripe, setStripe] = useState<Stripe | null>(null);
 
-  // Multi-step flow state
-  const [flowStep, setFlowStep] = useState<FlowStep>("initial");
+  // Multi-step flow state - start with bank_details to show form immediately
+  const [flowStep, setFlowStep] = useState<FlowStep>("bank_details");
   const [bankConnectionData, setBankConnectionData] =
     useState<BankConnectionData | null>(null);
-  const [stripeConnectInstance, setStripeConnectInstance] = useState<ReturnType<
-    typeof loadConnectAndInitialize
-  > | null>(null);
+  // Commented out - Connect instance no longer needed
+  // const [stripeConnectInstance, setStripeConnectInstance] = useState<ReturnType<
+  //   typeof loadConnectAndInitialize
+  // > | null>(null);
 
   // Bank account form state
   const [bankFormData, setBankFormData] = useState<BankAccountFormData>({
@@ -135,11 +138,6 @@ export default function BankConnection() {
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  // Go to bank details step
-  const handleShowBankDetailsForm = () => {
-    setFlowStep("bank_details");
   };
 
   // Handle bank details form submission
@@ -187,74 +185,8 @@ export default function BankConnection() {
         .filter(Boolean)
         .join(" ");
 
-      // Check if user has required DOB and address data
-      if (!resolvedUser.dob && !resolvedUser.dateOfBirth) {
-        throw new Error(
-          "Date of birth is required. Please update your profile."
-        );
-      }
-
-      if (!resolvedUser.address) {
-        throw new Error("Address is required. Please update your profile.");
-      }
-
-      const userDob = resolvedUser.dob || resolvedUser.dateOfBirth || "";
-
-      console.log("📋 User data for Stripe:", {
-        email: resolvedUser.email,
-        firstName: resolvedUser.firstName,
-        lastName: resolvedUser.lastName,
-        dob: userDob,
-        address: resolvedUser.address,
-      });
-
       // ============================
-      // STEP 1: CREATE CUSTOM CONNECTED ACCOUNT WITH BANK
-      // ============================
-      console.log(
-        "🔄 Creating Stripe Connect Custom account with bank details..."
-      );
-
-      const customAccountResult = await createCustomConnectedAccountAction({
-        email: resolvedUser.email,
-        firstName: resolvedUser.firstName || "",
-        lastName: resolvedUser.lastName || "",
-        dob: userDob,
-        address: {
-          line1: resolvedUser.address.line1,
-          city: resolvedUser.address.city,
-          state: resolvedUser.address.state,
-          postal_code: resolvedUser.address.postal_code,
-          country: resolvedUser.address.country || "US",
-        },
-        routingNumber: bankFormData.routingNumber,
-        accountNumber: bankFormData.accountNumber,
-        userId: resolvedUser.id,
-      });
-
-      // Log full response BEFORE error check so we always see it
-      console.log("📋 Full customAccountResult response:", JSON.stringify(customAccountResult, null, 2));
-
-      if (!customAccountResult.success || !customAccountResult.accountId) {
-        console.error(
-          "❌ Failed to create custom account:",
-          customAccountResult.error
-        );
-        throw new Error(
-          customAccountResult.error ||
-            "Failed to create Connect account for payouts."
-        );
-      }
-
-      const connectedAccountId = customAccountResult.accountId;
-      console.log(
-        "✅ Custom Connect account created:",
-        connectedAccountId,
-        customAccountResult
-      );
-
-      // ============================
-      // STEP 2: CREATE CUSTOMER AND FINANCIAL CONNECTIONS
+      // STEP 1: CREATE CUSTOMER AND FINANCIAL CONNECTIONS
       // ============================
       console.log(
         "🔄 Creating Stripe customer and Financial Connections session..."
@@ -317,7 +249,7 @@ export default function BankConnection() {
       );
 
       // ============================
-      // STEP 3: CREATE PAYMENT METHOD
+      // STEP 2: CREATE PAYMENT METHOD
       // ============================
       console.log(
         "🔄 Creating payment method from Financial Connections account..."
@@ -357,31 +289,22 @@ export default function BankConnection() {
       console.log("✅ Payment method created and attached:", paymentMethodId);
       console.log("📋 Status:", paymentMethodResult.status);
 
-      // Store data for completing the flow
-      setBankConnectionData({
-        connectedAccountId,
-        customerId: customer.customerId,
-        paymentMethodId,
-        accountFirstName: resolvedUser.firstName || "",
-        accountLastName: resolvedUser.lastName || "",
-        accountLast4: bankFormData.accountNumber.slice(-4),
-        bankName: connectedAccount.institution_name ?? undefined,
-        fcAccountId: connectedAccount.id,
-      });
-
-      // Move directly to completing step since we're using custom account (no onboarding UI needed)
+      // Move to completing step
       setFlowStep("completing");
 
-      // Complete the bank connection
+      // ============================
+      // STEP 3: SEND NEW PAYLOAD TO BACKEND
+      // ============================
       const bankAccountPayload = {
         id: connectedAccount.id,
         customer_id: customer.customerId,
-        payment_method_id: paymentMethodId,
+        bank_name: connectedAccount.institution_name ?? "",
         account_first_name: resolvedUser.firstName || "",
         account_last_name: resolvedUser.lastName || "",
         account_last4: bankFormData.accountNumber.slice(-4),
-        bank_name: connectedAccount.institution_name ?? undefined,
-        connected_account_id: connectedAccountId,
+        payment_method_id: paymentMethodId,
+        routing_number: bankFormData.routingNumber,
+        account_number: bankFormData.accountNumber,
       };
 
       console.log(
@@ -389,7 +312,7 @@ export default function BankConnection() {
         bankAccountPayload
       );
       await AuthService.linkStripeBankAccount(bankAccountPayload, token);
-      console.log("✅ Bank account successfully linked with Connect account");
+      console.log("✅ Bank account successfully linked");
 
       await refreshUser();
       setIsLoading(false);
@@ -409,7 +332,7 @@ export default function BankConnection() {
   const handleConnectOnboardingExit = async () => {
     if (!bankConnectionData) {
       setError("Missing bank connection data. Please try again.");
-      setFlowStep("initial");
+      setFlowStep("bank_details");
       return;
     }
 
@@ -423,37 +346,22 @@ export default function BankConnection() {
         throw new Error("Please log in again to complete bank connection.");
       }
 
-      // Check if onboarding was successful
-      console.log("🔍 Checking Connect account status...");
-      const statusResult = await getConnectedAccountStatusAction({
-        accountId: bankConnectionData.connectedAccountId,
-      });
-
-      console.log("Account status:", statusResult);
-
-      // Note: For Express accounts, payouts_enabled may not be immediately true
-      // The account needs to complete verification which can take time
-      if (!statusResult.detailsSubmitted) {
-        throw new Error(
-          "Onboarding was not completed. Please try again and complete all required steps."
-        );
-      }
-
-      // Send all data to backend
+      // Send all data to backend with new payload structure
       const bankAccountPayload = {
         id: bankConnectionData.fcAccountId,
         customer_id: bankConnectionData.customerId,
-        payment_method_id: bankConnectionData.paymentMethodId,
+        bank_name: bankConnectionData.bankName ?? "",
         account_first_name: bankConnectionData.accountFirstName,
         account_last_name: bankConnectionData.accountLastName,
         account_last4: bankConnectionData.accountLast4,
-        bank_name: bankConnectionData.bankName,
-        connected_account_id: bankConnectionData.connectedAccountId,
+        payment_method_id: bankConnectionData.paymentMethodId,
+        routing_number: bankConnectionData.routingNumber,
+        account_number: bankConnectionData.accountNumber,
       };
 
       console.log("Sending bank account data to backend:", bankAccountPayload);
       await AuthService.linkStripeBankAccount(bankAccountPayload, token);
-      console.log("✅ Bank account successfully linked with Connect account");
+      console.log("✅ Bank account successfully linked");
 
       await refreshUser();
       close();
@@ -464,8 +372,8 @@ export default function BankConnection() {
           ? err.message
           : "Failed to complete bank connection. Please try again."
       );
-      // Go back to initial state so user can retry
-      setFlowStep("initial");
+      // Go back to bank_details state so user can retry
+      setFlowStep("bank_details");
     } finally {
       setIsLoading(false);
     }
@@ -498,7 +406,8 @@ export default function BankConnection() {
     );
   }
 
-  // Show Connect onboarding UI
+  // Connect onboarding UI - commented out (no longer used)
+  /*
   if (flowStep === "connect_onboarding" && stripeConnectInstance) {
     return (
       <CardAuth
@@ -522,6 +431,7 @@ export default function BankConnection() {
       </CardAuth>
     );
   }
+  */
 
   // Show completing state
   if (flowStep === "completing") {
@@ -620,8 +530,8 @@ export default function BankConnection() {
               showArrow
             />
             <Button
-              onClick={() => setFlowStep("initial")}
-              text="Back"
+              onClick={close}
+              text="Cancel"
               variant="secondary"
               className="w-full"
               disabled={isLoading}
@@ -643,37 +553,6 @@ export default function BankConnection() {
     );
   }
 
-  // Initial state - show connect button
-  return (
-    <CardAuth
-      title="Connect Your Bank Account"
-      description="Securely connect your US bank account via Stripe to enable automated contributions and payouts. Your banking credentials are never stored by Koajo."
-    >
-      <div className="space-y-6">
-        <div className="space-y-3 pt-4">
-          <Button
-            onClick={handleShowBankDetailsForm}
-            text="Connect Bank Account"
-            variant="primary"
-            className="w-full"
-            showArrow
-          />
-          <Button
-            onClick={close}
-            text="Cancel"
-            variant="secondary"
-            className="w-full"
-            showArrow={false}
-          />
-        </div>
-        <div className="text-xs text-text-400 text-center pt-2">
-          <p>
-            By connecting your bank account, you agree to our terms of service
-            and authorize Koajo to process payments according to your pod
-            schedule.
-          </p>
-        </div>
-      </div>
-    </CardAuth>
-  );
+  // Default fallback - show bank details form
+  return null;
 }
