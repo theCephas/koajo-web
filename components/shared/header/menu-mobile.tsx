@@ -2,14 +2,36 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
-import {useState } from "react";
+import { useState, useEffect } from "react";
 import cn from "clsx";
 import Link from "next/link";
 import { Button } from "@/components/utils";
 import { menuItems } from "@/data/navigation";
+import { TokenManager } from "@/lib/utils/memory-manager";
 
 export default function MenuMobile() {
   const [open, setOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check authentication status on mount and after storage changes
+    const checkAuth = () => {
+      setIsAuthenticated(TokenManager.isAuthenticated());
+    };
+
+    checkAuth();
+
+    // Listen for storage changes (in case user logs in/out in another tab)
+    window.addEventListener('storage', checkAuth);
+
+    // Also listen for custom auth events
+    window.addEventListener('auth-change', checkAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('auth-change', checkAuth);
+    };
+  }, []);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -68,27 +90,38 @@ export default function MenuMobile() {
           {/* Menu Items */}
           <nav className="header_container flex flex-col gap-6 ">
             <ul className="flex flex-col gap-4 mb-2.5">
-            {menuItems.map((item, i) => (
-              <li key={i}>
-              <Link
-                href={item.href}
-                className={cn(
-                  "text-xl text-text-200 hover:text-primary transition",
-                  item.label.toLocaleLowerCase() === "login" && "mt-1"
-                )}
-                onClick={() => setOpen(false)}
-              >
-                  {item.label}
-                </Link>
-                </li>
-              ))}
+            {menuItems
+              .filter((item) => isAuthenticated ? item.label.toLowerCase() !== "login" : true)
+              .map((item, i) => (
+                <li key={i}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "text-xl text-text-200 hover:text-primary transition",
+                    item.label.toLocaleLowerCase() === "login" && "mt-1"
+                  )}
+                  onClick={() => setOpen(false)}
+                >
+                    {item.label}
+                  </Link>
+                  </li>
+                ))}
             </ul>
-            <Button
-              href="/register"
-              className="w-full"
-              text="Get Started"
-              onClick={() => setOpen(false)}
-            />
+            {isAuthenticated ? (
+              <Button
+                href="/dashboard"
+                className="w-full"
+                text="Go to Dashboard"
+                onClick={() => setOpen(false)}
+              />
+            ) : (
+              <Button
+                href="/register"
+                className="w-full"
+                text="Get Started"
+                onClick={() => setOpen(false)}
+              />
+            )}
           </nav>
         </Dialog.Content>
       </Dialog.Portal>

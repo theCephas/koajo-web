@@ -63,6 +63,13 @@ export default function RegisterPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // If user is fully authenticated, redirect to dashboard
+    if (TokenManager.isAuthenticated()) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    // If user has started registration, show continue modal
     if (
       TokenManager.isRegistered() &&
       registrationStage !== REGISTRATION_STAGE.NONE
@@ -70,7 +77,7 @@ export default function RegisterPage() {
       setModalType("continue");
       setModalVisible(true);
     }
-  }, [registrationStage]);
+  }, [registrationStage, router]);
 
   const onClose = () => {
     setModalVisible(false);

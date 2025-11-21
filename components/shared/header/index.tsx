@@ -1,18 +1,43 @@
+"use client";
 import Image from "next/image";
 import cn from "clsx";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import MenuMobile from "./menu-mobile";
 import { menuItems } from "@/data/navigation";
 import { Button } from "@/components/utils";
+import { TokenManager } from "@/lib/utils/memory-manager";
 
 interface HeaderProps {
   className?: string;
 }
 
 export default function Header({ className = "" }: HeaderProps) {
-  const loginItem = menuItems.find( 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const loginItem = menuItems.find(
     (item) => item.label.toLowerCase() === "login"
   );
+
+  useEffect(() => {
+    // Check authentication status on mount and after storage changes
+    const checkAuth = () => {
+      setIsAuthenticated(TokenManager.isAuthenticated());
+    };
+
+    checkAuth();
+
+    // Listen for storage changes (in case user logs in/out in another tab)
+    window.addEventListener('storage', checkAuth);
+
+    // Also listen for custom auth events
+    window.addEventListener('auth-change', checkAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('auth-change', checkAuth);
+    };
+  }, []);
 
   return (
     <header
@@ -60,15 +85,21 @@ export default function Header({ className = "" }: HeaderProps) {
 
         {/* Login  &  CTA Button*/}
         <div className="hidden lg:flex items-center gap-8">
-          {loginItem && (
-            <Link
-              href="/auth/login"
-              className="text-base text-gray-900 hover:text-primary transition-colors"
-            >
-              Login
-            </Link>
+          {isAuthenticated ? (
+            <Button href="/dashboard" text="Go to Dashboard" />
+          ) : (
+            <>
+              {loginItem && (
+                <Link
+                  href="/auth/login"
+                  className="text-base text-gray-900 hover:text-primary transition-colors"
+                >
+                  Login
+                </Link>
+              )}
+              <Button href="/register" text="Get Started" />
+            </>
           )}
-          <Button href="/register" text="Get Started" />
         </div>
 
         <MenuMobile />

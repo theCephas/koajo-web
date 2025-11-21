@@ -18,7 +18,6 @@ export default function PlanCard({ title, description }: PlanCardProps) {
         <p className="text-black text-base mb-6 leading-relaxed">
           {description}
         </p>
-        <Button href="/register" text="Get Started" />
       </div>
     </div>
   );

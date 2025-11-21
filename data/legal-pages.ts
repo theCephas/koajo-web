@@ -181,7 +181,7 @@ const privacyPolicyData: LegalPageData = {
 
 const termsOfUseData: LegalPageData = {
   slug: "terms-of-use",
-  title: "Terms of Use",
+  title: "Terms",
   description: `Welcome to Koajo! By accessing and using our platform, you agree to comply with and be bound by these Terms of Use. If you do not agree to these terms, please do not use our services.`,
   content: [
     {

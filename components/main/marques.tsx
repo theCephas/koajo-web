@@ -2,8 +2,8 @@ import Marquee from "react-fast-marquee";
 
 export default function Marques() {
   return (
-    <section className="w-full bg-gray py-15">
-      <div className="page_container flex flex-col gap-4.5 px-0">
+    <section className="w-full bg-gray py-10 md:py-12 lg:py-15 lg:pb-32 overflow-hidden">
+      <div className="flex flex-col gap-4 md:gap-4.5">
         <Marquee
           speed={70}
           className="relative z-10 flex items-center gap-2.5 -rotate-2 h-12.5 md:h-14 lg:h-17 bg-black py-1.5 lg:py-2.5 text-xl md:text-2xl lg:text-3xl font-semibold text-white"

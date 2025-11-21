@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="w-full bg-gray pt-7 md:pt-15 lg:pt-25">
       <div className="page_container flex flex-col items-center gap-6 lg:gap-7.5 pb-9 lg:max-w-full lg:px-4">
-        <div className="flex flex-col items-center relative px-6 py-15 lg:pt-25 lg:pb-12.5 lg:w-full bg-[image:linear-gradient(250deg,#E78D5C_1.2%,#2F8488_43.67%,#000_96.25%),linear-gradient(107deg,#672706_-2.13%,#024044_46.9%,#3A1E10_94.01%)] rounded-xl">
+        <div className="flex flex-col items-center relative px-6 py-15 lg:pt-25 lg:pb-12.5 lg:w-full bg-[linear-gradient(250deg,#E78D5C_1.2%,#2F8488_43.67%,#000_96.25%),linear-gradient(107deg,#672706_-2.13%,#024044_46.9%,#3A1E10_94.01%)] rounded-xl">
           {/* Background */}
           <div className="size-full absolute inset-0 z-0 rounded-[inherit]">
             <Image
@@ -103,21 +103,21 @@ const socialLinks = [
   {
     label: "Instagram",
     icon: "/media/icons/social-instagram.svg",
-    href: "https://www.instagram.com/koajo",
+    href: "https://instagram.com/joinkoajo",
   },
   {
     label: "Facebook",
     icon: "/media/icons/social-facebook.svg",
-    href: "https://www.facebook.com/koajo",
+    href: "https://www.facebook.com/share/18tZXcxzL9",
   },
   {
-    label: "WhatsApp",
-    icon: "/media/icons/social-whatsapp.svg",
-    href: "https://wa.me/koajo",
+    label: "TikTok",
+    icon: "/media/icons/tiktok.svg",
+    href: "https://www.tiktok.com/@JoinKoajo",
   },
-  {
-    label: "LinkedIn",
-    icon: "/media/icons/social-linkedin.svg",
-    href: "https://www.linkedin.com/company/koajo",
-  },
+  // {
+  //   label: "LinkedIn",
+  //   icon: "/media/icons/social-linkedin.svg",
+  //   href: "https://www.linkedin.com/company/koajo",
+  // },
 ];

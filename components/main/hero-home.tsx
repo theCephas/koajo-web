@@ -1,6 +1,9 @@
+"use client";
 import Image from "next/image";
 import { Button } from "../utils";
-import { MyImage } from "../utils";
+import Lottie from "lottie-react";
+import cardsAnimation from "@/public/media/animation/cards.json";
+import cardsMobileAnimation from "@/public/media/animation/cards-mobile.json";
 
 export default function Hero() {
   return (
@@ -36,7 +39,7 @@ export default function Hero() {
             </div> */}
 
             {/* Headline */}
-            <h1 className="text-xl md:text-3xl lg:text-5xl font-semibold text-white text-center  mb-5 lg:mb-6 relative z-10">
+            <h1 className="text-xl md:text-3xl lg:text-5xl font-medium text-white text-center  mb-5 lg:mb-6 relative z-10">
               Savings. Financial Security.{" "}
               <span className="text-highlight">Financial</span> Freedom
             </h1>
@@ -55,22 +58,23 @@ export default function Hero() {
         </div>
 
         {/* Stats Card */}
-        <div className="inner_container lg:max-w-[calc(1078rem/16)] mx-auto">
-          <MyImage
-            src="hero-home_zafbgr"
-            alt="Users avatars"
-            width={293}
-            height={347}
-            desktop={{
-              width: 1078,
-              height: 571,
-              src: "hero-home-desktop_iy9o4j",
-            }}
-            className="rounded-lg size-auto relative -top-[calc(124rem/16)] mx-auto z-10"
-            isCloudinary
-            quality={100}
-            priority
-          />
+        <div className="inner_container lg:max-w-[calc(1078rem/16)] mx-auto px-4 md:px-6 lg:px-0">
+          <div className="rounded-lg relative -top-[calc(124rem/16)] z-10 w-full max-w-[293px] md:max-w-[600px] lg:max-w-[1078px] mx-auto aspect-[293/347] lg:aspect-[1078/571]">
+            {/* Mobile Animation */}
+            <Lottie
+              animationData={cardsMobileAnimation}
+              loop={true}
+              autoplay={true}
+              className="w-full h-full lg:hidden"
+            />
+            {/* Desktop Animation */}
+            <Lottie
+              animationData={cardsAnimation}
+              loop={true}
+              autoplay={true}
+              className="w-full h-full hidden lg:block"
+            />
+          </div>
         </div>
       </div>
     </section>

@@ -103,7 +103,7 @@ const footerLinksMobile = [
             href: "/legals/privacy-policy",
           },
           {
-            label: "Terms of Use",
+            label: "Terms",
             href: "/legals/terms-of-use",
           },
         ],
@@ -181,7 +181,7 @@ const footerLinksDesktop = [
             href: "/legals/privacy-policy",
           },
           {
-            label: "Terms of Use",
+            label: "Terms",
             href: "/legals/terms-of-use",
           },
         ],

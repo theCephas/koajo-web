@@ -11,7 +11,7 @@ export default function RootLayout({
   return (
     <>
         <Header />
-        <main className="mt-header-height">{children}</main>
+        <main className="mt-header-height px-[3px]">{children}</main>
         <Footer />
     </>
   );

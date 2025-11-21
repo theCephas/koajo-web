@@ -59,7 +59,7 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
                     href="/legals/terms-of-use"
                     className="text-tertiary-100 hover:text-tertiary-100/80"
                   >
-                    Term & Condition
+                    Terms
                   </Link>
                   <span className="hidden sm:inline">|</span>
                   <Link

@@ -19,7 +19,9 @@ export default function Steps() {
 
   const progressHeight = useMemo(() => {
     if (activeIdx === 0) return "2%";
-    return activeIdx === steps.length - 1 ? "100%" : `${((activeIdx + 1) * 100) / steps.length}%`;
+    return activeIdx === steps.length - 1
+      ? "100%"
+      : `${((activeIdx + 1) * 100) / steps.length}%`;
   }, [activeIdx]);
 
   useEffect(() => {
@@ -58,14 +60,19 @@ export default function Steps() {
   }, []);
 
   useEffect(() => {
-    const stepTextContainers = document.querySelectorAll(".step-text-container");
-    const maxHeight = Array.from(stepTextContainers).reduce((acc, container) =>  acc + container.clientHeight, 0);
+    const stepTextContainers = document.querySelectorAll(
+      ".step-text-container"
+    );
+    const maxHeight = Array.from(stepTextContainers).reduce(
+      (acc, container) => acc + container.clientHeight,
+      0
+    );
     setProgressMaxHeight(maxHeight);
     console.log("maxHeight", maxHeight);
   }, []);
 
   return (
-    <section className="w-full bg-[image:linear-gradient(250deg,#000_1.2%,#032425_43.67%,#000_96.25%)]">
+    <section className="w-full bg-[linear-gradient(250deg,#000_1.2%,#032425_43.67%,#000_96.25%)]">
       <div className="page_container py-15 relative">
         {/* Background */}
         <div className="size-full -z-10 absolute inset-0  rounded-[inherit] overflow-hidden">
@@ -80,7 +87,7 @@ export default function Steps() {
 
         {/* headings */}
         <div className="flex flex-col gap-5 md:gap-6 items-center text-center mb-10 lg:mb-15 max-w-[calc(940rem/16)] mx-auto">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-white">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-medium text-white">
             See How We Are{" "}
             <span className="text-highlight">Empowering Millions...</span>
           </h2>
@@ -113,11 +120,17 @@ export default function Steps() {
             ))}
           </div>
           <div
-            className="relative flex flex-col overflow-auto lg:h-[calc(677rem/16)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-300"
+            className="relative flex flex-col overflow-auto lg:h-[calc(677rem/16)] scrollbar-hide"
             id="steps-info-container"
           >
             {/* Progress Bar */}
-            <div className="absolute z-0 top-0 left-4.5 w-[1px] h-full bg-gray-100/25" style={{ height: progressMaxHeight > 0 ? `${progressMaxHeight}px` : "100%" }}>
+            <div
+              className="absolute z-0 top-0 left-4.5 w-px h-full bg-gray-100/25"
+              style={{
+                height:
+                  progressMaxHeight > 0 ? `${progressMaxHeight}px` : "100%",
+              }}
+            >
               <div
                 className="bg-white h-[2%]"
                 style={{ height: progressHeight }}
@@ -137,7 +150,12 @@ export default function Steps() {
                   {idx < 8 && "0"}
                   {idx + 1}
                 </div>
-                <div className={cn("step-text-container flex flex-col gap-4 lg:gap-6 pb-7.5 lg:pb-50", idx === steps.length - 1 && "pb-0")}>
+                <div
+                  className={cn(
+                    "step-text-container flex flex-col gap-4 lg:gap-6 pb-7.5 lg:pb-50",
+                    idx === steps.length - 1 && "pb-0"
+                  )}
+                >
                   <h3 className="text-2lg md:text-xl lg:text-2xl font-semibold text-transparent bg-clip-text w-full bg-[image:linear-gradient(90deg,#5A606C_0%,#FFFFFF_50%,#5A606C_100%)]">
                     {step.title}
                   </h3>

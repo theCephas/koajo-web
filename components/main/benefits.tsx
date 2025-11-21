@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Benefits() {
   return (
-    <section className="w-full bg-gray py-15 pb-7.5">
+    <section className="w-full bg-gray pt-32 py-15 pb-7.5">
       <div className="page_container flex flex-col lg:flex-row gap-7.5 md:gap-10 lg:gap-28 ">
         {/* Heading */}
         <div className="flex flex-col gap-5 md:gap-6 min-w-[calc(150rem/16)] lg:max-w-[calc(434rem/16)]">
@@ -17,7 +17,7 @@ export default function Benefits() {
               and modernizes it into a secure and seamless digital experience
             </p>
 
-            <p className="text-gray-900 font-semibold lg:bg-clip-text lg:text-transparent lg:bg-[image:linear-gradient(107deg,#FD8B51_-2.13%,_#469DA3_49.87%,_#FD8B51_94.01%)]">
+            <p className="text-gray-900 font-semibold lg:bg-clip-text lg:text-transparent lg:bg-[linear-gradient(107deg,#FD8B51_-2.13%,#469DA3_49.87%,#FD8B51_94.01%)]">
               Traditional Ajo systems have served communities for centuries, but
               they need to evolve to keep up with modern financial demands.
             </p>

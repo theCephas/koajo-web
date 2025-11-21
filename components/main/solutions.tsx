@@ -13,15 +13,16 @@ export default function Solutions() {
 
   return (
     <section className="w-full bg-gray">
-      <div className="page_container py-15">
+      <div className="page_container py-12 md:py-20 lg:py-[120px]">
         {/* headings */}
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-text-600 text-center mb-10 mx-auto max-w-[calc(940rem/16)]">
-          Solving real challenges Reshaping{" "}
-          <span className="text-highlight">financial</span> freedom at scale!
+        <h2 className="text-lg md:text-2xl lg:text-[56px] font-medium text-text-600 text-center mb-8 md:mb-10 mx-auto max-w-[calc(940rem/16)] px-4">
+          Solving real challenges <br />
+          Reshaping <span className="text-highlight">financial</span> freedom at
+          scale!
         </h2>
 
         {/* solutions */}
-        <div className="flex items-center lg:gap-9">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:gap-9 bg-white rounded-lg md:rounded-xl lg:rounded-[13.75px] py-8 px-5 md:py-12 md:px-8 lg:py-[56px] lg:px-[52px]">
           <div className="relative hidden lg:flex flex-col gap-4 shrink-0 grow-0 rounded-[0.875rem] w-full lg:max-w-[calc(621rem/16)] lg:h-[calc(640rem/16)]">
             {solutions.map((solution, idx) =>
               solution.image(
@@ -35,30 +36,34 @@ export default function Solutions() {
               )
             )}
           </div>
-          <div className="flex flex-col gap-10 lg:gap-7.5 ">
+          <div className="flex flex-col gap-6 md:gap-8 lg:gap-7.5 w-full">
             {solutions.map((solution, idx) => (
-              <div key={idx} className="lg:pb-12.5 border-b border-text-200">
-                <div className="flex flex-col gap-4 mb-7.5 lg:hidden">
+              <div
+                key={idx}
+                className="pb-6 md:pb-8 lg:pb-12.5 border-b border-text-200 last:border-b-0"
+              >
+                <div className="flex flex-col gap-4 mb-6 md:mb-7.5 lg:hidden">
                   {solution.image()}
                 </div>
                 <div
-                  className="w-full gap-5 flex items-center justify-center cursor-pointer"
+                  className="w-full gap-3 md:gap-5 flex items-center justify-between cursor-pointer"
                   onClick={() => handleSolutionClick(idx)}
                 >
-                  <h3 className="text-2lg md:text-xl font-semibold mb-4 text-gray-900 w-full">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-semibold mb-0 text-gray-900 w-full">
                     {solution.title}
                   </h3>
                   <ChevronUpIcon
                     className={cn(
-                      "size-6 shrink-0 grow-0 transition-transform duration-300 ease-in-out",
+                      "size-5 md:size-6 shrink-0 grow-0 transition-transform duration-300 ease-in-out",
                       activeSolution === idx ? "rotate-0" : "rotate-180"
                     )}
                   />
                 </div>
                 <p
                   className={cn(
-                    "text-sm md:text-base lg:text-md text-gray-700 lg:max-h-0 overflow-hidden transition-all duration-300 ease-in-out",
-                    activeSolution === idx && "lg:max-h-96"
+                    "text-sm md:text-base lg:text-md text-gray-700 overflow-hidden transition-all duration-300 ease-in-out mt-3 md:mt-4",
+                    "max-h-0 lg:max-h-0",
+                    activeSolution === idx && "max-h-[500px] lg:max-h-96"
                   )}
                 >
                   {solution.description}

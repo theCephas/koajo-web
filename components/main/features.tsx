@@ -1,12 +1,15 @@
 import { MyImage, Donot } from "../utils";
-import cn from "clsx"
+import cn from "clsx";
 
 export default function Features() {
   const renderFeature = (feature: Feature, idx?: number, className = "") => {
     return (
       <div
         key={idx}
-        className={cn("px-5 py-10 bg-teal-800 rounded-[calc(22.5rem/16)] border-2 border-teal-800", className)}
+        className={cn(
+          "px-5 py-10 bg-teal-800 rounded-[calc(22.5rem/16)] border-2 border-teal-800",
+          className
+        )}
       >
         {feature.Visual && (
           <div className="size-[calc(221rem/16)] mb-6 mx-auto">
@@ -25,7 +28,7 @@ export default function Features() {
       <div className="page_container py-15">
         {/* headings */}
         <div className="flex flex-col gap-5 md:gap-6 items-center text-center mb-10">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 w-auto lg:w-[668px] leading-16">
             Financial security isn&apos;t just about
             <span className="text-highlight">wealth</span> it&apos;s about
             mental <span className="text-highlight">peace</span>

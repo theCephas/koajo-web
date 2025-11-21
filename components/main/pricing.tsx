@@ -1,4 +1,4 @@
-import { PlanCard } from "@/components/utils";
+import { Button, PlanCard } from "@/components/utils";
 import cn from "clsx";
 
 export default function Pricing() {
@@ -31,6 +31,10 @@ export default function Pricing() {
             );
           })}
         </div>
+
+        <div className="flex items-center justify-center pt-10">
+          <Button href="/register" text="Get Started" />
+        </div>
       </div>
     </div>
   );
@@ -41,25 +45,25 @@ const plans = [
     id: "100",
     title: "$100",
     description:
-      "$100 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$100 contribution payment due on the 1st & 16th of each month for 3 or 6 months.",
   },
   {
     id: "200",
     title: "$200",
     description:
-      "$200 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$200 contribution payment due on the 1st & 16th of each month for 3 or 6 months.",
   },
   {
     id: "500",
     title: "$500",
     description:
-      "$500 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$500 contribution payment due on the 1st & 16th of each month for 3 or 6 months.",
   },
   {
     id: "1000",
     title: "$1000",
     description:
-      "$1000 contribution payment due on the 1st & 16th of each month for 3 months.",
+      "$1000 contribution payment due on the 1st & 16th of each month for 3 or 6 months.",
   },
   {
     id: "custom",

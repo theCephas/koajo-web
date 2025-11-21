@@ -38,6 +38,18 @@ const decrypt = (ciphertext: string): string => {
 
 export class TokenManager {
   /**
+   * Dispatch custom auth change event
+   */
+  private static dispatchAuthChangeEvent(): void {
+    if (typeof window === "undefined") return;
+    try {
+      window.dispatchEvent(new Event('auth-change'));
+    } catch (error) {
+      console.error("Failed to dispatch auth change event:", error);
+    }
+  }
+
+  /**
    * Store registration Status
    */
   static setRegistrationStage(registrationStage: RegistrationStage): void {
@@ -78,6 +90,9 @@ export class TokenManager {
       localStorage.setItem(USER_KEY, encryptedUserData);
 
       console.log("Auth data stored and encrypted successfully");
+
+      // Dispatch event to notify components of auth state change
+      this.dispatchAuthChangeEvent();
     } catch (error) {
       console.error("Failed to store auth data:", error);
     }
@@ -322,6 +337,9 @@ export class TokenManager {
       }
 
       console.log("Auth data, cache, and cookies cleared successfully");
+
+      // Dispatch event to notify components of auth state change
+      this.dispatchAuthChangeEvent();
     } catch (error) {
       console.error("Failed to clear auth data:", error);
     }

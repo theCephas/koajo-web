@@ -53,7 +53,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                   href="/legals/terms-of-use"
                   className="text-tertiary-100 hover:underline cursor-pointer"
                 >
-                  Term of use
+                  Terms
                 </Link>
                 <span>|</span>
                 <Link
